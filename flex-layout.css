@@ -1,0 +1,30 @@
+/* -- global ---------------------------------------------------------------- */
+.fluid { display: flex }
+.fluid .col { flex-direction: column; flex: 1 }
+/* -- cal ------------------------------------------------------------------- */
+.cal { width: 100%; height: 100%; min-width: 420px }
+    .cal .col { border-left: 1px solid #DDD }
+    .cal .col:first-of-type { border-left: none }
+/* -- toolbar --------------------------------------------------------------- */
+    .cal .toolbar { padding: 10px 0; text-align: center }
+        .cal .toolbar .col { border-left: none }
+        .cal .toolbar .col:first-of-type { text-align: left }
+        .cal .toolbar h2 { margin: 0 }
+        .cal .toolbar .col:last-of-type { text-align: right }
+/* -- header ---------------------------------------------------------------- */
+    .cal .header { height: 40px; overflow-y: scroll; text-align: center; border: 1px solid #DDD; border-bottom: none }
+            .cal .header .cell { height: 20px; border-bottom: 1px solid #DDD }
+/* -- main ------------------------------------------------------------------ */
+.cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD; border-top: none }
+    .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; height: 40px; position: relative }
+    .cal .main .cell:first-of-type { border-top: none }
+        .event { height: 100% }
+/* -- month-view ------------------------------------------------------------ */
+    .cal.month .main .cell { height: 80px }
+        .month .event { height: auto }
+/* -- week-view ------------------------------------------------------------- */
+    .cal.week .header .col:first-of-type,
+    .cal.week .main .col:first-of-type { flex: .55 }
+/* -- day-view -------------------------------------------------------------- */
+    .cal.day .header .col:first-of-type,
+    .cal.day .main .col:first-of-type { flex: .078 }
