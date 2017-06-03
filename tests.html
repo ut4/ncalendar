@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test runner</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="vendor/test-vendor.css">
+    </head>
+    <body>
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+        <!-- App sorsat -->
+        <script src="vendor/app-vendor.js"></script>
+        <script>window.$el = Inferno.createElement;</script>
+        <!-- Vain testeihin tarvittavat sorsat -->
+        <script src="vendor/test-vendor.js"></script>
+        <script>QUnit.config.autostart = false;</script>
+        <script src="vendor/require.js"></script>
+        <!-- Itse testien lataus -->
+        <script>require(['test/LayoutComponentTests'], QUnit.start);</script>
+    </body>
+</html>
