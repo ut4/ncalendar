@@ -5,9 +5,9 @@
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="flex-layout.css">
-    <link rel="stylesheet" href="flex-mqueries.css">
+    <link rel="stylesheet" href="flex-layout-mob.css">
     <link rel="stylesheet" href="flex-theme.css">
-    <style>#demo { max-width: 800px; width: 100%; height: 100%; margin: 20px auto }</style>
+    <style>#demo { max-width: 800px; width: 100%; height: 100%; margin: 20px auto } #demo .cal { margin: 0 10px; }</style>
 </head>
 <body>
     <div id="demo"></div>
@@ -39,7 +39,7 @@
             <div class="toolbar">
             <div class="fluid">
                 <div class="col"><button disabled>&lt;</button><button disabled>&gt;</button><button disabled>today</button></div>
-                <div class="col"><h2>April 2017</h2></div>
+                <div class="col"><h2>Apr 16 – 22, 2017</h2></div>
                 <div class="col"><button onclick="setView('month')">month</button><button onclick="setView('week')">week</button><button onclick="setView('day')">day</button></div>
             </div>
             </div>
@@ -69,12 +69,41 @@
             </div>
         </div>
     </template>
+    <template id="weekMob">
+        <div class="cal week-m m">
+            <div class="toolbar">
+            <div class="fluid">
+                <div class="col"><button disabled>&lt;</button><button disabled>&gt;</button><button disabled>today</button></div>
+                <div class="col"><h2>Apr 16 – 22, 2017</h2></div>
+                <div class="col"><button onclick="setView('month')">month</button><button onclick="setView('week')">week</button><button onclick="setView('day')">day</button></div>
+            </div>
+            </div>
+            <div class="main">
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>Ma</span><div class="event"><span><span>00:00 Foo</span><span>Bar foo...</span></span></div></div></div>
+                <div class="col"><div class="cell"><span>Ti</span><div class="event"><span><span>02:00 Foo</span><span>Bar foo...</span></span></div></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>Ke</span></div></div>
+                <div class="col"><div class="cell"><span>To</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>Pe</span></div></div>
+                <div class="col"><div class="cell"><span>La</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>Su</span></div></div>
+                <div class="col"><div class="cell"><span>This week: 2 events</span></div></div>
+            </div>
+            </div>
+        </div>
+    </template>
     <template id="month">
         <div class="cal month">
             <div class="toolbar">
             <div class="fluid">
                 <div class="col"><button disabled>&lt;</button><button disabled>&gt;</button><button disabled>today</button></div>
-                <div class="col"><h2>Apr 16 – 22, 2017</h2></div>
+                <div class="col"><h2>April 2017</h2></div>
                 <div class="col"><button onclick="setView('month')">month</button><button onclick="setView('week')">week</button><button onclick="setView('day')">day</button></div>
             </div>
             </div>
@@ -102,6 +131,115 @@
             </div>
         </div>
     </template>
+    <template id="monthMob">
+        <div class="cal month-m m">
+            <div class="toolbar">
+            <div class="fluid">
+                <div class="col"><button disabled>&lt;</button><button disabled>&gt;</button><button disabled>today</button></div>
+                <div class="col"><h2>April 2017</h2></div>
+                <div class="col"><button onclick="setView('month')">month</button><button onclick="setView('week')">week</button><button onclick="setView('day')">day</button></div>
+            </div>
+            </div>
+            <div class="main">
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>1 Ti</span></div></div>
+                <div class="col"><div class="cell"><span>2 Ke</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>3 To</span></div></div>
+                <div class="col"><div class="cell"><span>4 Pe</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>5 La</span></div></div>
+                <div class="col"><div class="cell"><span>6 Su</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>7 Ma</span></div></div>
+                <div class="col"><div class="cell"><span>8 Ti</span><div class="event"><span><span>00:00 Foo</span><span>Bar foo...</span></span></div></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>9 Ke</span></div></div>
+                <div class="col"><div class="cell"><span>10 To</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>11 Pe</span></div></div>
+                <div class="col"><div class="cell"><span>12 La</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>13 Su</span></div></div>
+                <div class="col"><div class="cell"><span>14 Ma</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>15 Ti</span></div></div>
+                <div class="col"><div class="cell"><span>16 Ke</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>17 To</span></div></div>
+                <div class="col"><div class="cell"><span>18 Pe</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>19 La</span></div></div>
+                <div class="col"><div class="cell"><span>20 Su</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>21 Ma</span></div></div>
+                <div class="col"><div class="cell"><span>22 Ti</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>23 Ke</span></div></div>
+                <div class="col"><div class="cell"><span>24 To</span></div></div>
+            </div>
+            </div>
+        </div>
+    </template>
+    <!--<template id="monthMob">
+        <div class="cal month-m m">
+            <div class="toolbar">
+            <div class="fluid">
+                <div class="col"><button disabled>&lt;</button><button disabled>&gt;</button><button disabled>today</button></div>
+                <div class="col"><h2>April 2017</h2></div>
+                <div class="col"><button onclick="setView('month')">month</button><button onclick="setView('week')">week</button><button onclick="setView('day')">day</button></div>
+            </div>
+            </div>
+            <div class="main">
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>1 Ma</span></div></div>
+                <div class="col"><div class="cell"><span>2 Ti</span></div></div>
+                <div class="col"><div class="cell"><span>3 Ke</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>3 To</span></div></div>
+                <div class="col"><div class="cell"><span>4 Pe</span></div></div>
+                <div class="col"><div class="cell"><span>5 La</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>6 Su</span></div></div>
+                <div class="col"><div class="cell"><span>7 Ma</span></div></div>
+                <div class="col"><div class="cell"><span>8 Ti</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>9 Ke</span></div></div>
+                <div class="col"><div class="cell"><span>10 To</span></div></div>
+                <div class="col"><div class="cell"><span>11 Pe</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>12 La</span></div></div>
+                <div class="col"><div class="cell"><span>13 Su</span></div></div>
+                <div class="col"><div class="cell"><span>14 Ma</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>15 Ti</span></div></div>
+                <div class="col"><div class="cell"><span>16 Ke</span></div></div>
+                <div class="col"><div class="cell"><span>17 To</span></div></div>
+            </div>
+            <div class="fluid">
+                <div class="col"><div class="cell"><span>18 Pe</span></div></div>
+                <div class="col"><div class="cell"><span>19 La</span></div></div>
+                <div class="col"><div class="cell"><span>20 Su</span></div></div>
+            </div>
+            </div>
+        </div>
+    </template>-->
     <script>
         /*!
          * Draggabilly PACKAGED v2.1.1
@@ -113,8 +251,33 @@
     </script>
     <script>
         var __d;
+        var __w = 'month';
+        var __m;
+        var __lm;
         //
-        setView('week');
+        //window.onload = function () {
+            var mq = window.matchMedia("(min-width: 800px)");
+            mq.addListener(wc);
+            wc(mq);
+            // media query change
+            function wc(mq) {
+                if (__w === 'day') {
+                    return;
+                }
+                if (mq.matches) {
+                console.log('window width is at least 500px')
+                __m = false;
+                } else {
+                console.log('window width is less than 500px')
+                __m = true;
+                }
+                if (__lm === undefined || __lm !== __m) {
+                    __lm = __m;
+                    setView(__w);
+                }
+            }
+        //}
+        //setView(__w);
         //
         function dayAsd(_i) {
             var h = '';
@@ -142,8 +305,9 @@
             return h;
         }
         function monthAsd(_i) {
-            var h = '';
-            for (var i = 1; i < 8; i++) {
+            var h = _i?'':'<div class="cell"></div>';
+            var l = _i?8:7;
+            for (var i = 1; i < l; i++) {
                 var e = '';
                 if (_i === 1 && i === 2) {
                     e = '<div class="event"><span><span>Foo</span><span>Bar foo...</span></span></div>';
@@ -155,16 +319,18 @@
         }
         //
         function setView(viewName) {
-            document.getElementById('demo').innerHTML = document.getElementById(viewName).innerHTML;
+            __w = viewName;
+            document.getElementById('demo').innerHTML = document.getElementById(viewName + (!__m || __w === 'day' ? '' : 'Mob')).innerHTML;
             __d = new Date();
             __d.setDate(1);
-            _$('.main .col').forEach((el, _i) => {
+            (__m && __w != 'day') || _$('.main .col').forEach((el, _i) => {
                 el.innerHTML = window[viewName + 'Asd'](_i);
             });
             _$('.event').forEach(el =>
                 new Draggabilly(el)
             );
         }
+        //
         function _$(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }
     </script>
 </body>
