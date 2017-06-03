@@ -13,11 +13,12 @@
         .cal .toolbar .col:last-of-type { text-align: right }
 /* -- header ---------------------------------------------------------------- */
     .cal .header { height: 40px; overflow-y: scroll; text-align: center; border: 1px solid #DDD; border-bottom: none }
-            .cal .header .cell { height: 20px; border-bottom: 1px solid #DDD }
+            .cal .header .cell { height: 20px/*; border-bottom: 1px solid #DDD*/ }
 /* -- main ------------------------------------------------------------------ */
-.cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD; border-top: none }
+.cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
     .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; position: relative }
-    .cal .main .cell:first-of-type:not(:only-of-type) { border-top: none }
+    /*.cal .main .cell:first-of-type:not(:only-of-type) { border-top: none }*/
+    .main > .fluid:first-of-type .cell { border-top: none }
         .event { height: 100%; margin-bottom: 2px }
         .event:last-of-type { margin-bottom: 0 }
 /* -- month-view ------------------------------------------------------------ */
