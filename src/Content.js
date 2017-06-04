@@ -1,9 +1,9 @@
-define(['src/Calendar'], Calendar => {
+define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
     'use strict';
+    const dateUtils = new DateUtils.default();
     const DAYS_IN_WEEK = 7;
     const HOURS_IN_DAY = 24;
     const HOURS_ARRAY = Array.from(Array(HOURS_IN_DAY).keys());
-    const formatHour = hour => (hour < 10 ? '0' : '') + hour + ':00';
     /*
      * Kalenterin pääsisältö day-muodossa.
      *  ___________________________
@@ -21,13 +21,13 @@ define(['src/Calendar'], Calendar => {
             super(props);
         }
         /**
-         * Renderöi 24 (tuntia) * 2 (tuntisarake + valittu päivä) gridin.
+         * Renderöi 2 (tuntisarake + valittu päivä) * 24 (tuntia) gridin.
          */
         render() {
             return $el('div', {className: 'main'},
                 HOURS_ARRAY.map(hour =>
                     $el('div', {className: 'fluid'},
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, formatHour(hour))),
+                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, dateUtils.formatHour(hour))),
                         $el('div', {className: 'col'}, $el('div', {className: 'cell'}, ''))
                     )
                 )
@@ -35,33 +35,57 @@ define(['src/Calendar'], Calendar => {
         }
     }
     /*
-     * Kalenterin pääsisältö week-muodossa.
+     * Kalenterin pääsisältö week, ja week-mobile -muodossa.
      */
     class WeekContent extends Inferno.Component {
         /**
-         * @param {object} props
+         * @param {object} props {isMobileViewEnabled: {boolean}}
          */
         constructor(props) {
             super(props);
         }
         /**
-         * Renderöi 24 (tuntia) * 8 (tuntisarake + viikon päivät) gridin.
+         * Renderöi 8 (tuntisarake + viikonpäivät) * 24 (tuntia) gridin, tai
+         * 2 (viikonpäivä) * 4 (rivi) gridin (mobile).
          */
         render() {
             return $el('div', {className: 'main'},
-                HOURS_ARRAY.map(hour =>
-                    $el('div', {className: 'fluid'},
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, formatHour(hour))),
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, ''))
+                !this.props.isMobileViewEnabled
+                    ? HOURS_ARRAY.map(hour =>
+                        $el('div', {className: 'fluid'},
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, dateUtils.formatHour(hour))),
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, ''))
+                        )
                     )
-                )
+                    : this.generateMobileGrid().map(row =>
+                        $el('div', {className: 'fluid'}, row.map(content =>
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, $el('span', null, content)))
+                        ))
+                    )
             );
+        }
+        /**
+         * Generoi viikonpäivät (lyhyessä muodossa) 2 * 4 taulukkoon. Esim.
+         * [['Ma', 'Ti'], ['Ke', 'To'], ...].
+         *
+         * @returns {array}
+         */
+        generateMobileGrid() {
+            const dayNames = dateUtils.getFormattedWeekDays(
+                Intl.DateTimeFormat('fi', {weekday: 'long'})
+            );
+            return [
+                [dayNames[0], dayNames[1]],
+                [dayNames[2], dayNames[3]],
+                [dayNames[4], dayNames[5]],
+                [dayNames[6], 'Tällä viikolla: 0 tapahtumaa'],
+            ];
         }
     }
     /*
@@ -69,39 +93,70 @@ define(['src/Calendar'], Calendar => {
      */
     class MonthContent extends Inferno.Component {
         /**
-         * @param {object} props
+         * @param {object} props {isMobileViewEnabled: {boolean}}
          */
         constructor(props) {
             super(props);
         }
         /**
-         * Renderöi 4 (viikot) * 7 (viikon päivät) gridin.
+         * Renderöi 7 (päivä) * 4 (viikkoa) gridin, tai 2 (päivä + viikonpäivä)
+         * * 15 (riviä) gridin (mobile).
          */
         render() {
             return $el('div', {className: 'main'},
-                this.generateDateGrid().map(row =>
-                    $el(...['div', {className: 'fluid'}].concat(row.map(date =>
-                        $el('div', {className: 'col'},
-                            $el('div', {className: 'cell'}, date)
-                        )
-                    )))
-                )
+                !this.props.isMobileViewEnabled
+                    ? this.generateDateGrid().map(row =>
+                        $el('div', {className: 'fluid'}, row.map(date =>
+                            $el('div', {className: 'col'},
+                                $el('div', {className: 'cell'}, date)
+                            )
+                        ))
+                    )
+                    : this.generateMobileDateGrid().map(row =>
+                        $el('div', {className: 'fluid'}, row.map(content =>
+                            $el('div', {className: 'col'}, $el('div', {className: 'cell'}, $el('span', null, content)))
+                        ))
+                    )
             );
         }
         /**
-         * Generoi 4 * 7 taulukon, joiden arvoina kuukauden päivä.
+         * Generoi kuun päivät numeerisessa muodossa 7 * 4 taulukkoon. Esim.
+         * [[1, 2 ...], [8, 9...], ...].
          *
          * @returns {Array}
          */
         generateDateGrid() {
+            return this.generateGrid(DAYS_IN_WEEK, d => d.getDate());
+        }
+        /**
+         * Generoi kuun päivät muodossa `<pvmNumeerinen> + <viikonPäiväLyhyt>)
+         * 2 * 15 taulukkoon. Esim. [[1 Ma, 2 Ti], [3 Ke ...], ...].
+         *
+         * @returns {array}
+         */
+        generateMobileDateGrid() {
+            const dayNames = dateUtils.getFormattedWeekDays(
+                Intl.DateTimeFormat('fi', {weekday: 'short'})
+            );
+            return this.generateGrid(2, d => d.getDate() + ' ' + dayNames[d.getDay()]);
+        }
+        /**
+         * Generoi kuukauden kaikki päivät <gridWidth> * <n> taulukkoon. Taulu-
+         * kon sisältö määräytyy <formatFn>:n mukaan.
+         *
+         * @param {number} gridWidth
+         * @param {Function} formatFn fn(d: Date)
+         * @returns {array}
+         */
+        generateGrid(gridWidth, formatFn) {
             const d = new Date(Calendar.state.dateCursor);
             d.setDate(1);
             const month = d.getMonth();
             const grid = [];
             let row = [];
             do {
-                row.push(d.getDate());
-                if (row.length === DAYS_IN_WEEK) {
+                row.push(formatFn(d));
+                if (row.length === gridWidth) {
                     grid.push(row);
                     row = [];
                 }

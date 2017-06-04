@@ -16,6 +16,9 @@ define(['src/Calendar'], Calendar => {
                 return formatted;
             });
         }
+        formatHour(hour) {
+            return (hour < 10 ? '0' : '') + hour + ':00';
+        }
         format(options, date) {
             return Intl.DateTimeFormat('fi', options).format(date);
         }
