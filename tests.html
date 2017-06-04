@@ -17,6 +17,9 @@
         <script>QUnit.config.autostart = false;</script>
         <script src="vendor/require.js"></script>
         <!-- Itse testien lataus -->
-        <script>require(['test/LayoutComponentTests'], QUnit.start);</script>
+        <script>require([
+            'test/HeaderComponentTests',
+            'test/LayoutComponentTests'
+        ], QUnit.start);</script>
     </body>
 </html>

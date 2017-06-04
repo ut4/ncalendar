@@ -1,20 +1,6 @@
-define(['src/Calendar'], Calendar => {
+define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
     'use strict';
-    const getStartOfWeek = date => {
-        var d = new Date(date);
-        var day = d.getDay();
-        d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
-        return d;
-    };
-    const EMPTY_WEEK = Array.from(Array(7));
-    const getFormattedWeekDays = format => {
-        const d = getStartOfWeek(Calendar.state.dateCursor);
-        return EMPTY_WEEK.map(() => {
-            const formatted = format.format(d);
-            d.setDate(d.getDate() + 1);
-            return formatted;
-        });
-    };
+    const dateUtils = new DateUtils.default();
     /*
      * Kalenterin toolbarin alapuolelle renderöitävä headerline day-muodossa.
      *  ___________________________
@@ -53,7 +39,7 @@ define(['src/Calendar'], Calendar => {
          */
         constructor(props) {
             super(props);
-            this.DAYS = getFormattedWeekDays(
+            this.DAYS = dateUtils.getFormattedWeekDays(
                 Intl.DateTimeFormat('fi', {weekday: 'short'})
             );
         }
@@ -79,7 +65,7 @@ define(['src/Calendar'], Calendar => {
          */
         constructor(props) {
             super(props);
-            this.DAYS = getFormattedWeekDays(
+            this.DAYS = dateUtils.getFormattedWeekDays(
                 Intl.DateTimeFormat('fi', {weekday: 'long'})
             );
         }
