@@ -10,7 +10,7 @@ define(['src/Calendar'], Calendar => {
             return '%1 %2 - %3 %4'
                 .replace('%1', Intl.DateTimeFormat('fi', {month: 'short'}).format(dateCursor))
                 .replace('%2', dateCursor.getDate())
-                .replace('%3', dateCursor.getDate())
+                .replace('%3', dateCursor.getDate() + 7)
                 .replace('%4', dateCursor.getFullYear());
         },
         [Calendar.views.MONTH]: (dateCursor) => {
@@ -18,7 +18,8 @@ define(['src/Calendar'], Calendar => {
         }
     };
     /*
-     * Kalenterilayoutin ylin osa.
+     * Kalenterilayoutin ylin osa. Sisältää päänavigaatiopainikkeet, otsakkeen,
+     * ja näkymänavigaatiopainikkeet.
      *  ___________________________
      * |______--> Toolbar <--______|
      * |__________Header___________|

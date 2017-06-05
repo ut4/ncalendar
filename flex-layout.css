@@ -17,7 +17,6 @@
 /* -- main ------------------------------------------------------------------ */
 .cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
     .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; position: relative }
-    /*.cal .main .cell:first-of-type:not(:only-of-type) { border-top: none }*/
     .main > .fluid:first-of-type .cell { border-top: none }
         .event { height: 100%; margin-bottom: 2px }
         .event:last-of-type { margin-bottom: 0 }

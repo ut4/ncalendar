@@ -1,19 +1,8 @@
-        .cal.m .main .cell:before { content: initial }
+        .cal.mobile .main .cell:before { content: initial }
 
-.cal.month-m .main { margin-top: 0; border-radius: 2px }
-        .cal.month-m .main .cell { min-height: 60px }
-            .month-m  .event { height: auto }
+.cal.month-mobile .main { margin-top: 0; border-radius: 2px }
+        .cal.month-mobile .main .cell { min-height: 60px }
+            .month-mobile  .event { height: auto }
 
-.cal.week-m .main { height: auto; margin-top: 0; border-radius: 2px }
-        .cal.week-m .main .cell { height: auto; min-height: 120px }
-
-/*@media (max-width:820px) {
-    .fluid { flex-wrap: wrap }
-    .fluid .col { flex: initial; width: 33.333333%; height: 33.333333%; box-sizing: border-box }
-    .cal .main .cell:before { content: initial }
-    .cal .main { margin-top: 0 }
-    .cal .header,
-    .cal.week .main .col:first-of-type,
-    .cal .main .cell { display: none }
-    .cal .main .cell:first-of-type { display: block; border-bottom: 1px solid #DDD; height: 100% }
-}*/
+.cal.week-mobile .main { height: auto; margin-top: 0; border-radius: 2px }
+        .cal.week-mobile .main .cell { height: auto; min-height: 120px }

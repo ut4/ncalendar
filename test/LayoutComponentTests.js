@@ -8,5 +8,11 @@ define(['src/Calendar', 'src/Layout', 'src/Header', 'src/Toolbar', 'src/Content'
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(rendered, Header[expectedView]), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(rendered, Content[expectedView]), undefined);
         });
+        QUnit.test('renderöi layoutin props.currentView -muodossa', assert => {
+            const expectedView = Calendar.views.DAY;
+            const rendered = Inferno.TestUtils.renderIntoDocument($el(Layout.default, {currentView: expectedView}));
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(rendered, Header[expectedView]), undefined);
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(rendered, Content[expectedView]), undefined);
+        });
     });
 });
