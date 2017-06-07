@@ -1,4 +1,4 @@
-require(['src/Layout'], Layout => {
+require(['src/Calendar'], (Calendar) => {
     'use strict';
-    Inferno.render($el(Layout.default), document.getElementById('cal'));
+    Inferno.render($el(Calendar.default), document.getElementById('cal'));
 });

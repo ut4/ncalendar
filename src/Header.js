@@ -1,4 +1,4 @@
-define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
+define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
     /*
@@ -12,11 +12,11 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
      */
     class DayHeader extends Inferno.Component {
         /**
-         * @param {object} props
+         * @param {object} props {dateCursor: {DateCursor}}
          */
         constructor(props) {
             super(props);
-            this.day = Intl.DateTimeFormat('fi', {weekday: 'long'}).format(Calendar.state.dateCursor);
+            this.day = Intl.DateTimeFormat('fi', {weekday: 'long'}).format(this.props.dateCursor.range.start);
         }
         /**
          * Renderöi 1 * 2 headerlinen
@@ -40,6 +40,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
         constructor(props) {
             super(props);
             this.DAYS = dateUtils.getFormattedWeekDays(
+                this.props.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'short'})
             );
         }
@@ -66,6 +67,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
         constructor(props) {
             super(props);
             this.DAYS = dateUtils.getFormattedWeekDays(
+                this.props.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'long'})
             );
         }
@@ -83,8 +85,8 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
         }
     }
     return {
-        [Calendar.views.DAY]: DayHeader,
-        [Calendar.views.WEEK]: WeekHeader,
-        [Calendar.views.MONTH]: MonthHeader
+        [Constants.VIEW_DAY]: DayHeader,
+        [Constants.VIEW_WEEK]: WeekHeader,
+        [Constants.VIEW_MONTH]: MonthHeader
     };
 });

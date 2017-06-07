@@ -1,17 +1,20 @@
-define(['src/Calendar', 'src/Header', 'src/Toolbar', 'src/Content'], (Calendar, Header, Toolbar, Content) => {
+define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, Toolbar, Content, Constants) => {
     'use strict';
     const mobileViewCondition = window.matchMedia('(max-width:800px)');
     /*
-     * Kalenterin juurikomponentti.
+     * Kasailee kalenterin eri osat paikalleen <Calendar.currentView> -muodossa.
      */
     class Layout extends Inferno.Component {
         /**
-         * @param {object} props {currentView: {string=}}
+         * @param {object} props {
+         *     dateCursor: {DateCursor},
+         *     currentView: {string},
+         *     changeView: {Function}
+         * }
          */
         constructor(props) {
             super(props);
             this.state = {
-                currentView: Calendar.views[props.currentView ? props.currentView.toUpperCase() : 'DEFAULT'],
                 isMobileViewEnabled: mobileViewCondition.matches
             };
         }
@@ -31,7 +34,7 @@ define(['src/Calendar', 'src/Header', 'src/Toolbar', 'src/Content'], (Calendar, 
          */
         viewPortListener(newMatch) {
             // Päivänäkymällä ei ole erillistä mobile™-mutaatiota
-            if (Calendar.state.currentView === Calendar.views.DAY) {
+            if (this.props.currentView === Constants.VIEW_DAY) {
                 return;
             }
             const newIsMobileViewEnabled = newMatch.matches;
@@ -40,39 +43,34 @@ define(['src/Calendar', 'src/Header', 'src/Toolbar', 'src/Content'], (Calendar, 
             }
         }
         /**
-         * Asettaa staten <state.currentView>:in arvoksi <to> (mikäli se ei ole
-         * jo valmiiksi).
-         *
-         * @access public
-         * @param {string} to keyof Calendar.views
-         */
-        changeView(to) {
-            const newView = Calendar.views[to.toUpperCase()];
-            if (this.state.currentView === newView) {
-                return;
-            }
-            this.setState({currentView: newView});
-        }
-        /**
          * Renderöi kalenterin kokonaisuudessaan mutaatiossa day, week,
          * week-mobile, month, tai month-mobile.
          */
         render() {
             //
-            let className = 'cal ' + this.state.currentView;
+            let className = 'cal ' + this.props.currentView;
             if (this.state.isMobileViewEnabled &&
-                this.state.currentView !== Calendar.views.DAY) {
+                this.props.currentView !== Constants.VIEW_DAY) {
                 className += '-mobile mobile';
             }
             //
             const isWeekOrMonthMobileView = this.state.isMobileViewEnabled &&
-                (this.state.currentView === Calendar.views.WEEK ||
-                this.state.currentView === Calendar.views.MONTH);
+                (this.props.currentView === Constants.VIEW_WEEK ||
+                this.props.currentView === Constants.VIEW_MONTH);
             //
             return $el('div', {className},
-                $el(Toolbar.default, {currentView: this.state.currentView, onViewChange: this.changeView.bind(this)}),
-                !isWeekOrMonthMobileView && $el(Header[this.state.currentView]),
-                $el(Content[this.state.currentView], {isMobileViewEnabled: this.state.isMobileViewEnabled})
+                $el(Toolbar.default, {
+                    dateCursor: this.props.dateCursor,
+                    currentView: this.props.currentView,
+                    onViewChange: this.props.changeView
+                }),
+                !isWeekOrMonthMobileView && $el(Header[this.props.currentView], {
+                    dateCursor: this.props.dateCursor
+                }),
+                $el(Content[this.props.currentView], {
+                    dateCursor: this.props.dateCursor,
+                    isMobileViewEnabled: this.state.isMobileViewEnabled
+                })
             );
         }
     }

@@ -1,4 +1,4 @@
-define(['src/Calendar'], Calendar => {
+define(() => {
     'use strict';
     const EMPTY_WEEK = Array.from(Array(7));
     class DateUtils {
@@ -8,8 +8,8 @@ define(['src/Calendar'], Calendar => {
             d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
             return d;
         }
-        getFormattedWeekDays(format) {
-            const d = this.getStartOfWeek(Calendar.state.dateCursor);
+        getFormattedWeekDays(date, format) {
+            const d = this.getStartOfWeek(date);
             return EMPTY_WEEK.map(() => {
                 const formatted = format.format(d);
                 d.setDate(d.getDate() + 1);

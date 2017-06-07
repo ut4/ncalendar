@@ -1,4 +1,4 @@
-define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
+define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
     const DAYS_IN_WEEK = 7;
@@ -15,7 +15,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
      */
     class DayContent extends Inferno.Component {
         /**
-         * @param {object} props
+         * @param {object} props {isMobileViewEnabled: {boolean}, dateCursor: {DateCursor}}
          */
         constructor(props) {
             super(props);
@@ -39,7 +39,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
      */
     class WeekContent extends Inferno.Component {
         /**
-         * @param {object} props {isMobileViewEnabled: {boolean}}
+         * @param {object} props {isMobileViewEnabled: {boolean}, dateCursor: {DateCursor}}
          */
         constructor(props) {
             super(props);
@@ -78,6 +78,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
          */
         generateMobileGrid() {
             const dayNames = dateUtils.getFormattedWeekDays(
+                this.props.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'long'})
             );
             return [
@@ -93,7 +94,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
      */
     class MonthContent extends Inferno.Component {
         /**
-         * @param {object} props {isMobileViewEnabled: {boolean}}
+         * @param {object} props {isMobileViewEnabled: {boolean}, dateCursor: {DateCursor}}
          */
         constructor(props) {
             super(props);
@@ -136,6 +137,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
          */
         generateMobileDateGrid() {
             const dayNames = dateUtils.getFormattedWeekDays(
+                this.props.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'short'})
             );
             return this.generateGrid(2, d => d.getDate() + ' ' + dayNames[d.getDay()]);
@@ -149,7 +151,7 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
          * @returns {array}
          */
         generateGrid(gridWidth, formatFn) {
-            const d = new Date(Calendar.state.dateCursor);
+            const d = new Date(this.props.dateCursor.range.start);
             d.setDate(1);
             const month = d.getMonth();
             const grid = [];
@@ -170,8 +172,8 @@ define(['src/Calendar', 'src/DateUtils'], (Calendar, DateUtils) => {
         }
     }
     return {
-        [Calendar.views.DAY]: DayContent,
-        [Calendar.views.WEEK]: WeekContent,
-        [Calendar.views.MONTH]: MonthContent
+        [Constants.VIEW_DAY]: DayContent,
+        [Constants.VIEW_WEEK]: WeekContent,
+        [Constants.VIEW_MONTH]: MonthContent
     };
 });

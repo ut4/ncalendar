@@ -1,4 +1,4 @@
-define(['src/Content', 'src/Calendar', 'src/DateUtils',], (Content, Calendar, DateUtils) => {
+define(['src/Content', 'src/Calendar', 'src/Constants', 'src/DateUtils',], (Content, Calendar, Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
     QUnit.module('ContentComponent', () => {
@@ -12,7 +12,9 @@ define(['src/Content', 'src/Calendar', 'src/DateUtils',], (Content, Calendar, Da
             });
         });
         QUnit.test('.week renderöi 24-riviä joissa tuntisolu, ja 7 sisältösolua', assert => {
-            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument($el(Content.week)));
+            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
+                $el(Content.week, {dateCursor: Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_WEEK)})
+            ));
             assert.equal(renderedRows.length, 24);
             renderedRows.forEach((row, hour) => {
                 assert.equal(row.children[0].textContent, dateUtils.formatHour(hour)); // Tuntisarake
@@ -23,10 +25,14 @@ define(['src/Content', 'src/Calendar', 'src/DateUtils',], (Content, Calendar, Da
         });
         QUnit.test('.week (mobile) renderöi 4-riviä joissa 2 päiväsolua otsikkona täydellinen viikonpäivän nimi', assert => {
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.week, {isMobileViewEnabled: true})
+                $el(Content.week, {
+                    isMobileViewEnabled: true,
+                    dateCursor: Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_WEEK)
+                })
             ));
             assert.equal(renderedRows.length, 4);
             const dayNames = dateUtils.getFormattedWeekDays(
+                new Date(),
                 Intl.DateTimeFormat('fi', {weekday: 'long'})
             );
             assert.equal(renderedRows[0].children[0].textContent, dayNames[0]);
@@ -39,9 +45,10 @@ define(['src/Content', 'src/Calendar', 'src/DateUtils',], (Content, Calendar, Da
             assert.equal(renderedRows[3].children[1].textContent, 'Tällä viikolla: 0 tapahtumaa');
         });
         QUnit.test('.month renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
-            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument($el(Content.month)));
+            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH);
+            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument($el(Content.month, {dateCursor})));
             assert.equal(renderedRows.length, 5);
-            const d = new Date(Calendar.state.dateCursor);
+            const d = new Date(dateCursor.range.start);
             d.setDate(1);
             renderedRows.forEach(row => {
                 assert.equal(row.children[0].textContent, d.getDate()); // Sisältösolu (maanantai)
@@ -52,11 +59,12 @@ define(['src/Content', 'src/Calendar', 'src/DateUtils',], (Content, Calendar, Da
             });
         });
         QUnit.test('.month (mobile) renderöi solun jokaiselle kuukauden päivälle 2-levyisinä riveinä otsikkona numeerinen kuukauden päivä ja viikonpäivän nimi', assert => {
+            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH);
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.month, {isMobileViewEnabled: true})
+                $el(Content.month, {isMobileViewEnabled: true, dateCursor})
             ));
             assert.equal(renderedRows.length, 15);
-            const d = new Date(Calendar.state.dateCursor);
+            const d = new Date(dateCursor.range.start);
             d.setDate(1);
             renderedRows.forEach(row => {
                 assert.equal(row.children[0].textContent, getExpectedMobileMonthCellTitle(d));
@@ -71,6 +79,7 @@ define(['src/Content', 'src/Calendar', 'src/DateUtils',], (Content, Calendar, Da
         return Inferno.TestUtils.scryRenderedDOMElementsWithClass(rendered, 'fluid');
     }
     const dayNames = dateUtils.getFormattedWeekDays(
+        new Date(),
         Intl.DateTimeFormat('fi', {weekday: 'short'})
     );
     function getExpectedMobileMonthCellTitle(date) {

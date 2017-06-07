@@ -1,15 +1,18 @@
-define(['src/Calendar', 'src/Layout', 'src/Header', 'src/Toolbar', 'src/Content'], (Calendar, Layout, Header, Toolbar, Content) => {
+define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Content'], (Calendar, Constants, Toolbar, Header, Content) => {
     'use strict';
-    QUnit.module('LayoutUndToolbarComponent', hooks => {
+    QUnit.module('CalendarComponent', hooks => {
         hooks.beforeEach(() => {
-            this.initialView = Calendar.views.DEFAULT;
-            this.rendered = Inferno.TestUtils.renderIntoDocument($el(Layout.default));
+            this.initialView = Constants.VIEW_DEFAULT;
+            this.rendered = Inferno.TestUtils.renderIntoDocument($el(Calendar.default));
         });
-        QUnit.test('Toolbarin month-näkymänavigaatiopainike vaihtaa näkymän muotoon Calendar.views.MONTH', assert => {
-            const expectedNewView = Calendar.views.MONTH;
-            // Assertoi alkuperäinen näkymä
-            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[this.initialView]), undefined);
-            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[this.initialView]), undefined);
+        QUnit.test('renderöi kalenterin Constants.VIEWS_DEFAULT-muodossa', assert => {
+            const expectedView = this.initialView;
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Toolbar.default), undefined);
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedView]), undefined);
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[expectedView]), undefined);
+        });
+        QUnit.test('Toolbarin month-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEWS_MONTH', assert => {
+            const expectedNewView = Constants.VIEW_MONTH;
             // Paina nappia
             const buttons = Inferno.TestUtils.scryRenderedDOMElementsWithTag(this.rendered, 'button');
             const monthViewButton = Array.from(buttons).find(el => el.textContent === 'Kuukausi');
@@ -19,10 +22,7 @@ define(['src/Calendar', 'src/Layout', 'src/Header', 'src/Toolbar', 'src/Content'
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[expectedNewView]), undefined);
         });
         QUnit.test('Toolbarin week-näkymänavigaatiopainike ei vaihda näkymää', assert => {
-            assert.equal(this.initialView, Calendar.views.DEFAULT);
-            // Assertoi alkuperäinen näkymä
-            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[this.initialView]), undefined);
-            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[this.initialView]), undefined);
+            assert.equal(Constants.VIEW_DEFAULT, Constants.VIEW_WEEK);
             // Paina nappia
             const buttons = Inferno.TestUtils.scryRenderedDOMElementsWithTag(this.rendered, 'button');
             const weekViewButton = Array.from(buttons).find(el => el.textContent === 'Viikko');
@@ -31,8 +31,8 @@ define(['src/Calendar', 'src/Layout', 'src/Header', 'src/Toolbar', 'src/Content'
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[this.initialView]), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[this.initialView]), undefined);
         });
-        QUnit.test('Toolbarin day-näkymänavigaatiopainike vaihtaa näkymän muotoon Calendar.views.DAY', assert => {
-            const expectedNewView = Calendar.views.DAY;
+        QUnit.test('Toolbarin day-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEWS_DAY', assert => {
+            const expectedNewView = Constants.VIEW_DAY;
             // Assertoi alkuperäinen näkymä
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[this.initialView]), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[this.initialView]), undefined);

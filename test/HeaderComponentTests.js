@@ -1,18 +1,20 @@
-define(['src/Header', 'src/Calendar', 'src/DateUtils',], (Header, Calendar, DateUtils) => {
+define(['src/Header', 'src/Calendar', 'src/Constants', 'src/DateUtils',], (Header, Calendar, Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
     QUnit.module('HeaderComponent', () => {
         QUnit.test('.day renderöi tuntisarakkeen ja current-päivän täydellisen nimen', assert => {
-            const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.day)));
+            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_DAY);
+            const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.day, {dateCursor})));
             assert.equal(renderedCells.length, 2);
             assert.equal(renderedCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
-            assert.equal(renderedCells[1].textContent, dateUtils.format({weekday: 'long'}, Calendar.state.dateCursor));
+            assert.equal(renderedCells[1].textContent, dateUtils.format({weekday: 'long'}, dateCursor.range.start));
         });
         QUnit.test('.week renderöi tuntisarakkeen ja jokaisen viikonpäivän nimen lyhyessä muodossa', assert => {
-            const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.week)));
+            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_WEEK);
+            const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.week, {dateCursor})));
             assert.equal(renderedCells.length, 1 + 7);
             assert.equal(renderedCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
-            const monday = dateUtils.getStartOfWeek(Calendar.state.dateCursor);
+            const monday = dateUtils.getStartOfWeek(dateCursor.range.start);
             assert.equal(renderedCells[1].textContent, getDayNameAndAddADay(monday));
             assert.equal(renderedCells[2].textContent, getDayNameAndAddADay(monday));
             assert.equal(renderedCells[3].textContent, getDayNameAndAddADay(monday));
@@ -22,9 +24,10 @@ define(['src/Header', 'src/Calendar', 'src/DateUtils',], (Header, Calendar, Date
             assert.equal(renderedCells[7].textContent, getDayNameAndAddADay(monday));
         });
         QUnit.test('.month renderöi jokaisen viikonpäivän täydellisen nimen', assert => {
-            const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.month)));
+            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH);
+            const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.month, {dateCursor})));
             assert.equal(renderedCells.length, 7);
-            const monday = dateUtils.getStartOfWeek(Calendar.state.dateCursor);
+            const monday = dateUtils.getStartOfWeek(dateCursor.range.start);
             assert.equal(renderedCells[0].textContent, getLongDayNameAndAddADay(monday));
             assert.equal(renderedCells[1].textContent, getLongDayNameAndAddADay(monday));
             assert.equal(renderedCells[2].textContent, getLongDayNameAndAddADay(monday));
