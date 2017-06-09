@@ -1,17 +1,28 @@
 define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Content'], (Calendar, Constants, Toolbar, Header, Content) => {
     'use strict';
-    QUnit.module('CalendarComponent', hooks => {
-        hooks.beforeEach(() => {
-            this.initialView = Constants.VIEW_DEFAULT;
-            this.rendered = Inferno.TestUtils.renderIntoDocument($el(Calendar.default));
-        });
+    QUnit.module('CalendarComponent', () => {
+        const render = viewName => {
+            this.initialView = viewName || Constants.VIEW_DEFAULT;
+            this.rendered = Inferno.TestUtils.renderIntoDocument(
+                viewName ? $el(Calendar.default, {initialView: viewName}) : $el(Calendar.default)
+            );
+        };
         QUnit.test('renderöi kalenterin Constants.VIEWS_DEFAULT-muodossa', assert => {
+            render();
             const expectedView = this.initialView;
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Toolbar.default), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedView]), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[expectedView]), undefined);
         });
+        QUnit.test('renderöi kalenterin props.initialView-muodossa', assert => {
+            const expectedInitialView = Constants.VIEW_DAY;
+            render(expectedInitialView);
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Toolbar.default), undefined);
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedInitialView]), undefined);
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[expectedInitialView]), undefined);
+        });
         QUnit.test('Toolbarin month-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEWS_MONTH', assert => {
+            render();
             const expectedNewView = Constants.VIEW_MONTH;
             // Paina nappia
             const buttons = Inferno.TestUtils.scryRenderedDOMElementsWithTag(this.rendered, 'button');
@@ -22,6 +33,7 @@ define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Conte
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[expectedNewView]), undefined);
         });
         QUnit.test('Toolbarin week-näkymänavigaatiopainike ei vaihda näkymää', assert => {
+            render();
             assert.equal(Constants.VIEW_DEFAULT, Constants.VIEW_WEEK);
             // Paina nappia
             const buttons = Inferno.TestUtils.scryRenderedDOMElementsWithTag(this.rendered, 'button');
@@ -32,6 +44,7 @@ define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Conte
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[this.initialView]), undefined);
         });
         QUnit.test('Toolbarin day-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEWS_DAY', assert => {
+            render();
             const expectedNewView = Constants.VIEW_DAY;
             // Assertoi alkuperäinen näkymä
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[this.initialView]), undefined);

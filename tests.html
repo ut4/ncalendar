@@ -18,9 +18,15 @@
         <script src="vendor/require.js"></script>
         <!-- Itse testien lataus -->
         <script>require([
-            'test/Calendar.dateCursorFactoryTests',
             'test/CalendarComponentTests',
+            'test/CalendarComponentTests(day)',
+            'test/CalendarComponentTests(month)',
+            'test/CalendarComponentTests(week)',
             'test/ContentComponentTests',
+            'test/DateCursors.dateCursorFactoryTests',
+            'test/DateCursors.DayViewCursorRangeTests',
+            'test/DateCursors.MonthViewCursorRangeTests',
+            'test/DateCursors.WeekViewCursorRangeTests',
             'test/HeaderComponentTests',
             'test/LayoutComponentTests'
         ], QUnit.start);</script>

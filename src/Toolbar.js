@@ -45,9 +45,9 @@ define(['src/Constants'], Constants => {
             return $el('div', {className: 'toolbar'},
                 $el('div', {className: 'fluid'},
                     $el('div', {className: 'col'},
-                        $el('button', {disabled: 'disabled'}, '<'),
-                        $el('button', {disabled: 'disabled'}, '>'),
-                        $el('button', {disabled: 'disabled'}, 'Tänään')
+                        $el('button', {onClick: this.props.dateCursor.prev.bind(this.props.dateCursor)}, '<'),
+                        $el('button', {onClick: this.props.dateCursor.next.bind(this.props.dateCursor)}, '>'),
+                        $el('button', {onClick: this.props.dateCursor.reset.bind(this.props.dateCursor)}, 'Tänään')
                     ),
                     $el('div', {className: 'col'},
                         $el('h2', null, titleFormatters[this.props.currentView](this.props.dateCursor))

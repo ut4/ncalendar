@@ -1,16 +1,16 @@
-define(['src/Header', 'src/Calendar', 'src/Constants', 'src/DateUtils',], (Header, Calendar, Constants, DateUtils) => {
+define(['src/Header', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (Header, DateCursors, Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
     QUnit.module('HeaderComponent', () => {
         QUnit.test('.day renderöi tuntisarakkeen ja current-päivän täydellisen nimen', assert => {
-            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_DAY);
+            const dateCursor = DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_DAY);
             const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.day, {dateCursor})));
             assert.equal(renderedCells.length, 2);
             assert.equal(renderedCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
             assert.equal(renderedCells[1].textContent, dateUtils.format({weekday: 'long'}, dateCursor.range.start));
         });
         QUnit.test('.week renderöi tuntisarakkeen ja jokaisen viikonpäivän nimen lyhyessä muodossa', assert => {
-            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_WEEK);
+            const dateCursor = DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_WEEK);
             const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.week, {dateCursor})));
             assert.equal(renderedCells.length, 1 + 7);
             assert.equal(renderedCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
@@ -24,7 +24,7 @@ define(['src/Header', 'src/Calendar', 'src/Constants', 'src/DateUtils',], (Heade
             assert.equal(renderedCells[7].textContent, getDayNameAndAddADay(monday));
         });
         QUnit.test('.month renderöi jokaisen viikonpäivän täydellisen nimen', assert => {
-            const dateCursor = Calendar.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH);
+            const dateCursor = DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH);
             const renderedCells = getRenderedCells(Inferno.TestUtils.renderIntoDocument($el(Header.month, {dateCursor})));
             assert.equal(renderedCells.length, 7);
             const monday = dateUtils.getStartOfWeek(dateCursor.range.start);

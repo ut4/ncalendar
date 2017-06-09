@@ -1,59 +1,18 @@
-define(['src/Layout', 'src/Constants', 'src/DateUtils'], (Layout, Constants, DateUtils) => {
+define(['src/Layout', 'src/Constants', 'src/DateCursors'], (Layout, Constants, DateCursors) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
-    // -------------------------------------------------------------------------
-    // -------------------------------------------------------------------------
-    class DayViewCursorRange {
-        constructor(currentDate) {
-            this.start = currentDate;
-            this.end = currentDate;
-        }
-    }
-    class WeekViewCursorRange {
-        constructor(currentDate) {
-            this.start = dateUtils.getStartOfWeek(currentDate);
-            this.end = new Date(this.start);
-            this.end.setDate(this.end.getDate() + 6);
-        }
-    }
-    class MonthViewCursorRange {
-        constructor(currentDate) {
-            this.start = new Date(currentDate);
-            this.start.setDate(1);
-            this.end = new Date(this.start);
-            this.end.setMonth(this.end.getMonth() + 1);
-            this.end.setDate(0);// 1. pvä - 1 (0) = edellisen kuun viimeinen
-        }
-    }
-    class DateCursor {
-        constructor(range) {
-            this.range = range;
-        }
-        move(/*direction*/) {}
-        goTo() {}
-    }
-    const cursorRanges = {
-        [Constants.VIEW_DAY]: DayViewCursorRange,
-        [Constants.VIEW_WEEK]: WeekViewCursorRange,
-        [Constants.VIEW_MONTH]: MonthViewCursorRange
-    };
-    // -------------------------------------------------------------------------
-    // -------------------------------------------------------------------------
-    const dateCursorFactory = {newDateCursor: viewName => {
-        return new DateCursor(new cursorRanges[viewName](new Date()));
-    }};
     /*
      * Kalenterin juurikomponentti, ja kirjaston public API.
      */
     class Calendar extends Inferno.Component {
         /**
-         * @param {Object} props
+         * @param {Object} props {initialView: {string=}}
          */
         constructor(props) {
             super(props);
+            const initialView = Constants['VIEW_' + ((props.initialView || 'default').toUpperCase())];
             this.state = {
-                currentView: Constants.VIEW_DEFAULT,
-                dateCursor: dateCursorFactory.newDateCursor(Constants.VIEW_DEFAULT)
+                currentView: initialView,
+                dateCursor: this.makeDateCursor(initialView)
             };
         }
         /**
@@ -70,8 +29,8 @@ define(['src/Layout', 'src/Constants', 'src/DateUtils'], (Layout, Constants, Dat
                 return;
             }
             this.setState({
-                currentView: newView//,
-                //dateCursor: Calendar.dateCursorFactory.newDateCursor(newView)
+                currentView: newView,
+                dateCursor: this.makeDateCursor(newView)
             });
         }
         /**
@@ -86,6 +45,14 @@ define(['src/Layout', 'src/Constants', 'src/DateUtils'], (Layout, Constants, Dat
                 changeView: this.changeView.bind(this)
             });
         }
+        /**
+         * @access private
+         */
+        makeDateCursor(viewName) {
+            return DateCursors.dateCursorFactory.newDateCursor(viewName, () => {
+                this.setState({dateCursor: this.state.dateCursor});
+            });
+        }
     }
-    return {default: Calendar, dateCursorFactory};
+    return {default: Calendar};
 });

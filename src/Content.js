@@ -1,9 +1,7 @@
 define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
-    const DAYS_IN_WEEK = 7;
-    const HOURS_IN_DAY = 24;
-    const HOURS_ARRAY = Array.from(Array(HOURS_IN_DAY).keys());
+    const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
     /*
      * Kalenterin pääsisältö day-muodossa.
      *  ___________________________
@@ -127,7 +125,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          * @returns {Array}
          */
         generateDateGrid() {
-            return this.generateGrid(DAYS_IN_WEEK, d => d.getDate());
+            return this.generateGrid(Constants.DAYS_IN_WEEK, d => d.getDate());
         }
         /**
          * Generoi kuun päivät muodossa `<pvmNumeerinen> + <viikonPäiväLyhyt>)

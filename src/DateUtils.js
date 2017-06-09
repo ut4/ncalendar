@@ -16,6 +16,22 @@ define(() => {
                 return formatted;
             });
         }
+        getStartOfDay(date) {
+            const start = new Date(date);
+            start.setHours(0);
+            start.setMinutes(0);
+            start.setSeconds(0);
+            start.setMilliseconds(1);
+            return start;
+        }
+        getEndOfDay(date) {
+            const end = new Date(date);
+            end.setHours(23);
+            end.setMinutes(59);
+            end.setSeconds(59);
+            end.setMilliseconds(999);
+            return end;
+        }
         formatHour(hour) {
             return (hour < 10 ? '0' : '') + hour + ':00';
         }
