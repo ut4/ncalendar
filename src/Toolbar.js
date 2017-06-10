@@ -1,19 +1,19 @@
 define(['src/Constants'], Constants => {
     'use strict';
     const titleFormatters = {
-        [Constants.VIEW_DAY]: (dateCursorRange) => {
+        [Constants.VIEW_DAY]: dateCursorRange => {
             return '%1, %2'
-                .replace('%1', Intl.DateTimeFormat('fi', {day: 'numeric', month: 'long', year: "numeric"}).format(dateCursorRange.start))
+                .replace('%1', Intl.DateTimeFormat('fi', {day: 'numeric', month: 'long'}).format(dateCursorRange.start))
                 .replace('%2', dateCursorRange.start.getFullYear());
         },
-        [Constants.VIEW_WEEK]: (dateCursorRange) => {
+        [Constants.VIEW_WEEK]: dateCursorRange => {
             return '%1 %2 - %3 %4'
                 .replace('%1', Intl.DateTimeFormat('fi', {month: 'short'}).format(dateCursorRange.start))
                 .replace('%2', dateCursorRange.start.getDate())
                 .replace('%3', dateCursorRange.end.getDate())
                 .replace('%4', dateCursorRange.start.getFullYear());
         },
-        [Constants.VIEW_MONTH]: (dateCursorRange) => {
+        [Constants.VIEW_MONTH]: dateCursorRange => {
             return Intl.DateTimeFormat('fi', {month: 'long', year: 'numeric'}).format(dateCursorRange.start);
         }
     };
