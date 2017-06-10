@@ -34,10 +34,6 @@ define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, T
          * @param {MediaQueryList} newMatch
          */
         viewPortListener(newMatch) {
-            // Päivänäkymällä ei ole erillistä mobile™-mutaatiota
-            if (this.props.currentView === Constants.VIEW_DAY) {
-                return;
-            }
             const newIsMobileViewEnabled = newMatch.matches;
             if (newIsMobileViewEnabled !== this.state.isMobileViewEnabled) {
                 this.setState({isMobileViewEnabled: newIsMobileViewEnabled});
