@@ -48,9 +48,8 @@ define(['src/Layout', 'src/Constants', 'src/DateCursors'], (Layout, Constants, D
             return this.settingsi;
         }
         /**
-         * Luo layoutin.
-         *
-         * @access private
+         * Luo ja configuroi Layout-komponentin, joka vastaa kalenterin
+         * renderöinnistä.
          */
         render() {
             return $el(Layout.default, {

@@ -14,10 +14,23 @@
         <script>window.$el = Inferno.createElement;</script>
         <!-- Vain testeihin tarvittavat sorsat -->
         <script src="vendor/test-vendor.js"></script>
-        <script>QUnit.config.autostart = false;</script>
+        <script>
+            QUnit.config.autostart = false;
+            // Siivoaa elementit, jotka Inferno.TestUtils renderöi documentin
+            // loppuun (<script id="test-boot">-elementin perään) testien
+            // aikana.
+            QUnit.moduleDone(() => {
+                let mountedTestComponentEl = document.getElementById('test-boot').nextElementSibling;
+                while (mountedTestComponentEl) {
+                    const copy = mountedTestComponentEl;
+                    mountedTestComponentEl = mountedTestComponentEl.nextElementSibling;
+                    document.body.removeChild(copy);
+                }
+            });
+        </script>
         <script src="vendor/require.js"></script>
         <!-- Itse testien lataus -->
-        <script>require([
+        <script id="test-boot">require([
             'test/CalendarClassTests',
             'test/CalendarComponentTests',
             'test/CalendarComponentTests(day)',

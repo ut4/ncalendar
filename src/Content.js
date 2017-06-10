@@ -72,6 +72,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          * Generoi viikonpäivät (lyhyessä muodossa) 2 * 4 taulukkoon. Esim.
          * [['Ma', 'Ti'], ['Ke', 'To'], ...].
          *
+         * @access private
          * @returns {array}
          */
         generateMobileGrid() {
@@ -122,6 +123,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          * Generoi kuun päivät numeerisessa muodossa 7 * 4 taulukkoon. Esim.
          * [[1, 2 ...], [8, 9...], ...].
          *
+         * @access private
          * @returns {Array}
          */
         generateDateGrid() {
@@ -131,6 +133,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          * Generoi kuun päivät muodossa `<pvmNumeerinen> + <viikonPäiväLyhyt>)
          * 2 * 15 taulukkoon. Esim. [[1 Ma, 2 Ti], [3 Ke ...], ...].
          *
+         * @access private
          * @returns {array}
          */
         generateMobileDateGrid() {
@@ -144,6 +147,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          * Generoi kuukauden kaikki päivät <gridWidth> * <n> taulukkoon. Taulu-
          * kon sisältö määräytyy <formatFn>:n mukaan.
          *
+         * @access private
          * @param {number} gridWidth
          * @param {Function} formatFn fn(d: Date)
          * @returns {array}
