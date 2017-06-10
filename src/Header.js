@@ -16,18 +16,30 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          */
         constructor(props) {
             super(props);
-            this.day = Intl.DateTimeFormat('fi', {weekday: 'long'}).format(this.props.dateCursor.range.start);
         }
         /**
          * Renderöi 1 * 2 headerlinen
+         *
+         * @access private
          */
         render() {
             return $el('div', {className: 'header'},
                 $el('div', {className: 'fluid'},
                     $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                    $el('div', {className: 'col'}, $el('div', {className: 'cell'}, this.day))
+                    $el('div', {className: 'col'}, $el('div', {className: 'cell'}, this.formatDay(this.props.dateCursor.range.start)))
                 )
             );
+        }
+        /**
+         * Palauttaa {cursorStart} Date-objektista täydellisen viikonpäivän
+         * nimen.
+         *
+         * @access private
+         * @param {Date} cursorStart
+         * @returns {string}
+         */
+        formatDay(cursorStart) {
+            return Intl.DateTimeFormat('fi', {weekday: 'long'}).format(cursorStart);
         }
     }
     /*

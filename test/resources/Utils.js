@@ -5,7 +5,9 @@ define(() => {
          * Palauttaa ensimmäisen löytämänsä {tag}-elementin sisällön
          * (textContent).
          */
-        getTagElementContent: (rendered, tag) => Inferno.TestUtils.findRenderedDOMElementWithTag(rendered, tag).textContent,
+        getElementContent: (rendered, tagOrClass) => tagOrClass.charAt(0) !== '.'
+            ? Inferno.TestUtils.findRenderedDOMElementWithTag(rendered, tagOrClass).textContent
+            : Inferno.TestUtils.findRenderedDOMElementWithClass(rendered, tagOrClass.substr(1)).textContent,
         /**
          * Palauttaa ensimmäisen löytämänsä <button>-elementin, jonka
          * textContent on täysin sama kuin {content}.
