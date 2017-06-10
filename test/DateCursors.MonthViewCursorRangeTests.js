@@ -2,7 +2,7 @@ define(['src/DateCursors', 'src/Constants'], (DateCursors, Constants) => {
     'use strict';
     QUnit.module('DateCursors.MonthViewCursorRange', hooks => {
         hooks.beforeEach(() => {
-            this.cursor = DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH, () => {});
+            this.cursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH, () => {});
         });
         QUnit.test('.construct luo kuukauden pituisen rangen', assert => {
             const now = new Date();

@@ -2,7 +2,7 @@ define(['src/DateCursors', 'src/Constants'], (DateCursors, Constants) => {
     'use strict';
     QUnit.module('DateCursors.DayViewCursorRange', hooks => {
         hooks.beforeEach(() => {
-            this.cursor = DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_DAY, () => {});
+            this.cursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY, () => {});
         });
         QUnit.test('.construct luo päivän pituisen rangen', assert => {
             const now = new Date();

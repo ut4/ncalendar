@@ -102,7 +102,7 @@ define(['src/Layout', 'src/Constants', 'src/DateUtils'], (Layout, Constants, Dat
         [Constants.VIEW_WEEK]: WeekViewCursorRange,
         [Constants.VIEW_MONTH]: MonthViewCursorRange
     };
-    const dateCursorFactory = {newDateCursor: (viewName, subscriberFn) => {
+    const dateCursorFactory = {newCursor: (viewName, subscriberFn) => {
         return new DateCursor(new cursorRanges[viewName](new Date()), subscriberFn);
     }};
     return {dateCursorFactory};

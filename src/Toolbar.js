@@ -1,20 +1,20 @@
 define(['src/Constants'], Constants => {
     'use strict';
     const titleFormatters = {
-        [Constants.VIEW_DAY]: (dateCursor) => {
+        [Constants.VIEW_DAY]: (dateCursorRange) => {
             return '%1, %2'
-                .replace('%1', Intl.DateTimeFormat('fi', {day: 'numeric', month: 'long'}).format(dateCursor.range.start))
-                .replace('%2', dateCursor.range.start.getFullYear());
+                .replace('%1', Intl.DateTimeFormat('fi', {day: 'numeric', month: 'long', year: "numeric"}).format(dateCursorRange.start))
+                .replace('%2', dateCursorRange.start.getFullYear());
         },
-        [Constants.VIEW_WEEK]: (dateCursor) => {
+        [Constants.VIEW_WEEK]: (dateCursorRange) => {
             return '%1 %2 - %3 %4'
-                .replace('%1', Intl.DateTimeFormat('fi', {month: 'short'}).format(dateCursor.range.start))
-                .replace('%2', dateCursor.range.start.getDate())
-                .replace('%3', dateCursor.range.end.getDate())
-                .replace('%4', dateCursor.range.start.getFullYear());
+                .replace('%1', Intl.DateTimeFormat('fi', {month: 'short'}).format(dateCursorRange.start))
+                .replace('%2', dateCursorRange.start.getDate())
+                .replace('%3', dateCursorRange.end.getDate())
+                .replace('%4', dateCursorRange.start.getFullYear());
         },
-        [Constants.VIEW_MONTH]: (dateCursor) => {
-            return Intl.DateTimeFormat('fi', {month: 'long', year: 'numeric'}).format(dateCursor.range.start);
+        [Constants.VIEW_MONTH]: (dateCursorRange) => {
+            return Intl.DateTimeFormat('fi', {month: 'long', year: 'numeric'}).format(dateCursorRange.start);
         }
     };
     /*
@@ -32,7 +32,8 @@ define(['src/Constants'], Constants => {
          * @param {object} props {
          *     currentView: {string},
          *     dateCursor: {DateCursor}
-         *     onViewChange: {Function}
+         *     onViewChange: {Function},
+         *     titleFormatter: {Function=}
          * }
          */
         constructor(props) {
@@ -50,7 +51,7 @@ define(['src/Constants'], Constants => {
                         $el('button', {onClick: this.props.dateCursor.reset.bind(this.props.dateCursor)}, 'Tänään')
                     ),
                     $el('div', {className: 'col'},
-                        $el('h2', null, titleFormatters[this.props.currentView](this.props.dateCursor))
+                        $el('h2', null, (this.props.titleFormatter || titleFormatters[this.props.currentView])(this.props.dateCursor.range))
                     ),
                     $el('div', {className: 'col'},
                         $el('button', {onClick: () => { this.props.onViewChange(Constants.VIEW_MONTH); }}, 'Kuukausi'),
@@ -61,5 +62,5 @@ define(['src/Constants'], Constants => {
             );
         }
     }
-    return {default: Toolbar};
+    return {default: Toolbar, titleFormatters};
 });

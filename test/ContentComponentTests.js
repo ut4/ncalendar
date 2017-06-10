@@ -13,7 +13,7 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
         });
         QUnit.test('.week renderöi 24-riviä joissa tuntisolu, ja 7 sisältösolua', assert => {
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.week, {dateCursor: DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_WEEK)})
+                $el(Content.week, {dateCursor: DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK)})
             ));
             assert.equal(renderedRows.length, 24);
             renderedRows.forEach((row, hour) => {
@@ -27,7 +27,7 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
                 $el(Content.week, {
                     isMobileViewEnabled: true,
-                    dateCursor: DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_WEEK)
+                    dateCursor: DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK)
                 })
             ));
             assert.equal(renderedRows.length, 4);
@@ -45,7 +45,7 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
             assert.equal(renderedRows[3].children[1].textContent, 'Tällä viikolla: 0 tapahtumaa');
         });
         QUnit.test('.month renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
-            const dateCursor = DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH);
+            const dateCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH);
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument($el(Content.month, {dateCursor})));
             assert.equal(renderedRows.length, 5);
             const d = new Date(dateCursor.range.start);
@@ -59,7 +59,7 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
             });
         });
         QUnit.test('.month (mobile) renderöi solun jokaiselle kuukauden päivälle 2-levyisinä riveinä otsikkona numeerinen kuukauden päivä ja viikonpäivän nimi', assert => {
-            const dateCursor = DateCursors.dateCursorFactory.newDateCursor(Constants.VIEW_MONTH);
+            const dateCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH);
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
                 $el(Content.month, {isMobileViewEnabled: true, dateCursor})
             ));

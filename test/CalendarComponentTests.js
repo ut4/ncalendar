@@ -4,7 +4,7 @@ define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Conte
         const render = viewName => {
             this.initialView = viewName || Constants.VIEW_DEFAULT;
             this.rendered = Inferno.TestUtils.renderIntoDocument(
-                viewName ? $el(Calendar.default, {initialView: viewName}) : $el(Calendar.default)
+                viewName ? $el(Calendar.default, {settings: {defaultView: viewName}}) : $el(Calendar.default)
             );
         };
         QUnit.test('renderöi kalenterin Constants.VIEWS_DEFAULT-muodossa', assert => {
@@ -14,7 +14,7 @@ define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Conte
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedView]), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Content[expectedView]), undefined);
         });
-        QUnit.test('renderöi kalenterin props.initialView-muodossa', assert => {
+        QUnit.test('renderöi kalenterin props.settings.defaultView-muodossa', assert => {
             const expectedInitialView = Constants.VIEW_DAY;
             render(expectedInitialView);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Toolbar.default), undefined);

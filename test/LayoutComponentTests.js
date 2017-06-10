@@ -5,7 +5,8 @@ define(['src/Constants', 'src/DateCursors', 'src/Layout', 'src/Header', 'src/Too
             const expectedView = Constants.VIEW_DAY;
             const rendered = Inferno.TestUtils.renderIntoDocument($el(Layout.default, {
                 currentView: expectedView,
-                dateCursor: DateCursors.dateCursorFactory.newDateCursor(expectedView)
+                dateCursor: DateCursors.dateCursorFactory.newCursor(expectedView),
+                titleFormatters: {}
             }));
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(rendered, Header[expectedView]), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(rendered, Content[expectedView]), undefined);

@@ -9,6 +9,7 @@ define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, T
          * @param {object} props {
          *     dateCursor: {DateCursor},
          *     currentView: {string},
+         *     titleFormatters: {Object}
          *     changeView: {Function}
          * }
          */
@@ -62,7 +63,8 @@ define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, T
                 $el(Toolbar.default, {
                     dateCursor: this.props.dateCursor,
                     currentView: this.props.currentView,
-                    onViewChange: this.props.changeView
+                    onViewChange: this.props.changeView,
+                    titleFormatter: this.props.titleFormatters[this.props.currentView] || null
                 }),
                 !isWeekOrMonthMobileView && $el(Header[this.props.currentView], {
                     dateCursor: this.props.dateCursor
