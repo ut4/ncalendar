@@ -24,7 +24,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          */
         render() {
             return $el('div', {className: 'header'},
-                $el('div', {className: 'fluid'},
+                $el('div', {className: 'row'},
                     $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
                     $el('div', {className: 'col'}, $el('div', {className: 'cell'}, this.formatDay(this.props.dateCursor.range.start)))
                 )
@@ -61,7 +61,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          */
         render() {
             return $el('div', {className: 'header'},
-                $el('div', {className: 'fluid'},
+                $el('div', {className: 'row'},
                     ([''].concat(this.DAYS)).map(content =>
                         $el('div', {className: 'col'}, $el('div', {className: 'cell'}, content))
                     )
@@ -88,7 +88,7 @@ define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
          */
         render() {
             return $el('div', {className: 'header'},
-                $el('div', {className: 'fluid'},
+                $el('div', {className: 'row'},
                     this.DAYS.map(weekDay =>
                         $el('div', {className: 'col'}, $el('div', {className: 'cell'}, weekDay))
                     )

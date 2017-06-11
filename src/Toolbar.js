@@ -44,7 +44,7 @@ define(['src/Constants'], Constants => {
          */
         render() {
             return $el('div', {className: 'toolbar'},
-                $el('div', {className: 'fluid'},
+                $el('div', {className: 'row'},
                     $el('div', {className: 'col'},
                         $el('button', {onClick: this.props.dateCursor.prev.bind(this.props.dateCursor)}, '<'),
                         $el('button', {onClick: this.props.dateCursor.next.bind(this.props.dateCursor)}, '>'),

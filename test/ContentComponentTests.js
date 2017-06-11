@@ -76,7 +76,7 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
         });
     });
     function getRenderedRows(rendered) {
-        return Inferno.TestUtils.scryRenderedDOMElementsWithClass(rendered, 'fluid');
+        return Inferno.TestUtils.scryRenderedDOMElementsWithClass(rendered, 'row');
     }
     const dayNames = dateUtils.getFormattedWeekDays(
         new Date(),

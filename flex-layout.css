@@ -1,6 +1,6 @@
 /* -- global ---------------------------------------------------------------- */
-.fluid { display: flex }
-.fluid .col { flex: 1 1 0% }
+.row { display: flex }
+.row .col { flex: 1 1 0% }
 /* -- cal ------------------------------------------------------------------- */
 .cal { min-width: 420px }
     .cal .col { border-left: 1px solid #DDD }
@@ -17,7 +17,7 @@
 /* -- main ------------------------------------------------------------------ */
 .cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
     .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; position: relative }
-    .main > .fluid:first-of-type .cell { border-top: none }
+    .main > .row:first-of-type .cell { border-top: none }
         .event { height: 100%; margin-bottom: 2px }
         .event:last-of-type { margin-bottom: 0 }
 /* -- month-view ------------------------------------------------------------ */
