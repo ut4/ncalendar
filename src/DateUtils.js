@@ -2,10 +2,14 @@ define(() => {
     'use strict';
     const EMPTY_WEEK = Array.from(Array(7));
     class DateUtils {
+        getEstimatedFirstDayOfWeek() {
+            // Kesäkuun ensimmäinen maanantai, 2017, klo 12:00:00
+            return (new Date(2017, 5, 5, 12, 0, 0, 0)).getDay();
+        }
         getStartOfWeek(date) {
-            var d = new Date(date);
-            var day = d.getDay();
-            d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+            const firstDay = this.getEstimatedFirstDayOfWeek();
+            const d = new Date(date);
+            d.setDate(date.getDate() - (7 + date.getDay() - firstDay) % 7);
             return d;
         }
         getFormattedWeekDays(date, format) {

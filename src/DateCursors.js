@@ -1,4 +1,4 @@
-define(['src/Layout', 'src/Constants', 'src/DateUtils'], (Layout, Constants, DateUtils) => {
+define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
     class DayViewCursorRange {

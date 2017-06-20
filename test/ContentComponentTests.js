@@ -1,9 +1,14 @@
-define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (Content, DateCursors, Constants, DateUtils) => {
+define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 'src/DateUtils'], (Content, ViewLayouts, DateCursors, Constants, DateUtils) => {
     'use strict';
     const dateUtils = new DateUtils.default();
+    const newDateCursor = DateCursors.dateCursorFactory.newCursor;
     QUnit.module('ContentComponent', () => {
-        QUnit.test('.day renderöi 24-riviä joissa tuntisolu, ja 1 sisältösolu', assert => {
-            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument($el(Content.day)));
+        QUnit.test('day-gridillä renderöi 24-riviä joissa tuntisolu, ja 1 sisältösolu', assert => {
+            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
+                $el(Content.default,
+                    (new ViewLayouts.day(newDateCursor(Constants.VIEW_DAY))).getParts()[1].props
+                )
+            ));
             assert.equal(renderedRows.length, 24);
             renderedRows.forEach((row, hour) => {
                 assert.equal(row.children[0].textContent, dateUtils.formatHour(hour)); // Tuntisarake
@@ -11,9 +16,11 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
                 assert.equal(row.children.length, 2);
             });
         });
-        QUnit.test('.week renderöi 24-riviä joissa tuntisolu, ja 7 sisältösolua', assert => {
+        QUnit.test('week-gridillä renderöi 24-riviä joissa tuntisolu, ja 7 sisältösolua', assert => {
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.week, {dateCursor: DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK)})
+                $el(Content.default,
+                    (new ViewLayouts.week(newDateCursor(Constants.VIEW_WEEK))).getParts()[1].props
+                )
             ));
             assert.equal(renderedRows.length, 24);
             renderedRows.forEach((row, hour) => {
@@ -23,12 +30,11 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
                 assert.equal(row.children.length, 8);
             });
         });
-        QUnit.test('.week (mobile) renderöi 4-riviä joissa 2 päiväsolua otsikkona täydellinen viikonpäivän nimi', assert => {
+        QUnit.test('compact week-gridillä renderöi 4-riviä joissa 2 päiväsolua otsikkona täydellinen viikonpäivän nimi', assert => {
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.week, {
-                    isMobileViewEnabled: true,
-                    dateCursor: DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK)
-                })
+                $el(Content.default,
+                    (new ViewLayouts.week(newDateCursor(Constants.VIEW_WEEK))).getParts(true)[0].props
+                )
             ));
             assert.equal(renderedRows.length, 4);
             const dayNames = dateUtils.getFormattedWeekDays(
@@ -42,35 +48,44 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
             assert.equal(renderedRows[2].children[0].textContent, dayNames[4]);
             assert.equal(renderedRows[2].children[1].textContent, dayNames[5]);
             assert.equal(renderedRows[3].children[0].textContent, dayNames[6]);
-            assert.equal(renderedRows[3].children[1].textContent, 'Tällä viikolla: 0 tapahtumaa');
+            assert.equal(renderedRows[3].children[1].textContent, 'Tällä viikolla: ? tapahtumaa');
         });
-        QUnit.test('.month renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
-            const dateCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH);
-            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument($el(Content.month, {dateCursor})));
-            assert.equal(renderedRows.length, 5);
-            const d = new Date(dateCursor.range.start);
-            d.setDate(1);
+        QUnit.test('month-gridillä renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
+            const dateCursor = newDateCursor(Constants.VIEW_MONTH);
+            const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
+                $el(Content.default,
+                    (new ViewLayouts.month(newDateCursor(Constants.VIEW_MONTH))).getParts()[1].props
+                )
+            ));
+            const currentDate = new Date(dateCursor.range.start);
+            // Assertoi, että generoi oikean määrän rivejä
+            assert.equal(renderedRows.length, getExpectedMonthCellCount(dateCursor, 7) / 7);
+            // Assertoi, että renderöi päivänumeron vain tämän kuukauden soluihin
+            const rollingDate = new Date(currentDate);
+            rollingDate.setDate(2 - (rollingDate.getDay() || 7));// tyhjien solujen lukumäärä
             renderedRows.forEach(row => {
-                assert.equal(row.children[0].textContent, d.getDate()); // Sisältösolu (maanantai)
-                d.setDate(d.getDate() + 1);
-                assert.equal(row.children[1].textContent, d.getDate()); // ...
-                d.setDate(d.getDate() + 6);
+                Array.from(row.children).forEach(col => {
+                    assert.equal(col.textContent, rollingDate.getMonth() === currentDate.getMonth() ? rollingDate.getDate() : '');
+                    rollingDate.setDate(rollingDate.getDate() + 1);
+                });
                 assert.equal(row.children.length, 7);
             });
         });
-        QUnit.test('.month (mobile) renderöi solun jokaiselle kuukauden päivälle 2-levyisinä riveinä otsikkona numeerinen kuukauden päivä ja viikonpäivän nimi', assert => {
-            const dateCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH);
+        QUnit.test('compact month-gridillä renderöi solun jokaiselle kuukauden päivälle 2-levyisinä riveinä otsikkona numeerinen kuukauden päivä ja viikonpäivän nimi', assert => {
+            const dateCursor = newDateCursor(Constants.VIEW_MONTH);
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.month, {isMobileViewEnabled: true, dateCursor})
+                $el(Content.default,
+                    (new ViewLayouts.month(newDateCursor(Constants.VIEW_MONTH))).getParts(true)[0].props
+                )
             ));
-            assert.equal(renderedRows.length, 15);
-            const d = new Date(dateCursor.range.start);
-            d.setDate(1);
+            assert.equal(renderedRows.length, getExpectedMonthCellCount(dateCursor, 2) / 2);
+            const currentDate = new Date(dateCursor.range.start);
+            const rollingDate = new Date(dateCursor.range.start);
             renderedRows.forEach(row => {
-                assert.equal(row.children[0].textContent, getExpectedMobileMonthCellTitle(d));
-                d.setDate(d.getDate() + 1);
-                assert.equal(row.children[1].textContent, getExpectedMobileMonthCellTitle(d));
-                d.setDate(d.getDate() + 1);
+                assert.equal(row.children[0].textContent, getExpectedMobileMonthCellTitle(rollingDate, currentDate));
+                rollingDate.setDate(rollingDate.getDate() + 1);
+                assert.equal(row.children[1].textContent, getExpectedMobileMonthCellTitle(rollingDate, currentDate));
+                rollingDate.setDate(rollingDate.getDate() + 1);
                 assert.equal(row.children.length, 2);
             });
         });
@@ -78,11 +93,17 @@ define(['src/Content', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (C
     function getRenderedRows(rendered) {
         return Inferno.TestUtils.scryRenderedDOMElementsWithClass(rendered, 'row');
     }
-    const dayNames = dateUtils.getFormattedWeekDays(
-        new Date(),
-        Intl.DateTimeFormat('fi', {weekday: 'short'})
-    );
-    function getExpectedMobileMonthCellTitle(date) {
-        return date.getDate() + ' ' + dayNames[date.getDay()];
+    function getExpectedMobileMonthCellTitle(date, currentDate) {
+        return date.getMonth() === currentDate.getMonth()
+            ? date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date)
+            : '';
+    }
+    function getExpectedMonthCellCount(dateCursor, gridWidth) {
+        let expectedCellCount = dateCursor.range.end.getDate();
+        if (gridWidth === Constants.DAYS_IN_WEEK) {
+            expectedCellCount += dateCursor.range.start.getDay() || 6;
+        }
+        expectedCellCount += gridWidth - (expectedCellCount % gridWidth || gridWidth);
+        return expectedCellCount;
     }
 });

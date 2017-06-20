@@ -1,4 +1,4 @@
-define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, Toolbar, Content, Constants) => {
+define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants, ViewLayouts) => {
     'use strict';
     const mobileViewCondition = window.matchMedia('(max-width:800px)');
     /*
@@ -15,15 +15,33 @@ define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, T
          */
         constructor(props) {
             super(props);
-            this.state = {
-                isMobileViewEnabled: mobileViewCondition.matches
+            const state = {
+                isMobileViewEnabled: mobileViewCondition.matches,
+                viewLayout: this.newViewLayout(this.props)
             };
+            if ('TODO' === true) {
+                state.loading = true;
+                this.updateContentLayers(this.props);
+            }
+            this.state = state;
         }
         /**
          * Lisää matchmedia-kuuntelijan.
          */
         componentWillMount() {
             mobileViewCondition.addListener(this.viewPortListener.bind(this));
+        }
+        /**
+         * Refreshaa layotin (jos tarvetta), ja sisältökerrokset (jos tarvetta).
+         */
+        componentWillReceiveProps(props) {
+            if (props.currentView !== this.props.currentView) {
+                this.setState({viewLayout: this.newViewLayout(props)});
+            }
+            if ('TODO' === true) {
+                this.setState({loading: true});
+                this.updateContentLayers(props);
+            }
         }
         /**
          * Matchmedia-kuuntelija. Päivittää state.isMobileViewEnabled:n arvoksi
@@ -40,6 +58,24 @@ define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, T
             }
         }
         /**
+         * Refreshaa sisältökerrokset (esim. eventLayerin tapahtumat).
+         *
+         * @access private
+         */
+        updateContentLayers(props) {
+            this.contentLayers = [];
+            Promise.all(this.contentLayers.map(l => l.load())).then(() => {
+                this.setState({loading: false});
+            });
+        }
+        /**
+         * @access private
+         * @return {Day|Week|MonthViewLayout}
+         */
+        newViewLayout(props) {
+            return new ViewLayouts[props.currentView](props.dateCursor);
+        }
+        /**
          * Renderöi kalenterin kokonaisuudessaan mutaatiossa day, week,
          * week-mobile, month, tai month-mobile.
          */
@@ -51,10 +87,9 @@ define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, T
                 className += '-mobile mobile';
             }
             //
-            const isWeekOrMonthMobileView = this.state.isMobileViewEnabled &&
-                (this.props.currentView === Constants.VIEW_WEEK ||
-                this.props.currentView === Constants.VIEW_MONTH);
-            //
+            const [header, content] = this.state.viewLayout.getParts(
+                this.state.isMobileViewEnabled
+            );
             return $el('div', {className},
                 $el(Toolbar.default, {
                     dateCursor: this.props.dateCursor,
@@ -62,13 +97,8 @@ define(['src/Header', 'src/Toolbar', 'src/Content', 'src/Constants'], (Header, T
                     onViewChange: this.props.changeView,
                     titleFormatter: this.props.titleFormatters[this.props.currentView] || null
                 }),
-                !isWeekOrMonthMobileView && $el(Header[this.props.currentView], {
-                    dateCursor: this.props.dateCursor
-                }),
-                $el(Content[this.props.currentView], {
-                    dateCursor: this.props.dateCursor,
-                    isMobileViewEnabled: this.state.isMobileViewEnabled
-                })
+                header !== null && $el(header.Component, header.props),
+                $el(content.Component, content.props)
             );
         }
     }
