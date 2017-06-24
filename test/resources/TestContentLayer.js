@@ -1,4 +1,4 @@
-define(() => {
+define(['src/ComponentConstruct'], (ComponentConstruct) => {
     'use strict';
     const someComponent = props => $el('span', null, props.loadCount);
     /*
@@ -17,9 +17,9 @@ define(() => {
             return Promise.resolve('foo');
         }
         decorateCell(cell) {
-            cell.children.push(() => [
-                [someComponent, {loadCount: TestContentLayer.loadCount}]
-            ]);
+            cell.children.push(
+                new ComponentConstruct.default(someComponent, {loadCount: TestContentLayer.loadCount})
+            );
         }
     }
     TestContentLayer.loadCount = 0;

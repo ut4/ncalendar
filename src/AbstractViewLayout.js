@@ -1,4 +1,4 @@
-define(['src/Header', 'src/Content', 'src/ioc'], (Header, Content, ioc) => {
+define(['src/Header', 'src/Content', 'src/ComponentConstruct', 'src/ioc'], (Header, Content, ComponentConstruct, ioc) => {
     'use strict';
     /*
      * ViewLayoutien juuriluokka
@@ -25,8 +25,8 @@ define(['src/Header', 'src/Content', 'src/ioc'], (Header, Content, ioc) => {
          */
         getFullLayout() {
             return [
-                new LayoutPart(Header[this.getName()], {dateCursor: this.dateCursor}),
-                new LayoutPart(Content.default, {gridGeneratorFn: () => this.generateFullGrid()})
+                new ComponentConstruct.default(Header[this.getName()], {dateCursor: this.dateCursor}),
+                new ComponentConstruct.default(Content.default, {gridGeneratorFn: () => this.generateFullGrid()})
             ];
         }
         /**
@@ -36,14 +36,8 @@ define(['src/Header', 'src/Content', 'src/ioc'], (Header, Content, ioc) => {
         getCompactLayout() {
             return [
                 null,
-                new LayoutPart(Content.default, {gridGeneratorFn: () => this.generateCompactGrid()})
+                new ComponentConstruct.default(Content.default, {gridGeneratorFn: () => this.generateCompactGrid()})
             ];
-        }
-    }
-    class LayoutPart {
-        constructor(Component, props) {
-            this.Component = Component;
-            this.props = props || {};
         }
     }
     return {default: AbstractViewLayout};

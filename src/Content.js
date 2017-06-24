@@ -108,8 +108,9 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                 // Title
                 cell.content,
                 // Sisältö
-                cell.children.map(factory =>
-                    factory().map(([cmp, props]) => $el(cmp, props))
+                cell.children.map(child => Array.isArray(child)
+                    ? child.map(construct => $el(construct.Component, construct.props))
+                    : $el(child.Component, child.props)
                 )
             );
         }
