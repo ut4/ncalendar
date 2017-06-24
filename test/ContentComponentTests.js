@@ -1,6 +1,6 @@
-define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 'src/DateUtils'], (Content, ViewLayouts, DateCursors, Constants, DateUtils) => {
+define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 'src/ioc'], (Content, ViewLayouts, DateCursors, Constants, ioc) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
+    const dateUtils = ioc.default.dateUtils();
     const newDateCursor = DateCursors.dateCursorFactory.newCursor;
     QUnit.module('ContentComponent', () => {
         QUnit.test('day-gridillä renderöi 24-riviä joissa tuntisolu, ja 1 sisältösolu', assert => {

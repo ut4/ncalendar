@@ -1,6 +1,5 @@
-define(['src/AbstractViewLayout', 'src/Content', 'src/Constants', 'src/DateUtils'], (AbstractViewLayout, Content, Constants, DateUtils) => {
+define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractViewLayout, Content, Constants) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
     /*
      * Kalenterin pääsisältö day-muodossa.
      */
@@ -33,7 +32,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants', 'src/DateUtils
                 rollingDate.setHours(hour);
                 // jossa tuntisarake, ja sisältösarake.
                 return [
-                    new Content.ImmutableCell(dateUtils.formatHour(hour)),
+                    new Content.ImmutableCell(this.dateUtils.formatHour(hour)),
                     new Content.Cell(null, new Date(rollingDate))
                 ];
             });

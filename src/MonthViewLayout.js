@@ -1,6 +1,5 @@
-define(['src/AbstractViewLayout', 'src/Content', 'src/Constants', 'src/DateUtils'], (AbstractViewLayout, Content, Constants, DateUtils) => {
+define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractViewLayout, Content, Constants) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
     /*
      * Kalenterin pääsisältö month-muodossa.
      */
@@ -29,7 +28,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants', 'src/DateUtils
          * @returns {Array}
          */
         generateCompactGrid() {
-            const dayNames = dateUtils.getFormattedWeekDays(
+            const dayNames = this.dateUtils.getFormattedWeekDays(
                 this.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'short'})
             );

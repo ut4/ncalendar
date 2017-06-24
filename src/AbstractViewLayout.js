@@ -1,4 +1,4 @@
-define(['src/Header', 'src/Content'], (Header, Content) => {
+define(['src/Header', 'src/Content', 'src/ioc'], (Header, Content, ioc) => {
     'use strict';
     /**
      * ViewLayoutien juuriluokka
@@ -9,6 +9,7 @@ define(['src/Header', 'src/Content'], (Header, Content) => {
          */
         constructor(dateCursor) {
             this.dateCursor = dateCursor;
+            this.dateUtils = ioc.default.dateUtils();
         }
         /**
          * @access public

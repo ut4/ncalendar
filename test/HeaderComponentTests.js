@@ -1,6 +1,6 @@
-define(['src/Header', 'src/DateCursors', 'src/Constants', 'src/DateUtils',], (Header, DateCursors, Constants, DateUtils) => {
+define(['src/Header', 'src/DateCursors', 'src/Constants', 'src/ioc'], (Header, DateCursors, Constants, ioc) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
+    const dateUtils = ioc.default.dateUtils();
     QUnit.module('HeaderComponent', () => {
         QUnit.test('.day renderöi tuntisarakkeen ja current-päivän täydellisen nimen', assert => {
             const dateCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY);

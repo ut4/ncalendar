@@ -1,6 +1,6 @@
-define(['src/Constants', 'src/DateUtils'], (Constants, DateUtils) => {
+define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
+    const dateUtils = ioc.default.dateUtils();
     /*
      * Kalenterin toolbarin alapuolelle renderöitävä headerline day-muodossa.
      *  ___________________________

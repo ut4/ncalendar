@@ -1,6 +1,5 @@
-define(['src/AbstractViewLayout', 'src/Content', 'src/Constants', 'src/DateUtils'], (AbstractViewLayout, Content, Constants, DateUtils) => {
+define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractViewLayout, Content, Constants) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
     /*
      * Kalenterin pääsisältö week, ja week-mobile -muodossa.
      */
@@ -23,7 +22,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants', 'src/DateUtils
                 const rollingDate = new Date(this.dateCursor.range.start);
                 rollingDate.setHours(hour);
                 // jossa tuntisarake, ...
-                const row = [new Content.ImmutableCell(dateUtils.formatHour(hour))];
+                const row = [new Content.ImmutableCell(this.dateUtils.formatHour(hour))];
                 // ja sarakkeet jokaiselle viikonpäivälle
                 while (row.push(new Content.Cell(null, new Date(rollingDate))) <= Constants.DAYS_IN_WEEK) {
                     rollingDate.setDate(rollingDate.getDate() + 1);
@@ -39,7 +38,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants', 'src/DateUtils
          * @returns {Array}
          */
         generateCompactGrid() {
-            const dayNames = dateUtils.getFormattedWeekDays(
+            const dayNames = this.dateUtils.getFormattedWeekDays(
                 this.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'long'})
             );

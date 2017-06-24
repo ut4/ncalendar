@@ -1,6 +1,6 @@
-define(['src/DateCursors', 'src/Constants', 'src/DateUtils',], (DateCursors, Constants, DateUtils) => {
+define(['src/DateCursors', 'src/Constants', 'src/ioc'], (DateCursors, Constants, ioc) => {
     'use strict';
-    const dateUtils = new DateUtils.default();
+    const dateUtils = ioc.default.dateUtils();
     QUnit.module('DateCursors.WeekViewCursorRange', hooks => {
         hooks.beforeEach(() => {
             this.cursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK, () => {});
