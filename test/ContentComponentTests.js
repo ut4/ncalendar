@@ -72,25 +72,25 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
             const currentDate = new Date(dateCursor.range.start);
             const rollingDate = new Date(dateCursor.range.start);
             renderedRows.forEach(row => {
-                assert.equal(row.children[0].textContent, getExpectedMobileMonthCellTitle(rollingDate, currentDate));
+                assert.equal(row.children[0].textContent, getExpectedCompactMonthCellTitle(rollingDate, currentDate));
                 rollingDate.setDate(rollingDate.getDate() + 1);
-                assert.equal(row.children[1].textContent, getExpectedMobileMonthCellTitle(rollingDate, currentDate));
+                assert.equal(row.children[1].textContent, getExpectedCompactMonthCellTitle(rollingDate, currentDate));
                 rollingDate.setDate(rollingDate.getDate() + 1);
                 assert.equal(row.children.length, 2);
             });
         });
     });
-    function makeProps(selectedView, useCompactForm) {
+    function makeProps(selectedView, compactFormShouldBeUsed) {
         return {
             grid: (new ViewLayouts[selectedView](newDateCursor(selectedView)))
-                .getParts(useCompactForm)[1].props.gridGeneratorFn(),
+                .getParts(compactFormShouldBeUsed)[1].props.gridGeneratorFn(),
             selectedContentLayers: []
         };
     }
     function getRenderedRows(rendered) {
         return Inferno.TestUtils.scryRenderedDOMElementsWithClass(rendered, 'row');
     }
-    function getExpectedMobileMonthCellTitle(date, currentDate) {
+    function getExpectedCompactMonthCellTitle(date, currentDate) {
         return date.getMonth() === currentDate.getMonth()
             ? date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date)
             : '';

@@ -18,7 +18,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          *     selectedContentLayers: {Array},
          *     dateCursor: {DateCursor},
          *     currentView: {string},
-         *     isMobileViewEnabled: {boolean}
+         *     isCompactViewEnabled: {boolean}
          * }
          */
         constructor(props) {
@@ -31,7 +31,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                     this.contentLayerFactory.make(name, [
                         this.props.dateCursor,
                         this.props.currentView,
-                        this.props.isMobileViewEnabled
+                        this.props.isCompactViewEnabled
                     ])
                 );
                 this.loadAsyncContent();
@@ -56,7 +56,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                 this.contentLayers.map(l => {
                     l.dateCursor = newProps.dateCursor;
                     l.currentView = newProps.currentView;
-                    l.isMobileViewEnabled = newProps.isMobileViewEnabled;
+                    l.isCompactViewEnabled = newProps.isCompactViewEnabled;
                 });
             }
             return Promise.all(this.contentLayers.map(l => l.load())).then(() => {

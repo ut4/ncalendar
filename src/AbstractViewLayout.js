@@ -13,11 +13,11 @@ define(['src/Header', 'src/Content', 'src/ioc'], (Header, Content, ioc) => {
         }
         /**
          * @access public
-         * @param {boolean} useCompactForm
+         * @param {boolean} compactFormShouldBeUsed
          * @returns {Layout}
          */
-        getParts(useCompactForm) {
-            return !useCompactForm ? this.getFullLayout() : this.getCompactLayout();
+        getParts(compactFormShouldBeUsed) {
+            return !compactFormShouldBeUsed ? this.getFullLayout() : this.getCompactLayout();
         }
         /**
          * @access protected

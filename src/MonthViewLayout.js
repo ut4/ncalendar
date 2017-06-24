@@ -1,7 +1,7 @@
 define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractViewLayout, Content, Constants) => {
     'use strict';
     /*
-     * Kalenterin pääsisältö month-muodossa.
+     * Kalenterin pääsisältö month, ja month-compact -muodossa
      */
     class MonthViewLayout extends AbstractViewLayout.default {
         getName() {

@@ -6,10 +6,10 @@ define(() => {
      * johon renderöityy kerroksen latauskerrat.
      */
     class TestContentLayer {
-        constructor(dateCursor, currentView, isMobileViewEnabled) {
+        constructor(dateCursor, currentView, isCompactViewEnabled) {
             this.dateCursor = dateCursor;
             this.currentView = currentView;
-            this.isMobileViewEnabled = isMobileViewEnabled;
+            this.isCompactViewEnabled = isCompactViewEnabled;
             TestContentLayer.loadCount = 0;
         }
         load() {

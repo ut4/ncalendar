@@ -1,0 +1,8 @@
+        .cal.compact .main .cell:before { content: initial }
+
+.cal.month-compact .main { margin-top: 0; border-radius: 2px }
+        .cal.month-compact .main .cell { min-height: 60px }
+            .month-compact  .event { height: auto }
+
+.cal.week-compact .main { height: auto; margin-top: 0; border-radius: 2px }
+        .cal.week-compact .main .cell { height: auto; min-height: 120px }

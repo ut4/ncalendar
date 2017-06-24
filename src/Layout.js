@@ -1,6 +1,6 @@
 define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants, ViewLayouts) => {
     'use strict';
-    const mobileViewCondition = window.matchMedia('(max-width:800px)');
+    const smallScreenCondition = window.matchMedia('(max-width:800px)');
     /*
      * Kasailee kalenterin eri osat paikalleen {props.currentView} -muodossa.
      */
@@ -17,7 +17,7 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
         constructor(props) {
             super(props);
             this.state = {
-                isMobileViewEnabled: mobileViewCondition.matches,
+                smallScreenConditionMaches: smallScreenCondition.matches,
                 viewLayout: this.newViewLayout(this.props)
             };
         }
@@ -25,7 +25,7 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
          * Lisää matchmedia-kuuntelijan.
          */
         componentWillMount() {
-            mobileViewCondition.addListener(this.viewPortListener.bind(this));
+            smallScreenCondition.addListener(this.viewPortListener.bind(this));
         }
         /**
          * Refreshaa layotin (jos tarvetta), ja sisältökerrokset (jos tarvetta).
@@ -36,17 +36,17 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
             }
         }
         /**
-         * Matchmedia-kuuntelija. Päivittää state.isMobileViewEnabled:n arvoksi
-         * true, mikäli selaimen ikkuna on pienempi kuin {?}, tai false, jos se
-         * on suurempi kuin {?}.
+         * Matchmedia-kuuntelija. Päivittää state.smallScreenConditionMaches:n
+         * arvoksi true, mikäli selaimen ikkuna on pienempi kuin {?}, tai false,
+         * jos se on suurempi kuin {?}.
          *
          * @access private
          * @param {MediaQueryList} newMatch
          */
         viewPortListener(newMatch) {
-            const newIsMobileViewEnabled = newMatch.matches;
-            if (newIsMobileViewEnabled !== this.state.isMobileViewEnabled) {
-                this.setState({isMobileViewEnabled: newIsMobileViewEnabled});
+            const newSmallScreenConditionMaches = newMatch.matches;
+            if (newSmallScreenConditionMaches !== this.state.smallScreenConditionMaches) {
+                this.setState({smallScreenConditionMaches: newSmallScreenConditionMaches});
             }
         }
         /**
@@ -58,18 +58,18 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
         }
         /**
          * Renderöi kalenterin kokonaisuudessaan mutaatiossa day, week,
-         * week-mobile, month, tai month-mobile.
+         * week-compact, month, tai month-compact.
          */
         render() {
             //
             let className = 'cal ' + this.props.currentView;
-            if (this.state.isMobileViewEnabled &&
+            if (this.state.smallScreenConditionMaches &&
                 this.props.currentView !== Constants.VIEW_DAY) {
-                className += '-mobile mobile';
+                className += '-compact compact';
             }
             //
             const [header, content] = this.state.viewLayout.getParts(
-                this.state.isMobileViewEnabled
+                this.state.smallScreenConditionMaches
             );
             return $el('div', {className},
                 $el(Toolbar.default, {
@@ -86,7 +86,7 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
                     selectedContentLayers: this.props.contentLayers,
                     dateCursor: this.props.dateCursor,
                     currentView: this.props.currentView,
-                    isMobileViewEnabled: this.state.isMobileViewEnabled
+                    isCompactViewEnabled: this.state.smallScreenConditionMaches
                 })
             );
         }

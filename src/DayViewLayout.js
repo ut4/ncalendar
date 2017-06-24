@@ -8,7 +8,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
             return Constants.VIEW_DAY;
         }
         /**
-         * Day-näkymällä ei ole erillistä mobile-muotoa.
+         * Day-näkymällä ei ole erillistä compact-muotoa.
          *
          * @access protected
          * @returns {Array}

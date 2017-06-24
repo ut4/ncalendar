@@ -1,7 +1,7 @@
 define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractViewLayout, Content, Constants) => {
     'use strict';
     /*
-     * Kalenterin pääsisältö week, ja week-mobile -muodossa.
+     * Kalenterin pääsisältö week, ja week-compact -muodossa.
      */
     class WeekViewLayout extends AbstractViewLayout.default {
         getName() {
