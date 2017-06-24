@@ -9,21 +9,17 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
          * @param {object} props {
          *     dateCursor: {DateCursor},
          *     currentView: {string},
-         *     titleFormatters: {Object}
-         *     changeView: {Function}
+         *     changeView: {Function},
+         *     titleFormatters: {Object},
+         *     contentLayers: {Array}
          * }
          */
         constructor(props) {
             super(props);
-            const state = {
+            this.state = {
                 isMobileViewEnabled: mobileViewCondition.matches,
                 viewLayout: this.newViewLayout(this.props)
             };
-            if ('TODO' === true) {
-                state.loading = true;
-                this.updateContentLayers(this.props);
-            }
-            this.state = state;
         }
         /**
          * Lisää matchmedia-kuuntelijan.
@@ -37,10 +33,6 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
         componentWillReceiveProps(props) {
             if (props.currentView !== this.props.currentView) {
                 this.setState({viewLayout: this.newViewLayout(props)});
-            }
-            if ('TODO' === true) {
-                this.setState({loading: true});
-                this.updateContentLayers(props);
             }
         }
         /**
@@ -56,17 +48,6 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
             if (newIsMobileViewEnabled !== this.state.isMobileViewEnabled) {
                 this.setState({isMobileViewEnabled: newIsMobileViewEnabled});
             }
-        }
-        /**
-         * Refreshaa sisältökerrokset (esim. eventLayerin tapahtumat).
-         *
-         * @access private
-         */
-        updateContentLayers(props) {
-            this.contentLayers = [];
-            Promise.all(this.contentLayers.map(l => l.load())).then(() => {
-                this.setState({loading: false});
-            });
         }
         /**
          * @access private
@@ -97,8 +78,16 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
                     onViewChange: this.props.changeView,
                     titleFormatter: this.props.titleFormatters[this.props.currentView] || null
                 }),
-                header !== null && $el(header.Component, header.props),
-                $el(content.Component, content.props)
+                header !== null && $el(header.Component,
+                    header.props
+                ),
+                $el(content.Component, {
+                    grid: content.props.gridGeneratorFn(),
+                    selectedContentLayers: this.props.contentLayers,
+                    dateCursor: this.props.dateCursor,
+                    currentView: this.props.currentView,
+                    isMobileViewEnabled: this.state.isMobileViewEnabled
+                })
             );
         }
     }

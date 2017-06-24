@@ -8,7 +8,8 @@ define(['src/Layout', 'src/Constants', 'src/DateCursors'], (Layout, Constants, D
          * @param {Object} props {
          *     settings: {
          *         defaultView: {string},
-         *         titleFormatters: {Object}
+         *         titleFormatters: {Object},
+         *         contentLayers: {Array}
          *     }=
          * }
          */
@@ -55,8 +56,9 @@ define(['src/Layout', 'src/Constants', 'src/DateCursors'], (Layout, Constants, D
             return $el(Layout.default, {
                 dateCursor: this.state.dateCursor,
                 currentView: this.state.currentView,
+                changeView: this.changeView.bind(this),
                 titleFormatters: this.settingsi.titleFormatters,
-                changeView: this.changeView.bind(this)
+                contentLayers: this.settingsi.contentLayers
             });
         }
         /**
@@ -81,6 +83,7 @@ define(['src/Layout', 'src/Constants', 'src/DateCursors'], (Layout, Constants, D
     function makeSettings(userSettings) {
         return {
             defaultView: getValidViewName(userSettings.defaultView || 'default'),
+            contentLayers: getValidContentLayers(userSettings.contentLayers),
             titleFormatters: getValidTitleFormatters(userSettings.titleFormatters)
         };
     }
@@ -97,6 +100,22 @@ define(['src/Layout', 'src/Constants', 'src/DateCursors'], (Layout, Constants, D
             throw new Error('Näkymää "' + viewNameKey + '" ei löytynyt');
         }
         return lookedUpViewName;
+    }
+    /**
+     * Palattaa validin contentLayers-arvon, tai heittää errorin jos {candidate}
+     * ei ollut validi.
+     *
+     * @param {Array} candidate
+     * @throws {Error}
+     */
+    function getValidContentLayers(candidate) {
+        if (!candidate) {
+            return [];
+        }
+        if (!Array.isArray(candidate)) {
+            throw new Error('contentLayers pitäisi olla taulukko');
+        }
+        return candidate;
     }
     /**
      * Palauttaa validin titleFormatters-, tai tyhjän objektin, tai heittää

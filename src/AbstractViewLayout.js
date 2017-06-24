@@ -25,7 +25,7 @@ define(['src/Header', 'src/Content'], (Header, Content) => {
         getFullLayout() {
             return [
                 new LayoutPart(Header[this.getName()], {dateCursor: this.dateCursor}),
-                new LayoutPart(Content.default, {grid: this.generateFullGrid()})
+                new LayoutPart(Content.default, {gridGeneratorFn: () => this.generateFullGrid()})
             ];
         }
         /**
@@ -34,7 +34,8 @@ define(['src/Header', 'src/Content'], (Header, Content) => {
          */
         getCompactLayout() {
             return [
-                new LayoutPart(Content.default, {grid: this.generateCompactGrid()})
+                null,
+                new LayoutPart(Content.default, {gridGeneratorFn: () => this.generateCompactGrid()})
             ];
         }
     }

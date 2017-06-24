@@ -5,9 +5,7 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
     QUnit.module('ContentComponent', () => {
         QUnit.test('day-gridillä renderöi 24-riviä joissa tuntisolu, ja 1 sisältösolu', assert => {
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.default,
-                    (new ViewLayouts.day(newDateCursor(Constants.VIEW_DAY))).getParts()[1].props
-                )
+                $el(Content.default, makeProps(Constants.VIEW_DAY))
             ));
             assert.equal(renderedRows.length, 24);
             renderedRows.forEach((row, hour) => {
@@ -18,9 +16,7 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
         });
         QUnit.test('week-gridillä renderöi 24-riviä joissa tuntisolu, ja 7 sisältösolua', assert => {
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.default,
-                    (new ViewLayouts.week(newDateCursor(Constants.VIEW_WEEK))).getParts()[1].props
-                )
+                $el(Content.default, makeProps(Constants.VIEW_WEEK))
             ));
             assert.equal(renderedRows.length, 24);
             renderedRows.forEach((row, hour) => {
@@ -32,9 +28,7 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
         });
         QUnit.test('compact week-gridillä renderöi 4-riviä joissa 2 päiväsolua otsikkona täydellinen viikonpäivän nimi', assert => {
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.default,
-                    (new ViewLayouts.week(newDateCursor(Constants.VIEW_WEEK))).getParts(true)[0].props
-                )
+                $el(Content.default, makeProps(Constants.VIEW_WEEK, true))
             ));
             assert.equal(renderedRows.length, 4);
             const dayNames = dateUtils.getFormattedWeekDays(
@@ -53,9 +47,7 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
         QUnit.test('month-gridillä renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
             const dateCursor = newDateCursor(Constants.VIEW_MONTH);
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.default,
-                    (new ViewLayouts.month(newDateCursor(Constants.VIEW_MONTH))).getParts()[1].props
-                )
+                $el(Content.default, makeProps(Constants.VIEW_MONTH))
             ));
             const currentDate = new Date(dateCursor.range.start);
             // Assertoi, että generoi oikean määrän rivejä
@@ -74,9 +66,7 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
         QUnit.test('compact month-gridillä renderöi solun jokaiselle kuukauden päivälle 2-levyisinä riveinä otsikkona numeerinen kuukauden päivä ja viikonpäivän nimi', assert => {
             const dateCursor = newDateCursor(Constants.VIEW_MONTH);
             const renderedRows = getRenderedRows(Inferno.TestUtils.renderIntoDocument(
-                $el(Content.default,
-                    (new ViewLayouts.month(newDateCursor(Constants.VIEW_MONTH))).getParts(true)[0].props
-                )
+                $el(Content.default, makeProps(Constants.VIEW_MONTH, true))
             ));
             assert.equal(renderedRows.length, getExpectedMonthCellCount(dateCursor, 2) / 2);
             const currentDate = new Date(dateCursor.range.start);
@@ -90,6 +80,13 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
             });
         });
     });
+    function makeProps(selectedView, useCompactForm) {
+        return {
+            grid: (new ViewLayouts[selectedView](newDateCursor(selectedView)))
+                .getParts(useCompactForm)[1].props.gridGeneratorFn(),
+            selectedContentLayers: []
+        };
+    }
     function getRenderedRows(rendered) {
         return Inferno.TestUtils.scryRenderedDOMElementsWithClass(rendered, 'row');
     }

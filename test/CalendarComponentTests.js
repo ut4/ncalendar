@@ -7,7 +7,7 @@ define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Layou
                 viewName ? $el(Calendar.default, {settings: {defaultView: viewName}}) : $el(Calendar.default)
             );
         };
-        QUnit.test('renderöi kalenterin Constants.VIEWS_DEFAULT-muodossa', assert => {
+        QUnit.test('renderöi kalenterin Constants.VIEW_DEFAULT-muodossa', assert => {
             render();
             const expectedView = this.initialView;
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Toolbar.default), undefined);
@@ -23,7 +23,7 @@ define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Layou
             const layout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Layout.default);
             assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[expectedInitialView], true);
         });
-        QUnit.test('Toolbarin month-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEWS_MONTH', assert => {
+        QUnit.test('Toolbarin month-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEW_MONTH', assert => {
             render();
             const expectedNewView = Constants.VIEW_MONTH;
             // Paina nappia
@@ -47,7 +47,7 @@ define(['src/Calendar', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/Layou
             const layout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Layout.default);
             assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[this.initialView], true);
         });
-        QUnit.test('Toolbarin day-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEWS_DAY', assert => {
+        QUnit.test('Toolbarin day-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEW_DAY', assert => {
             render();
             const expectedNewView = Constants.VIEW_DAY;
             // Assertoi alkuperäinen näkymä
