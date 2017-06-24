@@ -22,8 +22,8 @@ define(['src/Layout', 'src/Constants', 'src/DateCursors'], (Layout, Constants, D
             };
         }
         /**
-         * Asettaa staten <state.currentView>:in arvoksi <to> (mikäli se ei ole
-         * jo valmiiksi), ja alustaa uuden kursorin <state.dateCursor>:iin (mi-
+         * Asettaa staten {state.currentView}:in arvoksi {to} (mikäli se ei ole
+         * jo valmiiksi), ja alustaa uuden kursorin {state.dateCursor}:iin (mi-
          * käli näkymä vaihtui).
          *
          * @access public

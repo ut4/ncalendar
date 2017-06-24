@@ -21,7 +21,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
             );
         }
         /**
-         * Generoi kuukauden päivät muodossa `<pvmNumeerinen> + <viikonPäiväLyhyt>`
+         * Generoi kuukauden päivät muodossa `{pvmNumeerinen} + {viikonPäiväLyhyt}`
          * 2 * ~15 taulukkoon Content.Cell-instansseihin wrapattuna.
          *
          * @access protected
@@ -37,7 +37,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
             ));
         }
         /**
-         * Generoi kuukauden kaikki päivät <gridWidth> * <n> taulukkoon. Ensimmäisen
+         * Generoi kuukauden kaikki päivät {gridWidth} * {?} taulukkoon. Ensimmäisen
          * rivin alkuun, ja viimeisen rivin loppuun lisätään "tyhjää", jos kuukauden
          * ensimmäinen päivä ei ole maanantai, tai viimeinen sunnuntai (ja {gridWith} = 7).
          * Esimerkkipaluuarvo, jos kuukauden ensimmäinen päivä on keskiviikko;

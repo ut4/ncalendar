@@ -39,9 +39,6 @@ define(['src/Constants'], Constants => {
         constructor(props) {
             super(props);
         }
-        /**
-         * Renderöi kalanterin hallintapaneelin.
-         */
         render() {
             return $el('div', {className: 'toolbar'},
                 $el('div', {className: 'row'},

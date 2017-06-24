@@ -51,7 +51,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             this.end.setDate(0);
         }
     }
-    /**
+    /*
      * Luokka joka vastaa kalenterin aikakursorin manipuloinnista
      * selaustoimintojen yhteydessä. Kuuluu osaksi Calendar-komponenttia, ja
      * public API:a.
@@ -64,7 +64,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             }
         }
         /**
-         * Asettaa <subscribeFn>:n funktioksi, joka triggeröidään jokaisen
+         * Asettaa {subscribeFn}:n funktioksi, joka triggeröidään jokaisen
          * selaustapahtuman yhteydessä.
          */
         subscribe(subscribeFn) {

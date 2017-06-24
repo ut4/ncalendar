@@ -2,7 +2,7 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
     'use strict';
     const mobileViewCondition = window.matchMedia('(max-width:800px)');
     /*
-     * Kasailee kalenterin eri osat paikalleen <Calendar.currentView> -muodossa.
+     * Kasailee kalenterin eri osat paikalleen {props.currentView} -muodossa.
      */
     class Layout extends Inferno.Component {
         /**
@@ -37,8 +37,8 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts'], (Toolbar, Constants,
         }
         /**
          * Matchmedia-kuuntelija. Päivittää state.isMobileViewEnabled:n arvoksi
-         * true, mikäli selaimen ikkuna on pienempi kuin <n>, tai false, jos se
-         * on suurempi kuin <n>.
+         * true, mikäli selaimen ikkuna on pienempi kuin {?}, tai false, jos se
+         * on suurempi kuin {?}.
          *
          * @access private
          * @param {MediaQueryList} newMatch

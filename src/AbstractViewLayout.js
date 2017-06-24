@@ -1,6 +1,6 @@
 define(['src/Header', 'src/Content', 'src/ioc'], (Header, Content, ioc) => {
     'use strict';
-    /**
+    /*
      * ViewLayoutien juuriluokka
      */
     class AbstractViewLayout {
