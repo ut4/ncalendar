@@ -4,13 +4,16 @@ Kalenteri-komponentti seuraavaan applikaatioosi! ES6, ECMAScript Intl, flexbox, 
 
 ## Usage
 
-`<script src="vendor/app-vendor.js"></script>
+```
+<script src="vendor/app-vendor.js"></script>
 <script src="dist/nullcalendar.min.js"></script>
-<script>nullcalendar.newCalendar(document.getElementById('foo')/*, config*/);</script>`
+<script>nullcalendar.newCalendar(document.getElementById('foo')/*, config*/);</script>
+```
 
 ## Example config
 
-`const myConfig = {
+```
+const myConfig = {
     defaultView: 'week',      // {string} week|month|day, default week
     contentLayers: ['event'], // {Array}, default []
     titleFormatters: {        // {Object} default null
@@ -18,7 +21,8 @@ Kalenteri-komponentti seuraavaan applikaatioosi! ES6, ECMAScript Intl, flexbox, 
         // week: {Function}
         // month: {Function}
     }
-};`
+};
+```
 
 # License
 
