@@ -14,7 +14,7 @@ define(['src/Header', 'src/Content', 'src/ComponentConstruct', 'src/ioc'], (Head
         /**
          * @access public
          * @param {boolean} compactFormShouldBeUsed
-         * @returns {Layout}
+         * @returns {Array}
          */
         getParts(compactFormShouldBeUsed) {
             return !compactFormShouldBeUsed ? this.getFullLayout() : this.getCompactLayout();

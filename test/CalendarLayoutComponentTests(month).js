@@ -1,11 +1,11 @@
-define(['src/Calendar', 'src/DateCursors', 'src/Constants', 'test/resources/Utils'], (Calendar, DateCursors, Constants, Utils) => {
+define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resources/Utils'], (CalendarLayout, DateCursors, Constants, Utils) => {
     'use strict';
     const domUtils = Utils.domUtils;
-    QUnit.module('CalendarComponent(month)', hooks => {
+    QUnit.module('CalendarLayoutComponent(month)', hooks => {
         const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
         hooks.beforeEach(() => {
             this.rendered = Inferno.TestUtils.renderIntoDocument(
-                $el(Calendar.default, {settings: {
+                $el(CalendarLayout.default, {settings: {
                     defaultView: Constants.VIEW_MONTH,
                     titleFormatters: {[Constants.VIEW_MONTH]: titleFormatter}
                 }})

@@ -1,4 +1,7 @@
-require(['src/Calendar'], (Calendar) => {
+require(['nullcalendar', 'src/event/EventLayer'], (nullcalendar, EventLayer) => {
     'use strict';
-    Inferno.render($el(Calendar.default), document.getElementById('cal'));
+    nullcalendar.registerContentLayer('event', EventLayer.default);
+    nullcalendar.newCalendar(document.getElementById('cal'),
+        {settings: {contentLayers: ['event']}}
+    );
 });

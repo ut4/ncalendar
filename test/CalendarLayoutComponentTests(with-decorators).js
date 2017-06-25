@@ -1,8 +1,8 @@
-define(['src/ioc', 'src/Calendar', 'src/Content', 'src/DateCursors', 'src/Constants', 'test/resources/Utils', 'test/resources/TestContentLayer'], (ioc, Calendar, Content, DateCursors, Constants, Utils, TestContentLayer) => {
+define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/Constants', 'test/resources/Utils', 'test/resources/TestContentLayer'], (ioc, CalendarLayout, Content, DateCursors, Constants, Utils, TestContentLayer) => {
     'use strict';
     const domUtils = Utils.domUtils;
     ioc.default.contentLayerFactory().register('atest', TestContentLayer.default);
-    QUnit.module('CalendarComponent(with-decorators)', hooks => {
+    QUnit.module('CalendarLayoutComponent(with-decorators)', hooks => {
         hooks.beforeEach(() => {
             this.contentLoadCallSpy = sinon.spy(Content.default.prototype, 'loadAsyncContent');
         });
@@ -10,7 +10,7 @@ define(['src/ioc', 'src/Calendar', 'src/Content', 'src/DateCursors', 'src/Consta
             this.contentLoadCallSpy.restore();
         });
         const render = (contentLayers = ['atest']) => {
-            return Inferno.TestUtils.renderIntoDocument($el(Calendar.default, {settings: {
+            return Inferno.TestUtils.renderIntoDocument($el(CalendarLayout.default, {settings: {
                 defaultView: Constants.VIEW_WEEK,
                 contentLayers: contentLayers
             }}));

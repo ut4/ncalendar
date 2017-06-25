@@ -31,18 +31,18 @@
         <script src="vendor/require.js"></script>
         <!-- Itse testien lataus -->
         <script id="test-boot">require([
-            'test/CalendarClassTests',
-            'test/CalendarComponentTests',
-            'test/CalendarComponentTests(day)',
-            'test/CalendarComponentTests(month)',
-            'test/CalendarComponentTests(week)',
-            'test/CalendarComponentTests(with-decorators)',
+            'test/CalendarLayoutComponentTests',
+            'test/CalendarLayoutComponentTests(day)',
+            'test/CalendarLayoutComponentTests(month)',
+            'test/CalendarLayoutComponentTests(week)',
+            'test/CalendarLayoutComponentTests(with-decorators)',
             'test/ContentComponentTests',
             'test/DateCursors.dateCursorFactoryTests',
             'test/DateCursors.DayViewCursorRangeTests',
             'test/DateCursors.MonthViewCursorRangeTests',
             'test/DateCursors.WeekViewCursorRangeTests',
-            'test/HeaderComponentTests'
+            'test/HeaderComponentTests',
+            'test/settingsFactoryTests'
         ], QUnit.start);</script>
     </body>
 </html>

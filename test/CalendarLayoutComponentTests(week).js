@@ -1,11 +1,11 @@
-define(['src/Calendar', 'src/DateCursors', 'src/Constants', 'test/resources/Utils'], (Calendar, DateCursors, Constants, Utils) => {
+define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resources/Utils'], (CalendarLayout, DateCursors, Constants, Utils) => {
     'use strict';
     const domUtils = Utils.domUtils;
-    QUnit.module('CalendarComponent(week)', hooks => {
+    QUnit.module('CalendarLayoutComponent(week)', hooks => {
         const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
         hooks.beforeEach(() => {
             this.rendered = Inferno.TestUtils.renderIntoDocument(
-                $el(Calendar.default, {settings: {
+                $el(CalendarLayout.default, {settings: {
                     titleFormatters: {[Constants.VIEW_WEEK]: titleFormatter}
                 }})
             );
