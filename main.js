@@ -1,7 +1,4 @@
-require(['nullcalendar', 'src/event/EventLayer'], (nullcalendar, EventLayer) => {
+require(['nullcalendar'], (nullcalendar) => {
     'use strict';
-    nullcalendar.registerContentLayer('event', EventLayer.default);
-    nullcalendar.newCalendar(document.getElementById('cal'),
-        {settings: {contentLayers: ['event']}}
-    );
+    nullcalendar.newCalendar(document.getElementById('cal'));
 });
