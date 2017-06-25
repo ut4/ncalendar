@@ -67,7 +67,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
             }
             // Tasaa viimeinen rivi
             if (row.length) {
-                while (row.push(undefined) < gridWidth);
+                while (row.push(undefined) < gridWidth) {/**/}
                 grid.push(row);
             }
             return grid;
