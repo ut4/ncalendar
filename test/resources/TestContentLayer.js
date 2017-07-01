@@ -6,22 +6,29 @@ define(['src/ComponentConstruct'], (ComponentConstruct) => {
      * johon renderöityy kerroksen latauskerrat.
      */
     class TestContentLayer {
-        constructor(dateCursor, currentView, isCompactViewEnabled) {
-            this.dateCursor = dateCursor;
-            this.currentView = currentView;
-            this.isCompactViewEnabled = isCompactViewEnabled;
-            TestContentLayer.loadCount = 0;
+        constructor(contentController, calendarController) {
+            this.args = arguments;
+            this.contentController = contentController;
+            this.calendarController = calendarController;
+            this.loadCount = 0;
         }
         load() {
-            TestContentLayer.loadCount++;
+            this.hasOneClickHandler = false;
+            this.loadCount++;
             return Promise.resolve('foo');
         }
         decorateCell(cell) {
             cell.children.push(
-                new ComponentConstruct.default(someComponent, {loadCount: TestContentLayer.loadCount})
+                new ComponentConstruct.default(someComponent, {loadCount: this.loadCount})
             );
+            if (cell && !this.hasOneClickHandler) {
+                cell.clickHandlers.push(TestContentLayer.testClickHandler);
+                this.hasOneClickHandler = true;
+            }
+        }
+        static testClickHandler() {
+            //
         }
     }
-    TestContentLayer.loadCount = 0;
     return {default: TestContentLayer};
 });
