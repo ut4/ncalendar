@@ -15,23 +15,19 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         /**
          * @param {object} props {
          *     grid: {Array},
-         *     selectedContentLayers: {Array},
-         *     dateCursor: {DateCursor},
-         *     currentView: {string},
-         *     isCompactViewEnabled: {boolean}
+         *     calendarController: {Object}
          * }
          */
         constructor(props) {
             super(props);
             this.state = {};
-            this.contentLayerFactory = ioc.default.contentLayerFactory();
-            this.hasAsyncContent = this.props.selectedContentLayers.length > 0;
+            const selectedLayers = this.props.calendarController.settings.contentLayers;
+            this.hasAsyncContent = selectedLayers.length > 0;
             if (this.hasAsyncContent) {
-                this.contentLayers = this.props.selectedContentLayers.map(name =>
-                    this.contentLayerFactory.make(name, [
-                        this.props.dateCursor,
-                        this.props.currentView,
-                        this.props.isCompactViewEnabled
+                const contentLayerFactory = ioc.default.contentLayerFactory();
+                this.contentLayers = selectedLayers.map(name =>
+                    contentLayerFactory.make(name, [
+                        this.props.calendarController
                     ])
                 );
                 this.loadAsyncContent();
@@ -40,10 +36,10 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         /**
          * Triggeröi sisältökerroksien päivityksen, jos niitä on.
          */
-        componentWillReceiveProps(props) {
+        componentWillReceiveProps() {
             if (this.hasAsyncContent) {
                 this.setState({loading: true});
-                this.loadAsyncContent(props);
+                this.loadAsyncContent();
             }
         }
         /**
@@ -51,23 +47,16 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          *
          * @access private
          */
-        loadAsyncContent(newProps) {
-            if (newProps) {
-                this.contentLayers.map(l => {
-                    l.dateCursor = newProps.dateCursor;
-                    l.currentView = newProps.currentView;
-                    l.isCompactViewEnabled = newProps.isCompactViewEnabled;
-                });
-            }
+        loadAsyncContent() {
             return Promise.all(this.contentLayers.map(l => l.load())).then(() => {
                 this.applyAsyncContent();
                 this.setState({loading: false});
             });
         }
         /**
-         * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa niitä sisältökerroksien
-         * dekoroitavaksi. Sisältökerros voi tällöin esim. lisätä solun children-taulukkoon
-         * omat lisäyksensä.
+         * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne sisältökerroksien
+         * dekoroitavaksi. Sisältökerros voi tällöin esim. lisätä solun children-,
+         * tai clickHandlers-taulukkoon omat lisäyksensä.
          *
          * @access private
          */
@@ -104,7 +93,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          * @returns {VNode}
          */
         newTitledContent(cell) {
-            return $el('span', null,
+            return $el('div', null,
                 // Title
                 cell.content,
                 // Sisältö
@@ -129,10 +118,11 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             this.children = [];
         }
     }
+    class PlaceholderCell extends Cell {}
     class ImmutableCell {
         constructor(content) {
             this.content = content;
         }
     }
-    return {default: Content, Cell, ImmutableCell, HOURS_ARRAY};
+    return {default: Content, Cell, ImmutableCell, PlaceholderCell, HOURS_ARRAY};
 });

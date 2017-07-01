@@ -30,9 +30,7 @@ define(['src/Constants'], Constants => {
     class Toolbar extends Inferno.Component {
         /**
          * @param {object} props {
-         *     currentView: {string},
-         *     dateCursor: {DateCursor}
-         *     onViewChange: {Function},
+         *     calendarController: {Object},
          *     titleFormatter: {Function=}
          * }
          */
@@ -40,20 +38,21 @@ define(['src/Constants'], Constants => {
             super(props);
         }
         render() {
+            const ctrl = this.props.calendarController;
             return $el('div', {className: 'toolbar'},
                 $el('div', {className: 'row'},
                     $el('div', {className: 'col'},
-                        $el('button', {onClick: this.props.dateCursor.prev.bind(this.props.dateCursor)}, '<'),
-                        $el('button', {onClick: this.props.dateCursor.next.bind(this.props.dateCursor)}, '>'),
-                        $el('button', {onClick: this.props.dateCursor.reset.bind(this.props.dateCursor)}, 'Tänään')
+                        $el('button', {onClick: () => ctrl.dateCursor.prev() }, '<'),
+                        $el('button', {onClick: () => ctrl.dateCursor.next() }, '>'),
+                        $el('button', {onClick: () => ctrl.dateCursor.reset() }, 'Tänään')
                     ),
                     $el('div', {className: 'col'},
-                        $el('h2', null, (this.props.titleFormatter || titleFormatters[this.props.currentView])(this.props.dateCursor.range))
+                        $el('h2', null, (this.props.titleFormatter || titleFormatters[ctrl.currentView])(ctrl.dateCursor.range))
                     ),
                     $el('div', {className: 'col'},
-                        $el('button', {onClick: () => { this.props.onViewChange(Constants.VIEW_MONTH); }}, 'Kuukausi'),
-                        $el('button', {onClick: () => { this.props.onViewChange(Constants.VIEW_WEEK); }}, 'Viikko'),
-                        $el('button', {onClick: () => { this.props.onViewChange(Constants.VIEW_DAY); }}, 'Päivä')
+                        $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_MONTH); }}, 'Kuukausi'),
+                        $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_WEEK); }}, 'Viikko'),
+                        $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_DAY); }}, 'Päivä')
                     )
                 )
             );

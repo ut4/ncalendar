@@ -60,7 +60,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
                     new Content.Cell(dayNames[5], getDateAndMoveToNexDay())
                 ], [
                     new Content.Cell(dayNames[6], getDateAndMoveToNexDay()),
-                    new Content.ImmutableCell('Tällä viikolla: ? tapahtumaa')
+                    new Content.PlaceholderCell(null, null)
                 ]
             ];
         }
