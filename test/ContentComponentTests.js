@@ -42,7 +42,7 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
             assert.equal(renderedRows[2].children[0].textContent, dayNames[4]);
             assert.equal(renderedRows[2].children[1].textContent, dayNames[5]);
             assert.equal(renderedRows[3].children[0].textContent, dayNames[6]);
-            assert.equal(renderedRows[3].children[1].textContent, 'Tällä viikolla: ? tapahtumaa');
+            assert.equal(renderedRows[3].children[1].textContent, '');
         });
         QUnit.test('month-gridillä renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
             const dateCursor = newDateCursor(Constants.VIEW_MONTH);
@@ -84,7 +84,7 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
         return {
             grid: (new ViewLayouts[selectedView](newDateCursor(selectedView)))
                 .getParts(compactFormShouldBeUsed)[1].props.gridGeneratorFn(),
-            selectedContentLayers: []
+            calendarController: {settings: {contentLayers: []}}
         };
     }
     function getRenderedRows(rendered) {

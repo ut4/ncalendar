@@ -22,6 +22,7 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 's
             state.viewLayout = this.newViewLayout(state.currentView, state.dateCursor);
             state.smallScreenConditionMaches = smallScreenCondition.matches;
             this.state = state;
+            this.controller = newController(this);
         }
         /**
          * Lisää matchmedia-kuuntelijan.
@@ -30,9 +31,16 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 's
             smallScreenCondition.addListener(this.viewPortListener.bind(this));
         }
         /**
-         * Asettaa staten {state.currentView}:in arvoksi {to}, mikäli se ei ole
-         * jo valmiiksi, ja alustaa uuden {state.dateCursor}in, ja {state.viewLayout}in
-         * mikäli näkymä vaihtui.
+         * Palauttaa per-kalenteri-API:n, jonka kautta kalenteria pääsääntöisesti
+         * kontrolloidaan.
+         */
+        getController() {
+            return this.controller;
+        }
+        /**
+         * Vaihtaa kalenterin currentView:iksi {to}, mikäli se ei ole jo valmiiksi,
+         * uudelleeninstantioi dateCursorin, ja triggeröi sisältökerroksien
+         * uudelleenlatauksen.
          *
          * @access public
          * @param {string} to Constants.VIEW_DAY | Constants.VIEW_WEEK | Constants.VIEW_MONTH
@@ -94,9 +102,7 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 's
             );
             return $el('div', {className},
                 $el(Toolbar.default, {
-                    dateCursor: this.state.dateCursor,
-                    currentView: this.state.currentView,
-                    onViewChange: to => this.changeView(to),
+                    calendarController: this.controller,
                     titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
                 }),
                 header !== null && $el(header.Component,
@@ -104,13 +110,33 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 's
                 ),
                 $el(content.Component, {
                     grid: content.props.gridGeneratorFn(),
-                    selectedContentLayers: this.settings.contentLayers,
-                    dateCursor: this.state.dateCursor,
-                    currentView: this.state.currentView,
-                    isCompactViewEnabled: this.state.smallScreenConditionMaches
+                    calendarController: this.controller
                 })
             );
         }
+    }
+    /**
+     * Yksittäisen kalenteri-instanssin public API. Käytetään myös sisäisesti
+     * lapsikomponenteissa (Content, Toolbar).
+     */
+    function newController(component) {
+        return {
+            get currentView() {
+                return component.state.currentView;
+            },
+            get dateCursor() {
+                return component.state.dateCursor;
+            },
+            get settings() {
+                return component.settings;
+            },
+            get isCompactViewEnabled() {
+                return component.state.smallScreenConditionMaches;
+            },
+            changeView: to => {
+                return component.changeView(to);
+            }
+        };
     }
     return {default: CalendarLayout};
 });
