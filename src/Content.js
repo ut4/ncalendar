@@ -27,6 +27,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                 const contentLayerFactory = ioc.default.contentLayerFactory();
                 this.contentLayers = selectedLayers.map(name =>
                     contentLayerFactory.make(name, [
+                        {update: () => this.forceUpdate()},
                         this.props.calendarController
                     ])
                 );
@@ -83,8 +84,14 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             } else {
                 content = this.newTitledContent(cell);
             }
+            const cellAttrs = {className: 'cell'};
+            if (cell && cell.clickHandlers && cell.clickHandlers.length) {
+                cellAttrs.onClick = e => {
+                    cell.clickHandlers.forEach(fn => fn(cell, e));
+                };
+            }
             return $el('div', {className: 'col'},
-                $el('div', {className: 'cell'}, content)
+                $el('div', cellAttrs, content)
             );
         }
         /**
@@ -116,6 +123,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             this.date = date;
             this.content = content;
             this.children = [];
+            this.clickHandlers = [];
         }
     }
     class PlaceholderCell extends Cell {}

@@ -5,9 +5,11 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
     QUnit.module('CalendarLayoutComponent(with-decorators)', hooks => {
         hooks.beforeEach(() => {
             this.contentLoadCallSpy = sinon.spy(Content.default.prototype, 'loadAsyncContent');
+            this.clickHandlerSpy = sinon.spy(TestContentLayer.default, 'testClickHandler');
         });
         hooks.afterEach(() => {
             this.contentLoadCallSpy.restore();
+            TestContentLayer.default.testClickHandler.restore();
         });
         const render = (contentLayers = ['atest']) => {
             return Inferno.TestUtils.renderIntoDocument($el(CalendarLayout.default, {settings: {
@@ -15,16 +17,28 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
                 contentLayers: contentLayers
             }}));
         };
-        QUnit.test('Lataa & ajaa sisältökerroksen', assert => {
-            //
-            const renderedRows = Inferno.TestUtils.scryRenderedDOMElementsWithClass(
-                render(), 'main .row'
+        QUnit.test('Instantioi & lataa & ajaa sisältökerroksen', assert => {
+            const rendered = render();
+            const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+            assert.ok(
+                expectedTestLayer instanceof TestContentLayer.default,
+                'Pitäisi instantioida sisältökerros'
+            );
+            assert.ok(
+                isProbablyContentController(expectedTestLayer.args[0]),
+                'Layerin 1. argumentti pitäisi olla contentController'
+            );
+            assert.ok(
+                isProbablyCalendarController(expectedTestLayer.args[1]),
+                'Layerin 2. argumentti pitäisi olla calendarController'
             );
             //
             assert.ok(this.contentLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerros');
             const done = assert.async();
             this.contentLoadCallSpy.firstCall.returnValue.then(() => {
-                const expectedDecorating = TestContentLayer.default.loadCount.toString();
+                const renderedRows = getRenderedRows(rendered);
+                assert.equal(Constants.HOURS_IN_DAY, renderedRows.length);
+                const expectedDecorating = expectedTestLayer.loadCount.toString();
                 const decoratings = expectedDecorating.repeat(Constants.DAYS_IN_WEEK);
                 assert.ok(
                     renderedRows.every(row => row.textContent.indexOf(decoratings) > -1),
@@ -33,12 +47,43 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
                 done();
             });
         });
+        QUnit.test('Kutsuu rekisteröityjä clickHandlereita', assert => {
+            const rendered = render();
+            //
+            const done = assert.async();
+            this.contentLoadCallSpy.firstCall.returnValue.then(() => {
+                const renderedRows = getRenderedRows(rendered);
+                // .row        .col(ma)    .cell
+                renderedRows[0].children[1].children[0].click(); // ma, pitäisi olla klikattava
+                renderedRows[0].children[2].children[0].click(); // ti, ei pitäisi olla klikattava
+                assert.ok(
+                    this.clickHandlerSpy.calledOnce,
+                    'Olisi pitänyt rekisteröidä handlerin ensimmäiseen celliin'
+                );
+                assert.deepEqual(2, this.clickHandlerSpy.firstCall.args.length);
+                assert.ok(
+                    this.clickHandlerSpy.firstCall.args[0] instanceof Content.Cell,
+                    'Handlerin 1. argumentti pitäis olla Cell-instanssi'
+                );
+                assert.ok(
+                    this.clickHandlerSpy.firstCall.args[1] instanceof Event,
+                    'Handlerin 2. argumentti pitäis olla click-event'
+                );
+                done();
+            });
+        });
         QUnit.test('Ei lataa sisältökerroksia jos niitä ei ole valittu', assert => {
             const rendered = render([]);
+            assert.equal(0, getInstantiatedLayers(rendered).length,
+                'Ei pitäisi instantioida sisältökerroksia'
+            );
             // Triggöi navigaatiotapahtuma
             domUtils.findButtonByContent(rendered, '<').click();
             //
-            assert.ok(this.contentLoadCallSpy.notCalled, 'Ei pitäisi ladata sisältökerroksia');
+            assert.ok(
+                this.contentLoadCallSpy.notCalled,
+                'Ei pitäisi ladata, tai uudelleenpäivittää sisältökerroksia'
+            );
         });
         QUnit.test('Toolbarin next-sivutuspainike triggeröi sisältökerroksen päivityksen', assert => {
             testButtonClickTriggersDecoratorRefresh.call(this, '>', assert);
@@ -66,6 +111,20 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
                 assert.notEqual(contentAfter, contentBefore);
                 done();
             });
+        }
+        function getRenderedRows(rendered) {
+            return Array.prototype.slice.call(Inferno.TestUtils.scryRenderedDOMElementsWithClass(
+                rendered, 'row'
+            )).slice(2);// toolbarin, ja headerin rivit pois
+        }
+        function getInstantiatedLayers(rendered) {
+            return Inferno.TestUtils.findRenderedVNodeWithType(rendered, Content.default).children.contentLayers || [];
+        }
+        function isProbablyContentController(object) {
+            return object instanceof Object && object.hasOwnProperty('update');
+        }
+        function isProbablyCalendarController(object) {
+            return object instanceof Object && object.hasOwnProperty('changeView');
         }
     });
 });
