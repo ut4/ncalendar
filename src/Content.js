@@ -27,12 +27,24 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                 const contentLayerFactory = ioc.default.contentLayerFactory();
                 this.contentLayers = selectedLayers.map(name =>
                     contentLayerFactory.make(name, [
-                        {update: () => this.forceUpdate()},
+                        {refresh: () => {
+                            this.applyAsyncContent();
+                            this.forceUpdate();
+                        }},
                         this.props.calendarController
                     ])
                 );
                 this.loadAsyncContent();
             }
+        }
+        /**
+         * Palauttaa kopion gridistä, jonka jokainen cell on alustettu / ei sisällä
+         * contentLayerien tekemiä modifikaatioita.
+         */
+        getFreshGrid() {
+            return this.props.grid.map(rows => rows.map(cell =>
+                cell ? new cell.constructor(cell.content, cell.date) : cell
+            ));
         }
         /**
          * Triggeröi sisältökerroksien päivityksen, jos niitä on.
@@ -62,6 +74,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          * @access private
          */
         applyAsyncContent() {
+            this.props.grid = this.getFreshGrid();
             this.contentLayers.forEach(layer => {
                 this.props.grid.forEach(row => {
                     row.forEach(cell => {
@@ -87,6 +100,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             const cellAttrs = {className: 'cell'};
             if (cell && cell.clickHandlers && cell.clickHandlers.length) {
                 cellAttrs.onClick = e => {
+                    if (e.which !== 1) { return; }
                     cell.clickHandlers.forEach(fn => fn(cell, e));
                 };
             }

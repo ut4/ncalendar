@@ -17,6 +17,12 @@ define(['src/ComponentConstruct'], (ComponentConstruct) => {
             this.loadCount++;
             return Promise.resolve('foo');
         }
+        setLoadCount(loadCount) {
+            this.loadCount = loadCount;
+        }
+        triggerContentRefresh() {
+            this.contentController.refresh();
+        }
         decorateCell(cell) {
             cell.children.push(
                 new ComponentConstruct.default(someComponent, {loadCount: this.loadCount})

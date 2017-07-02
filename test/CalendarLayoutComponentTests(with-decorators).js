@@ -38,11 +38,37 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             this.contentLoadCallSpy.firstCall.returnValue.then(() => {
                 const renderedRows = getRenderedRows(rendered);
                 assert.equal(Constants.HOURS_IN_DAY, renderedRows.length);
-                const expectedDecorating = expectedTestLayer.loadCount.toString();
-                const decoratings = expectedDecorating.repeat(Constants.DAYS_IN_WEEK);
                 assert.ok(
-                    renderedRows.every(row => row.textContent.indexOf(decoratings) > -1),
+                    isEveryCellDecoratedWith(rendered, expectedTestLayer.loadCount),
                     'Jokainen solu pitäisi olla dekoroitu'
+                );
+                done();
+            });
+        });
+        QUnit.test('contentController.refresh ajaa sisältökerroksen uudestaan', assert => {
+            const rendered = render();
+            const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+            //
+            const done = assert.async();
+            this.contentLoadCallSpy.firstCall.returnValue.then(() => {
+                const decoratingSpy = sinon.spy(expectedTestLayer, 'decorateCell');
+                this.contentLoadCallSpy.reset();
+                // Päivitä dekoroitava luku, ja triggeröi contentController.refresh
+                const newDecorating = 45;
+                expectedTestLayer.setLoadCount(newDecorating);
+                expectedTestLayer.triggerContentRefresh();
+                assert.ok(
+                    decoratingSpy.callCount,
+                    Constants.DAYS_IN_WEEK * Constants.HOURS_IN_DAY,
+                    'Pitäisi ajaa layerin dekorointi uudelleen'
+                );
+                assert.ok(
+                    isEveryCellDecoratedWith(rendered, newDecorating),
+                    'Jokainen solu pitäisi olla uudelleendekoroitu'
+                );
+                assert.ok(
+                    this.contentLoadCallSpy.notCalled,
+                    'Ei pitäisi uudelleenladata sisältöä'
                 );
                 done();
             });
@@ -112,6 +138,12 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
                 done();
             });
         }
+        function isEveryCellDecoratedWith(rendered, what) {
+            const combinedCellContents = what.toString().repeat(Constants.DAYS_IN_WEEK);
+            return getRenderedRows(rendered).every(row =>
+                row.textContent.indexOf(combinedCellContents) > -1
+            );
+        }
         function getRenderedRows(rendered) {
             return Array.prototype.slice.call(Inferno.TestUtils.scryRenderedDOMElementsWithClass(
                 rendered, 'row'
@@ -121,7 +153,7 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             return Inferno.TestUtils.findRenderedVNodeWithType(rendered, Content.default).children.contentLayers || [];
         }
         function isProbablyContentController(object) {
-            return object instanceof Object && object.hasOwnProperty('update');
+            return object instanceof Object && object.hasOwnProperty('refresh');
         }
         function isProbablyCalendarController(object) {
             return object instanceof Object && object.hasOwnProperty('changeView');
