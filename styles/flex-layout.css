@@ -2,7 +2,7 @@
 .row { display: flex }
 .row .col { flex: 1 1 0% }
 /* -- cal ------------------------------------------------------------------- */
-.cal { min-width: 420px }
+.cal { min-width: 420px; position: relative }
     .cal .col { border-left: 1px solid #DDD }
     .cal .col:first-of-type { border-left: none }
 /* -- toolbar --------------------------------------------------------------- */
@@ -16,7 +16,7 @@
             .cal .header .cell { height: 20px/*; border-bottom: 1px solid #DDD*/ }
 /* -- main ------------------------------------------------------------------ */
 .cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
-    .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; position: relative }
+    .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; height: 100%; position: relative }
     .main > .row:first-of-type .cell { border-top: none }
         .event { height: 100%; margin-bottom: 2px }
         .event:last-of-type { margin-bottom: 0 }
@@ -29,3 +29,11 @@
 /* -- day-view -------------------------------------------------------------- */
     .cal.day .header .col:first-of-type,
     .cal.day .main .col:first-of-type { flex: 0 0 56px }
+/* -- modal -------------------------------------------------------------- */
+.modal { display: block; box-sizing: border-box; height: 100%; width: 100%;
+    position: absolute; padding: 10px; z-index: 1; background-color: rgba(0,0,0,0.5);
+    border-radius: 2px; }
+.modal-content { max-width: 560px; max-height: 100%; margin: 0 auto; padding: 10px 10px 0;
+    box-sizing: border-box; overflow-y: auto; background-color: #FFFFFF; border-radius: 2px; }
+.modal-content:after { /* puskee scroll tilassa paddingia */ content: ""; display: block;
+    margin-bottom: 10px; }

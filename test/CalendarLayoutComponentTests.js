@@ -1,4 +1,4 @@
-define(['src/CalendarLayout', 'src/Constants', 'src/Toolbar', 'src/Header', 'src/ViewLayouts'], (CalendarLayout, Constants, Toolbar, Header, ViewLayouts) => {
+define(['src/CalendarLayout', 'src/Modal', 'src/Toolbar', 'src/Header', 'src/ViewLayouts', 'src/Constants'], (CalendarLayout, Modal, Toolbar, Header, ViewLayouts, Constants) => {
     'use strict';
     QUnit.module('CalendarLayoutComponent', () => {
         const render = viewName => {
@@ -10,18 +10,24 @@ define(['src/CalendarLayout', 'src/Constants', 'src/Toolbar', 'src/Header', 'src
         QUnit.test('renderöi kalenterin Constants.VIEW_DEFAULT-muodossa', assert => {
             render();
             const expectedView = this.initialView;
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Modal.default), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Toolbar.default), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedView]), undefined);
-            const layout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
-            assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[expectedView], true);
+            const calendarLayout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
+            assert.equal(calendarLayout.children.state.viewLayout instanceof ViewLayouts[expectedView], true);
         });
         QUnit.test('renderöi kalenterin props.settings.defaultView-muodossa', assert => {
             const expectedInitialView = Constants.VIEW_DAY;
             render(expectedInitialView);
+            assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Modal.default), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Toolbar.default), undefined);
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedInitialView]), undefined);
-            const layout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
-            assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[expectedInitialView], true);
+            const calendarLayout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
+            assert.equal(calendarLayout.children.state.viewLayout instanceof ViewLayouts[expectedInitialView], true);
+        });
+        QUnit.test('Asettaa modalin propertyksi', assert => {
+            const calendarLayout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
+            assert.ok(calendarLayout.children.modal instanceof Modal.default);
         });
         QUnit.test('Toolbarin month-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEW_MONTH', assert => {
             render();
@@ -32,8 +38,8 @@ define(['src/CalendarLayout', 'src/Constants', 'src/Toolbar', 'src/Header', 'src
             monthViewButton.click();
             // Assertoi että vaihtui
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedNewView]), undefined);
-            const layout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
-            assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[expectedNewView], true);
+            const calendarLayout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
+            assert.equal(calendarLayout.children.state.viewLayout instanceof ViewLayouts[expectedNewView], true);
         });
         QUnit.test('Toolbarin week-näkymänavigaatiopainike ei vaihda näkymää', assert => {
             render();
@@ -44,23 +50,23 @@ define(['src/CalendarLayout', 'src/Constants', 'src/Toolbar', 'src/Header', 'src
             weekViewButton.click();
             // Assertoi että ei vaihtunut
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[this.initialView]), undefined);
-            const layout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
-            assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[this.initialView], true);
+            const calendarLayout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
+            assert.equal(calendarLayout.children.state.viewLayout instanceof ViewLayouts[this.initialView], true);
         });
         QUnit.test('Toolbarin day-näkymänavigaatiopainike vaihtaa näkymän muotoon Constants.VIEW_DAY', assert => {
             render();
             const expectedNewView = Constants.VIEW_DAY;
             // Assertoi alkuperäinen näkymä
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[this.initialView]), undefined);
-            const layout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
-            assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[this.initialView], true);
+            const calendarLayout = Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, CalendarLayout.default);
+            assert.equal(calendarLayout.children.state.viewLayout instanceof ViewLayouts[this.initialView], true);
             // Paina nappia
             const buttons = Inferno.TestUtils.scryRenderedDOMElementsWithTag(this.rendered, 'button');
             const dayViewButton = Array.from(buttons).find(el => el.textContent === 'Päivä');
             dayViewButton.click();
             // Assertoi että vaihtui
             assert.notEqual(Inferno.TestUtils.findRenderedVNodeWithType(this.rendered, Header[expectedNewView]), undefined);
-            assert.equal(layout.children.state.viewLayout instanceof ViewLayouts[expectedNewView], true);
+            assert.equal(calendarLayout.children.state.viewLayout instanceof ViewLayouts[expectedNewView], true);
         });
     });
 });

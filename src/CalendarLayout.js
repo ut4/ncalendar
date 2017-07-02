@@ -1,4 +1,4 @@
-define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 'src/settingsFactory'], (Toolbar, Constants, ViewLayouts, DateCursors, settingsFactory) => {
+define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 'src/settingsFactory'], (Modal, Toolbar, ViewLayouts, DateCursors, Constants, settingsFactory) => {
     'use strict';
     const smallScreenCondition = window.matchMedia('(max-width:800px)');
     /*
@@ -101,6 +101,9 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 's
                 this.state.smallScreenConditionMaches
             );
             return $el('div', {className},
+                $el(Modal.default, {ref: cmp => {
+                    this.modal = cmp;
+                }}),
                 $el(Toolbar.default, {
                     calendarController: this.controller,
                     titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
@@ -135,6 +138,12 @@ define(['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 's
             },
             changeView: to => {
                 return component.changeView(to);
+            },
+            openModal: componentConstruct => {
+                component.modal.open(componentConstruct);
+            },
+            closeModal: () => {
+                component.modal.close();
             }
         };
     }
