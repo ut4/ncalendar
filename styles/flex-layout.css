@@ -18,11 +18,8 @@
 .cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
     .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; height: 100%; position: relative }
     .main > .row:first-of-type .cell { border-top: none }
-        .event { height: 100%; margin-bottom: 2px }
-        .event:last-of-type { margin-bottom: 0 }
 /* -- month-view ------------------------------------------------------------ */
     .cal.month .main .cell { min-height: 80px }
-        .month .event { height: auto }
 /* -- week-view ------------------------------------------------------------- */
     .cal.week .header .col:first-of-type,
     .cal.week .main .col:first-of-type,
