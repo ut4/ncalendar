@@ -1,0 +1,11 @@
+/* -- layout ---------------------------------------------------------------- */
+.event { margin-bottom: 2px; background-color: rgba(0,0,0,0.2) }
+.event:last-of-type { margin-bottom: 0 }
+    .event button { float: right; padding: 3px 2px 4px; margin: 2px; line-height: 0;
+        font-size: 8px; cursor: pointer }
+    .event button:first-of-type { margin-left: 0 }
+
+/* -- theme ----------------------------------------------------------------- */
+.event { background-color: lightpink; border-radius: 3px }
+    .event button { padding: 6px 5px 7px; border: none; background: rgba(0,0,0,0.2);
+        border-radius: 2px; color: #fff }
