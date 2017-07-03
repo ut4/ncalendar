@@ -8,4 +8,3 @@
         .cal .col:first-of-type .cell:before { display: none }
         .cal.week .col.today { background-color: #FCF8E3 }
             .cal.month .main .cell:before { content: initial }
-            .event { background-color: lightpink; border-radius: 3px }

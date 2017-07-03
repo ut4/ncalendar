@@ -15,6 +15,14 @@ define(() => {
         findButtonByContent: (rendered, content) => {
             const allButtons = Inferno.TestUtils.scryRenderedDOMElementsWithTag(rendered, 'button');
             return Array.from(allButtons).find(el => el.textContent === content);
+        },
+        /**
+         * Triggeröi DOM-tapahtuma {eventType} elementissä {el}.
+         */
+        triggerEvent: (eventType, el) => {
+            const event = document.createEvent('HTMLEvents');
+            event.initEvent(eventType, false, true);
+            el.dispatchEvent(event);
         }
     };
     return {domUtils};
