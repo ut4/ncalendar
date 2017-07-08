@@ -35,6 +35,6 @@ require(['nullcalendar', 'src/event/InMemoryEventRepository', 'src/event/EventLa
     nullcalendar.registerContentLayer('event', MyEventLayer);
     // Määrittele rekisteröity layeri ladattavaksi.
     nullcalendar.newCalendar(document.getElementById('cal'),
-        {settings: {contentLayers: ['event']}}
+        {contentLayers: ['event']}
     );
 });

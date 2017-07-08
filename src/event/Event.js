@@ -4,7 +4,7 @@ define(() => {
         EDIT: 'edit',
         DELETE: 'delete'
     };
-    class Event extends Inferno.Component {
+    class Event extends React.Component {
         /**
          * @param {Object} props {
          *     event: {Object},
@@ -20,7 +20,7 @@ define(() => {
          */
         receiveClick(action, e) {
             e.stopPropagation();
-            if (e.which !== 1) {
+            if (e.which && e.which !== 1) {
                 return;
             }
             this.props[action](this.props.event, e);

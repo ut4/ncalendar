@@ -1,6 +1,6 @@
 define(['src/ioc', 'test/resources/Utils', 'src/CalendarLayout', 'src/Content', 'src/event/EventLayer', 'src/event/InMemoryEventRepository'], (ioc, Utils, CalendarLayout, Content, EventLayer, InMemoryEventRepository) => {
     'use strict';
-    const itu = Inferno.TestUtils;
+    const rtu = ReactTestUtils;
     const now = new Date();
     const testEvents = [
         {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 1'},
@@ -19,7 +19,7 @@ define(['src/ioc', 'test/resources/Utils', 'src/CalendarLayout', 'src/Content', 
     QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', hooks => {
         hooks.beforeEach(() => {
             this.contentLoadCallSpy = sinon.spy(Content.default.prototype, 'loadAsyncContent');
-            this.rendered = itu.renderIntoDocument(
+            this.rendered = rtu.renderIntoDocument(
                 $el(CalendarLayout.default, {settings: {
                     contentLayers: ['eventasd']
                 }})
@@ -49,14 +49,14 @@ define(['src/ioc', 'test/resources/Utils', 'src/CalendarLayout', 'src/Content', 
                 const repositoryInsertSpy = sinon.spy(repository, 'insert');
                 // Triggeröi klikkaus
                 const mondayAt0Am = hourRows[0].children[1].children[0];
-                mondayAt0Am.click();
+                rtu.Simulate.click(mondayAt0Am);
                 const inputs = getRenderedInputs(this.rendered);
-                assert.equal(inputs.length, 2, 'Pitäisi avata modalin');
+                assert.equal(inputs.length, 2, 'Pitäisi avata modal');
                 const data = {title: 'Foo', date: getSomeDateString()};
                 // Triggeröi lomakkeen submit
-                inputs[0].value = data.title; Utils.domUtils.triggerEvent('input', inputs[0]);
-                inputs[1].value = data.date; Utils.domUtils.triggerEvent('input', inputs[1]);
-                Utils.domUtils.findButtonByContent(this.rendered, 'Ok').click();
+                inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
+                inputs[1].value = data.date; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
+                rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, 'Ok'));
                 // Assertoi että luo tapahtuman ja renderöi sen kalenteriin
                 assert.equal(getRenderedInputs(this.rendered).length, 0, 'Pitäisi sulkea modalin');
                 assert.ok(repositoryInsertSpy.calledOnce, 'Pitäisi kutsua repository.insert');
@@ -87,15 +87,15 @@ define(['src/ioc', 'test/resources/Utils', 'src/CalendarLayout', 'src/Content', 
                 const repositoryUpdateSpy = sinon.spy(repository, 'update');
                 // Triggeröi klikkaus
                 const eventEditButton = renderedEvents[0].querySelector('button[title="Muokkaa"]');
-                eventEditButton.click();
+                rtu.Simulate.click(eventEditButton);
                 const inputs = getRenderedInputs(this.rendered);
                 assert.equal(inputs.length, 2, 'Pitäisi avata modalin');
                 // Simuloi lomakkeen submit
                 const data = {title: 'Holyy', date: getSomeDateString()};
-                inputs[0].value = data.title; Utils.domUtils.triggerEvent('input', inputs[0]);
-                inputs[1].value = data.date; Utils.domUtils.triggerEvent('input', inputs[1]);
+                inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
+                inputs[1].value = data.date; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
                 const expectedCurrentEvent = testEvents[0];
-                Utils.domUtils.findButtonByContent(this.rendered, 'Ok').click();
+                rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, 'Ok'));
                 // Assertoi että päivitti tapahtuman ja uudelleenrenderöi kalenterin oikein
                 assert.equal(getRenderedInputs(this.rendered).length, 0, 'Pitäisi sulkea modalin');
                 assert.ok(repositoryUpdateSpy.calledOnce, 'Pitäisi kutsua repository.update');
@@ -135,7 +135,7 @@ define(['src/ioc', 'test/resources/Utils', 'src/CalendarLayout', 'src/Content', 
                 const repositoryDeleteSpy = sinon.spy(repository, 'delete');
                 // Triggeröi klikkaus
                 const deleteEditButton = renderedEvents[0].querySelector('button[title="Poista"]');
-                deleteEditButton.click();
+                rtu.Simulate.click(deleteEditButton);
                 // Assertoi että poistaa tapahtuman ja uudelleenrenderöi kalenterin
                 assert.ok(repositoryDeleteSpy.calledOnce, 'Pitäisi kutsua repository.delete');
                 assert.deepEqual(
@@ -154,13 +154,13 @@ define(['src/ioc', 'test/resources/Utils', 'src/CalendarLayout', 'src/Content', 
         });
     });
     function getRenderedInputs(rendered) {
-        return itu.scryRenderedDOMElementsWithTag(rendered, 'input');
+        return rtu.scryRenderedDOMComponentsWithTag(rendered, 'input');
     }
     function getRenderedEvents(rendered) {
-        return itu.scryRenderedDOMElementsWithClass(rendered, 'event');
+        return rtu.scryRenderedDOMComponentsWithClass(rendered, 'event');
     }
     function getRenderedRows(rendered) {
-        return itu.findRenderedDOMElementWithClass(rendered, 'main').children;
+        return rtu.findRenderedDOMComponentWithClass(rendered, 'main').children;
     }
     function getSomeDateString(hour = 2) {
         const date = new Date(testEvents[0].date);
