@@ -10,8 +10,9 @@ define(['src/CalendarLayout', 'src/ioc'], (CalendarLayout, ioc) => {
          * @param {Object} settings Kalenterin configuraatio
          * @return {Object} Kalenteri-instanssin kontrolleri/API
          */
-        newCalendar: (el, settings) =>
-            Inferno.render($el(CalendarLayout.default, settings), el).getController(),
+        newCalendar: (el, settings) => {
+            return ReactDOM.render($el(CalendarLayout.default, settings ? {settings} : undefined), el).getController();
+        },
         /**
          * @param {string} name Nimi, jolla rekisteröidään
          * @param {Object} Class Sisältökerroksen implementaatio

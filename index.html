@@ -12,8 +12,10 @@
 </head>
 <body>
     <div id="cal"></div>
-    <script src="vendor/app-vendor.js"></script>
-    <script>window.$el = Inferno.createElement;</script>
+    <!-- 1. preact setup <script src="vendor/app-vendor-preact.js"></script> -->
+    <!-- 2. Inferno setup --> <script src="vendor/app-vendor-inferno.js"></script>
+    <!-- 3. React setup <script src="vendor/app-vendor-react.js"></script> -->
     <script data-main="main" src="vendor/require.js"></script>
+    <script src="app-header.js"></script>
 </body>
 </html>

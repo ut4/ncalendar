@@ -12,7 +12,7 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             TestContentLayer.default.testClickHandler.restore();
         });
         const render = (contentLayers = ['atest']) => {
-            return Inferno.TestUtils.renderIntoDocument($el(CalendarLayout.default, {settings: {
+            return ReactTestUtils.renderIntoDocument($el(CalendarLayout.default, {settings: {
                 defaultView: Constants.VIEW_WEEK,
                 contentLayers: contentLayers
             }}));
@@ -78,22 +78,25 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             //
             const done = assert.async();
             this.contentLoadCallSpy.firstCall.returnValue.then(() => {
-                const renderedRows = getRenderedRows(rendered);
-                // .row        .col(ma)    .cell
-                renderedRows[0].children[1].children[0].click(); // ma, pitäisi olla klikattava
-                renderedRows[0].children[2].children[0].click(); // ti, ei pitäisi olla klikattava
+                const firstHourRow = getRenderedRows(rendered)[0];
+                //                 .row       .col         .cell
+                const mondayCell = firstHourRow.children[1].children[0];
+                const tuesDayCell = firstHourRow.children[2].children[0];
+                ReactTestUtils.Simulate.click(mondayCell); // pitäisi olla klikattava
+                ReactTestUtils.Simulate.click(tuesDayCell); // ei pitäisi olla klikattava
                 assert.ok(
                     this.clickHandlerSpy.calledOnce,
-                    'Olisi pitänyt rekisteröidä handlerin ensimmäiseen celliin'
+                    'Pitäisi kutsua testilayerin lisäämää click-handleria'
                 );
                 assert.deepEqual(2, this.clickHandlerSpy.firstCall.args.length);
                 assert.ok(
                     this.clickHandlerSpy.firstCall.args[0] instanceof Content.Cell,
-                    'Handlerin 1. argumentti pitäis olla Cell-instanssi'
+                    'Handlerin 1. argumentti pitäisi olla Cell-instanssi'
                 );
-                assert.ok(
-                    this.clickHandlerSpy.firstCall.args[1] instanceof Event,
-                    'Handlerin 2. argumentti pitäis olla click-event'
+                assert.equal(
+                    typeof this.clickHandlerSpy.firstCall.args[1].preventDefault,
+                    'function',
+                    'Handlerin 2. argumentti pitäisi olla click-event'
                 );
                 done();
             });
@@ -104,7 +107,7 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
                 'Ei pitäisi instantioida sisältökerroksia'
             );
             // Triggöi navigaatiotapahtuma
-            domUtils.findButtonByContent(rendered, '<').click();
+            ReactTestUtils.Simulate.click(domUtils.findButtonByContent(rendered, '<'));
             //
             assert.ok(
                 this.contentLoadCallSpy.notCalled,
@@ -128,7 +131,7 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
                 contentBefore = domUtils.getElementContent(rendered, '.main');
                 this.contentLoadCallSpy.reset();
                 // Triggöi navigaatiotapahtuma
-                domUtils.findButtonByContent(rendered, buttonContent).click();
+                ReactTestUtils.Simulate.click(domUtils.findButtonByContent(rendered, buttonContent));
                 //
                 assert.ok(this.contentLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerros uudelleen');
                 return this.contentLoadCallSpy.firstCall.returnValue;
@@ -145,12 +148,12 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             );
         }
         function getRenderedRows(rendered) {
-            return Array.prototype.slice.call(Inferno.TestUtils.scryRenderedDOMElementsWithClass(
+            return Array.prototype.slice.call(ReactTestUtils.scryRenderedDOMComponentsWithClass(
                 rendered, 'row'
             )).slice(2);// toolbarin, ja headerin rivit pois
         }
         function getInstantiatedLayers(rendered) {
-            return Inferno.TestUtils.findRenderedVNodeWithType(rendered, Content.default).children.contentLayers || [];
+            return ReactTestUtils.findRenderedComponentWithType(rendered, Content.default).contentLayers || [];
         }
         function isProbablyContentController(object) {
             return object instanceof Object && object.hasOwnProperty('refresh');

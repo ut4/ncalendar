@@ -27,7 +27,7 @@ define(['src/Constants'], Constants => {
      * |         Content           |
      * |___________________________|
      */
-    class Toolbar extends Inferno.Component {
+    class Toolbar extends React.Component {
         /**
          * @param {object} props {
          *     calendarController: {Object},
