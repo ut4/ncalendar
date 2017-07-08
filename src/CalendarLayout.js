@@ -4,7 +4,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
     /*
      * Kalenterin juurikomponentti.
      */
-    class CalendarLayout extends Inferno.Component {
+    class CalendarLayout extends React.Component {
         /**
          * @param {object} props {
          *     settings: {
@@ -16,7 +16,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          */
         constructor(props) {
             super(props);
-            this.settings = settingsFactory.default(props.settings || {});
+            this.settings = settingsFactory.default(this.props.settings || {});
             const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};
             state.currentView = this.settings.defaultView;
             state.viewLayout = this.newViewLayout(state.currentView, state.dateCursor);

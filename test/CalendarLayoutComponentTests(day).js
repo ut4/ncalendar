@@ -4,7 +4,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
     QUnit.module('CalendarLayoutComponent(day)', hooks => {
         const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
         hooks.beforeEach(() => {
-            this.rendered = Inferno.TestUtils.renderIntoDocument(
+            this.rendered = ReactTestUtils.renderIntoDocument(
                 $el(CalendarLayout.default, {settings: {
                     defaultView: Constants.VIEW_DAY,
                     titleFormatters: {[Constants.VIEW_DAY]: titleFormatter}
@@ -16,7 +16,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             const initialHeaderlineContent = domUtils.getElementContent(this.rendered, '.header');
             // Paina nappia
             const nextDayButton = domUtils.findButtonByContent(this.rendered, '>');
-            nextDayButton.click();
+            ReactTestUtils.Simulate.click(nextDayButton);
             // Simuloi next-toiminto
             this.replicatedCursor.next();
             // Assertoi että title päivittyi seuraavaan päivään
@@ -31,7 +31,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             const initialHeaderlineContent = domUtils.getElementContent(this.rendered, '.header');
             // Paina nappia
             const prevDayButton = domUtils.findButtonByContent(this.rendered, '<');
-            prevDayButton.click();
+            ReactTestUtils.Simulate.click(prevDayButton);
             // Simuloi prev-toiminto
             this.replicatedCursor.prev();
             // Assertoi että title päivittyi edelliseen päivään
@@ -47,11 +47,11 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             const initialHeaderlineContent = domUtils.getElementContent(this.rendered, '.header');
             // Mene pari sivullista eteenpäin
             const nextDayButton = domUtils.findButtonByContent(this.rendered, '>');
-            nextDayButton.click();
-            nextDayButton.click();
+            ReactTestUtils.Simulate.click(nextDayButton);
+            ReactTestUtils.Simulate.click(nextDayButton);
             // Siirrä takaisin tälle viikolle
             const currentDayButton = domUtils.findButtonByContent(this.rendered, 'Tänään');
-            currentDayButton.click();
+            ReactTestUtils.Simulate.click(currentDayButton);
             // Assertoi että palautui tälle viikolle
             const titleContentAfter = domUtils.getElementContent(this.rendered, 'h2');
             assert.equal(titleContentAfter, initialTitleContent);

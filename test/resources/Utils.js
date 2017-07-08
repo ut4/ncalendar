@@ -6,14 +6,14 @@ define(() => {
          * (textContent).
          */
         getElementContent: (rendered, tagOrClass) => tagOrClass.charAt(0) !== '.'
-            ? Inferno.TestUtils.findRenderedDOMElementWithTag(rendered, tagOrClass).textContent
-            : Inferno.TestUtils.findRenderedDOMElementWithClass(rendered, tagOrClass.substr(1)).textContent,
+            ? ReactTestUtils.findRenderedDOMComponentWithTag(rendered, tagOrClass).textContent
+            : ReactTestUtils.findRenderedDOMComponentWithClass(rendered, tagOrClass.substr(1)).textContent,
         /**
          * Palauttaa ensimmäisen löytämänsä <button>-elementin, jonka
          * textContent on täysin sama kuin {content}.
          */
         findButtonByContent: (rendered, content) => {
-            const allButtons = Inferno.TestUtils.scryRenderedDOMElementsWithTag(rendered, 'button');
+            const allButtons = ReactTestUtils.scryRenderedDOMComponentsWithTag(rendered, 'button');
             return Array.from(allButtons).find(el => el.textContent === content);
         },
         /**

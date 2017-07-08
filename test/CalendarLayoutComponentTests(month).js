@@ -4,7 +4,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
     QUnit.module('CalendarLayoutComponent(month)', hooks => {
         const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
         hooks.beforeEach(() => {
-            this.rendered = Inferno.TestUtils.renderIntoDocument(
+            this.rendered = ReactTestUtils.renderIntoDocument(
                 $el(CalendarLayout.default, {settings: {
                     defaultView: Constants.VIEW_MONTH,
                     titleFormatters: {[Constants.VIEW_MONTH]: titleFormatter}
@@ -15,7 +15,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
         QUnit.test('Toolbarin next-sivutuspainike päivittää titlen', assert => {
             // Paina nappia
             const nextMonthButton = domUtils.findButtonByContent(this.rendered, '>');
-            nextMonthButton.click();
+            ReactTestUtils.Simulate.click(nextMonthButton);
             // Simuloi next-toiminto
             this.replicatedCursor.next();
             // Assertoi että title päivittyi seuraavaan kuukauteen
@@ -25,7 +25,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
         QUnit.test('Toolbarin prev-sivutuspainike päivittää titlen', assert => {
             // Paina nappia
             const prevMonthButton = domUtils.findButtonByContent(this.rendered, '<');
-            prevMonthButton.click();
+            ReactTestUtils.Simulate.click(prevMonthButton);
             // Simuloi prev-toiminto
             this.replicatedCursor.prev();
             // Assertoi että title päivittyi edelliseen kuukauteen
@@ -36,11 +36,11 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             const initialTitleContent = domUtils.getElementContent(this.rendered, 'h2');
             // Mene pari sivullista eteenpäin
             const nextMonthButton = domUtils.findButtonByContent(this.rendered, '>');
-            nextMonthButton.click();
-            nextMonthButton.click();
+            ReactTestUtils.Simulate.click(nextMonthButton);
+            ReactTestUtils.Simulate.click(nextMonthButton);
             // Siirrä takaisin tälle kuukaudelle
             const currentMonthButton = domUtils.findButtonByContent(this.rendered, 'Tänään');
-            currentMonthButton.click();
+            ReactTestUtils.Simulate.click(currentMonthButton);
             // Assertoi että palautui tälle kuukaudelle
             const titleContentAfter = domUtils.getElementContent(this.rendered, 'h2');
             assert.equal(titleContentAfter, initialTitleContent);
