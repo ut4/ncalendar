@@ -37,7 +37,7 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             const done = assert.async();
             this.contentLoadCallSpy.firstCall.returnValue.then(() => {
                 const renderedRows = getRenderedRows(rendered);
-                assert.equal(Constants.HOURS_IN_DAY, renderedRows.length);
+                assert.equal(renderedRows.length, Constants.HOURS_IN_DAY);
                 assert.ok(
                     isEveryCellDecoratedWith(rendered, expectedTestLayer.loadCount),
                     'Jokainen solu pitäisi olla dekoroitu'
@@ -88,7 +88,7 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
                     this.clickHandlerSpy.calledOnce,
                     'Pitäisi kutsua testilayerin lisäämää click-handleria'
                 );
-                assert.deepEqual(2, this.clickHandlerSpy.firstCall.args.length);
+                assert.deepEqual(this.clickHandlerSpy.firstCall.args.length, 2);
                 assert.ok(
                     this.clickHandlerSpy.firstCall.args[0] instanceof Content.Cell,
                     'Handlerin 1. argumentti pitäisi olla Cell-instanssi'
@@ -103,7 +103,7 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
         });
         QUnit.test('Ei lataa sisältökerroksia jos niitä ei ole valittu', assert => {
             const rendered = render([]);
-            assert.equal(0, getInstantiatedLayers(rendered).length,
+            assert.equal(getInstantiatedLayers(rendered).length, 0,
                 'Ei pitäisi instantioida sisältökerroksia'
             );
             // Triggöi navigaatiotapahtuma

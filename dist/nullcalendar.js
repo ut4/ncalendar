@@ -1,3 +1,7 @@
+/**
+ * @license nullcalendar
+ * Released under BSD-3-Clause license.
+ */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         //Allow using this built library as an AMD module
@@ -447,8 +451,69 @@ var requirejs, require, define;
     };
 }());
 
-define("vendor/almond", function(){});
+// 1. window.React && window.ReactDOM
+if (window.Inferno) {
+    window.React = Inferno;
+    window.React.ON_INPUT = 'onInput';
+    window.ReactDOM = Inferno;
+} else if (window.preact) {
+    window.React = preact;
+    window.React.ON_INPUT = 'onInput';
+    window.ReactDOM = {render: (component, containerNode, replaceNode) =>
+        preact.render(component, containerNode, replaceNode)._component
+    };
+} else if (window.React) {
+    window.React.ON_INPUT = 'onChange';
+} else {
+    throw new Error('nullcalendar tarvitsee Inferno, preact, tai React\'n toimiakseen');
+}
+// 2. window.$el
+window.$el = React.createElement;
 
+define('src/Modal',[],() => {
+    'use strict';
+    /**
+     * Kalenterikontrolleri/API:n kautta avattava/suljettava näkymä, johon voidaan
+     * ladata custom-sisältöä.
+     */
+    class Modal extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {contentConstruct: null};
+        }
+        /**
+         * @access public
+         * @param {ComponentConstruct} construct
+         */
+        open(construct) {
+            this.setState({contentConstruct: construct});
+        }
+        /**
+         * @access public
+         */
+        close() {
+            this.setState({contentConstruct: null});
+        }
+        /**
+         * Renderöi modalin, tai ei tee mitään jos sisältöa ei ole asetettu.
+         */
+        render() {
+            return this.state.contentConstruct
+                ? $el('div', {className: 'modal'},
+                    $el('div', {className: 'modal-content'},
+                        $el(
+                            this.state.contentConstruct.Component,
+                            Object.assign({}, this.state.contentConstruct.props, {
+                                closeModal: () => this.close()
+                            })
+                        )
+                    )
+                )
+                : null;
+        }
+    }
+    return {default: Modal};
+});
 define('src/Constants',[],() => {
     'use strict';
     return Object.freeze({
@@ -490,12 +555,10 @@ define('src/Toolbar',['src/Constants'], Constants => {
      * |         Content           |
      * |___________________________|
      */
-    class Toolbar extends Inferno.Component {
+    class Toolbar extends React.Component {
         /**
          * @param {object} props {
-         *     currentView: {string},
-         *     dateCursor: {DateCursor}
-         *     onViewChange: {Function},
+         *     calendarController: {Object},
          *     titleFormatter: {Function=}
          * }
          */
@@ -503,20 +566,21 @@ define('src/Toolbar',['src/Constants'], Constants => {
             super(props);
         }
         render() {
+            const ctrl = this.props.calendarController;
             return $el('div', {className: 'toolbar'},
                 $el('div', {className: 'row'},
                     $el('div', {className: 'col'},
-                        $el('button', {onClick: this.props.dateCursor.prev.bind(this.props.dateCursor)}, '<'),
-                        $el('button', {onClick: this.props.dateCursor.next.bind(this.props.dateCursor)}, '>'),
-                        $el('button', {onClick: this.props.dateCursor.reset.bind(this.props.dateCursor)}, 'Tänään')
+                        $el('button', {onClick: () => ctrl.dateCursor.prev() }, '<'),
+                        $el('button', {onClick: () => ctrl.dateCursor.next() }, '>'),
+                        $el('button', {onClick: () => ctrl.dateCursor.reset() }, 'Tänään')
                     ),
                     $el('div', {className: 'col'},
-                        $el('h2', null, (this.props.titleFormatter || titleFormatters[this.props.currentView])(this.props.dateCursor.range))
+                        $el('h2', null, (this.props.titleFormatter || titleFormatters[ctrl.currentView])(ctrl.dateCursor.range))
                     ),
                     $el('div', {className: 'col'},
-                        $el('button', {onClick: () => { this.props.onViewChange(Constants.VIEW_MONTH); }}, 'Kuukausi'),
-                        $el('button', {onClick: () => { this.props.onViewChange(Constants.VIEW_WEEK); }}, 'Viikko'),
-                        $el('button', {onClick: () => { this.props.onViewChange(Constants.VIEW_DAY); }}, 'Päivä')
+                        $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_MONTH); }}, 'Kuukausi'),
+                        $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_WEEK); }}, 'Viikko'),
+                        $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_DAY); }}, 'Päivä')
                     )
                 )
             );
@@ -651,7 +715,7 @@ define('src/Header',['src/Constants', 'src/ioc'], (Constants, ioc) => {
      * |         Content           |
      * |___________________________|
      */
-    class DayHeader extends Inferno.Component {
+    class DayHeader extends React.Component {
         /**
          * @param {object} props {dateCursor: {DateCursor}}
          */
@@ -686,7 +750,7 @@ define('src/Header',['src/Constants', 'src/ioc'], (Constants, ioc) => {
     /*
      * Headerline week-muodossa.
      */
-    class WeekHeader extends Inferno.Component {
+    class WeekHeader extends React.Component {
         /**
          * @param {object} props
          */
@@ -704,7 +768,7 @@ define('src/Header',['src/Constants', 'src/ioc'], (Constants, ioc) => {
             return $el('div', {className: 'header'},
                 $el('div', {className: 'row'},
                     ([''].concat(this.DAYS)).map(content =>
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, content))
+                        $el('div', {key: content, className: 'col'}, $el('div', {className: 'cell'}, content))
                     )
                 )
             );
@@ -713,7 +777,7 @@ define('src/Header',['src/Constants', 'src/ioc'], (Constants, ioc) => {
     /*
      * Headerline month-muodossa.
      */
-    class MonthHeader extends Inferno.Component {
+    class MonthHeader extends React.Component {
         /**
          * @param {object} props
          */
@@ -731,7 +795,7 @@ define('src/Header',['src/Constants', 'src/ioc'], (Constants, ioc) => {
             return $el('div', {className: 'header'},
                 $el('div', {className: 'row'},
                     this.DAYS.map(weekDay =>
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, weekDay))
+                        $el('div', {key: weekDay ,className: 'col'}, $el('div', {className: 'cell'}, weekDay))
                     )
                 )
             );
@@ -757,39 +821,51 @@ define('src/Content',['src/Constants', 'src/ioc'], (Constants, ioc) => {
      * |      --> Content <--      |
      * |___________________________|
      */
-    class Content extends Inferno.Component {
+    class Content extends React.Component {
         /**
          * @param {object} props {
          *     grid: {Array},
-         *     selectedContentLayers: {Array},
-         *     dateCursor: {DateCursor},
-         *     currentView: {string},
-         *     isCompactViewEnabled: {boolean}
+         *     calendarController: {Object}
          * }
          */
         constructor(props) {
             super(props);
             this.state = {};
-            this.contentLayerFactory = ioc.default.contentLayerFactory();
-            this.hasAsyncContent = this.props.selectedContentLayers.length > 0;
+            const selectedLayers = this.props.calendarController.settings.contentLayers;
+            this.hasAsyncContent = selectedLayers.length > 0;
             if (this.hasAsyncContent) {
-                this.contentLayers = this.props.selectedContentLayers.map(name =>
-                    this.contentLayerFactory.make(name, [
-                        this.props.dateCursor,
-                        this.props.currentView,
-                        this.props.isCompactViewEnabled
+                const contentLayerFactory = ioc.default.contentLayerFactory();
+                this.contentLayers = selectedLayers.map(name =>
+                    contentLayerFactory.make(name, [
+                        {refresh: () => {
+                            this.applyAsyncContent();
+                            this.forceUpdate();
+                        }},
+                        this.props.calendarController
                     ])
                 );
                 this.loadAsyncContent();
             }
         }
         /**
+         * Poistaa props.gridistä sisältökerroksien modifikaatiot (children &
+         * clickHandlers).
+         */
+        resetGrid() {
+            return this.props.grid.map(rows => rows.map(cell => {
+                if (cell && !(cell instanceof ImmutableCell)) {
+                    cell.children = [];
+                    cell.clickHandlers = [];
+                }
+            }));
+        }
+        /**
          * Triggeröi sisältökerroksien päivityksen, jos niitä on.
          */
-        componentWillReceiveProps(props) {
+        componentWillReceiveProps() {
             if (this.hasAsyncContent) {
                 this.setState({loading: true});
-                this.loadAsyncContent(props);
+                this.loadAsyncContent();
             }
         }
         /**
@@ -797,27 +873,21 @@ define('src/Content',['src/Constants', 'src/ioc'], (Constants, ioc) => {
          *
          * @access private
          */
-        loadAsyncContent(newProps) {
-            if (newProps) {
-                this.contentLayers.map(l => {
-                    l.dateCursor = newProps.dateCursor;
-                    l.currentView = newProps.currentView;
-                    l.isCompactViewEnabled = newProps.isCompactViewEnabled;
-                });
-            }
+        loadAsyncContent() {
             return Promise.all(this.contentLayers.map(l => l.load())).then(() => {
                 this.applyAsyncContent();
                 this.setState({loading: false});
             });
         }
         /**
-         * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa niitä sisältökerroksien
-         * dekoroitavaksi. Sisältökerros voi tällöin esim. lisätä solun children-taulukkoon
-         * omat lisäyksensä.
+         * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne sisältökerroksien
+         * dekoroitavaksi. Sisältökerros voi tällöin esim. lisätä solun children-,
+         * tai clickHandlers-taulukkoon omat lisäyksensä.
          *
          * @access private
          */
         applyAsyncContent() {
+            this.resetGrid();
             this.contentLayers.forEach(layer => {
                 this.props.grid.forEach(row => {
                     row.forEach(cell => {
@@ -829,9 +899,10 @@ define('src/Content',['src/Constants', 'src/ioc'], (Constants, ioc) => {
         /**
          * @access private
          * @param {Cell} cell
+         * @param {string} key
          * @returns {VNode}
          */
-        newCell(cell) {
+        newCell(cell, key) {
             let content;
             if (!cell) {
                 content = '';
@@ -840,8 +911,15 @@ define('src/Content',['src/Constants', 'src/ioc'], (Constants, ioc) => {
             } else {
                 content = this.newTitledContent(cell);
             }
-            return $el('div', {className: 'col'},
-                $el('div', {className: 'cell'}, content)
+            const cellAttrs = {className: 'cell'};
+            if (cell && cell.clickHandlers && cell.clickHandlers.length) {
+                cellAttrs.onClick = e => {
+                    if (e.which && e.which !== 1) { return; }
+                    cell.clickHandlers.forEach(fn => fn(cell, e));
+                };
+            }
+            return $el('div', {className: 'col', key},
+                $el('div', cellAttrs, content)
             );
         }
         /**
@@ -850,20 +928,19 @@ define('src/Content',['src/Constants', 'src/ioc'], (Constants, ioc) => {
          * @returns {VNode}
          */
         newTitledContent(cell) {
-            return $el('span', null,
+            return $el('div', null,
                 // Title
                 cell.content,
                 // Sisältö
-                cell.children.map(child => Array.isArray(child)
-                    ? child.map(construct => $el(construct.Component, construct.props))
-                    : $el(child.Component, child.props)
+                cell.children.map((child, i) =>
+                    $el(child.Component, Object.assign({}, child.props, {key: i}))
                 )
             );
         }
         render() {
-            return $el('div', {className: 'main'}, this.props.grid.map(row =>
-                $el('div', {className: 'row'},
-                    row.map(cell => this.newCell(cell)
+            return $el('div', {className: 'main'}, this.props.grid.map((row, ri) =>
+                $el('div', {className: 'row', key: ri},
+                    row.map((cell, ci) => this.newCell(cell, ri+'.'+ci)
                 ))
             ));
         }
@@ -873,14 +950,16 @@ define('src/Content',['src/Constants', 'src/ioc'], (Constants, ioc) => {
             this.date = date;
             this.content = content;
             this.children = [];
+            this.clickHandlers = [];
         }
     }
+    class PlaceholderCell extends Cell {}
     class ImmutableCell {
         constructor(content) {
             this.content = content;
         }
     }
-    return {default: Content, Cell, ImmutableCell, HOURS_ARRAY};
+    return {default: Content, Cell, ImmutableCell, PlaceholderCell, HOURS_ARRAY};
 });
 define('src/ComponentConstruct',[],() => {
     'use strict';
@@ -1040,7 +1119,7 @@ define('src/WeekViewLayout',['src/AbstractViewLayout', 'src/Content', 'src/Const
                     new Content.Cell(dayNames[5], getDateAndMoveToNexDay())
                 ], [
                     new Content.Cell(dayNames[6], getDateAndMoveToNexDay()),
-                    new Content.ImmutableCell('Tällä viikolla: ? tapahtumaa')
+                    new Content.PlaceholderCell(null, null)
                 ]
             ];
         }
@@ -1323,13 +1402,13 @@ define('src/settingsFactory',['src/Constants'], (Constants) => {
         getValidViewName
     };
 });
-define('src/CalendarLayout',['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 'src/DateCursors', 'src/settingsFactory'], (Toolbar, Constants, ViewLayouts, DateCursors, settingsFactory) => {
+define('src/CalendarLayout',['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 'src/settingsFactory'], (Modal, Toolbar, ViewLayouts, DateCursors, Constants, settingsFactory) => {
     'use strict';
     const smallScreenCondition = window.matchMedia('(max-width:800px)');
     /*
      * Kalenterin juurikomponentti.
      */
-    class CalendarLayout extends Inferno.Component {
+    class CalendarLayout extends React.Component {
         /**
          * @param {object} props {
          *     settings: {
@@ -1341,12 +1420,13 @@ define('src/CalendarLayout',['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 
          */
         constructor(props) {
             super(props);
-            this.settings = settingsFactory.default(props.settings || {});
+            this.settings = settingsFactory.default(this.props.settings || {});
             const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};
             state.currentView = this.settings.defaultView;
             state.viewLayout = this.newViewLayout(state.currentView, state.dateCursor);
             state.smallScreenConditionMaches = smallScreenCondition.matches;
             this.state = state;
+            this.controller = newController(this);
         }
         /**
          * Lisää matchmedia-kuuntelijan.
@@ -1355,9 +1435,16 @@ define('src/CalendarLayout',['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 
             smallScreenCondition.addListener(this.viewPortListener.bind(this));
         }
         /**
-         * Asettaa staten {state.currentView}:in arvoksi {to}, mikäli se ei ole
-         * jo valmiiksi, ja alustaa uuden {state.dateCursor}in, ja {state.viewLayout}in
-         * mikäli näkymä vaihtui.
+         * Palauttaa per-kalenteri-API:n, jonka kautta kalenteria pääsääntöisesti
+         * kontrolloidaan.
+         */
+        getController() {
+            return this.controller;
+        }
+        /**
+         * Vaihtaa kalenterin currentView:iksi {to}, mikäli se ei ole jo valmiiksi,
+         * uudelleeninstantioi dateCursorin, ja triggeröi sisältökerroksien
+         * uudelleenlatauksen.
          *
          * @access public
          * @param {string} to Constants.VIEW_DAY | Constants.VIEW_WEEK | Constants.VIEW_MONTH
@@ -1418,10 +1505,11 @@ define('src/CalendarLayout',['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 
                 this.state.smallScreenConditionMaches
             );
             return $el('div', {className},
+                $el(Modal.default, {ref: cmp => {
+                    this.modal = cmp;
+                }}),
                 $el(Toolbar.default, {
-                    dateCursor: this.state.dateCursor,
-                    currentView: this.state.currentView,
-                    onViewChange: to => this.changeView(to),
+                    calendarController: this.controller,
                     titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
                 }),
                 header !== null && $el(header.Component,
@@ -1429,13 +1517,39 @@ define('src/CalendarLayout',['src/Toolbar', 'src/Constants', 'src/ViewLayouts', 
                 ),
                 $el(content.Component, {
                     grid: content.props.gridGeneratorFn(),
-                    selectedContentLayers: this.settings.contentLayers,
-                    dateCursor: this.state.dateCursor,
-                    currentView: this.state.currentView,
-                    isCompactViewEnabled: this.state.smallScreenConditionMaches
+                    calendarController: this.controller
                 })
             );
         }
+    }
+    /**
+     * Yksittäisen kalenteri-instanssin public API. Käytetään myös sisäisesti
+     * lapsikomponenteissa (Content, Toolbar).
+     */
+    function newController(component) {
+        return {
+            get currentView() {
+                return component.state.currentView;
+            },
+            get dateCursor() {
+                return component.state.dateCursor;
+            },
+            get settings() {
+                return component.settings;
+            },
+            get isCompactViewEnabled() {
+                return component.state.smallScreenConditionMaches;
+            },
+            changeView: to => {
+                return component.changeView(to);
+            },
+            openModal: componentConstruct => {
+                component.modal.open(componentConstruct);
+            },
+            closeModal: () => {
+                component.modal.close();
+            }
+        };
     }
     return {default: CalendarLayout};
 });
@@ -1444,29 +1558,20 @@ define('nullcalendar',['src/CalendarLayout', 'src/ioc'], (CalendarLayout, ioc) =
     'use strict';
     const contentLayerFactory = ioc.default.contentLayerFactory();
     /**
-     * Yksittäisen kalenteri-instanssin public API.
-     */
-    function Nullcalendar(component) {
-        this.currentView = component.currentView;
-        this.dateCursor = component.dateCursor;
-        this.settings = component.settings;
-        this.changeView = to => {
-            return component.changeView(to);
-        };
-    }
-    /**
      * Kirjaston public API.
      */
     return {
         /**
          * @param {HTMLElement} el DOM-elementti johon kalenteri renderöidään
          * @param {Object} settings Kalenterin configuraatio
+         * @return {Object} Kalenteri-instanssin kontrolleri/API
          */
-        newCalendar: (el, settings) =>
-            new Nullcalendar(Inferno.render($el(CalendarLayout.default, settings), el)),
+        newCalendar: (el, settings) => {
+            return ReactDOM.render($el(CalendarLayout.default, settings ? {settings} : undefined), el).getController();
+        },
         /**
          * @param {string} name Nimi, jolla rekisteröidään
-         * @param {Object} Class Implementaatio
+         * @param {Object} Class Sisältökerroksen implementaatio
          */
         registerContentLayer: (name, Class) =>
             contentLayerFactory.register(name, Class)
