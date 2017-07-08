@@ -11,7 +11,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
      * |      --> Content <--      |
      * |___________________________|
      */
-    class Content extends Inferno.Component {
+    class Content extends React.Component {
         /**
          * @param {object} props {
          *     grid: {Array},
@@ -38,13 +38,16 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             }
         }
         /**
-         * Palauttaa kopion gridistä, jonka jokainen cell on alustettu / ei sisällä
-         * contentLayerien tekemiä modifikaatioita.
+         * Poistaa props.gridistä sisältökerroksien modifikaatiot (children &
+         * clickHandlers).
          */
-        getFreshGrid() {
-            return this.props.grid.map(rows => rows.map(cell =>
-                cell ? new cell.constructor(cell.content, cell.date) : cell
-            ));
+        resetGrid() {
+            return this.props.grid.map(rows => rows.map(cell => {
+                if (cell && !(cell instanceof ImmutableCell)) {
+                    cell.children = [];
+                    cell.clickHandlers = [];
+                }
+            }));
         }
         /**
          * Triggeröi sisältökerroksien päivityksen, jos niitä on.
@@ -74,7 +77,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          * @access private
          */
         applyAsyncContent() {
-            this.props.grid = this.getFreshGrid();
+            this.resetGrid();
             this.contentLayers.forEach(layer => {
                 this.props.grid.forEach(row => {
                     row.forEach(cell => {
@@ -86,9 +89,10 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         /**
          * @access private
          * @param {Cell} cell
+         * @param {string} key
          * @returns {VNode}
          */
-        newCell(cell) {
+        newCell(cell, key) {
             let content;
             if (!cell) {
                 content = '';
@@ -100,11 +104,11 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             const cellAttrs = {className: 'cell'};
             if (cell && cell.clickHandlers && cell.clickHandlers.length) {
                 cellAttrs.onClick = e => {
-                    if (e.which !== 1) { return; }
+                    if (e.which && e.which !== 1) { return; }
                     cell.clickHandlers.forEach(fn => fn(cell, e));
                 };
             }
-            return $el('div', {className: 'col'},
+            return $el('div', {className: 'col', key},
                 $el('div', cellAttrs, content)
             );
         }
@@ -118,16 +122,15 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                 // Title
                 cell.content,
                 // Sisältö
-                cell.children.map(child => Array.isArray(child)
-                    ? child.map(construct => $el(construct.Component, construct.props))
-                    : $el(child.Component, child.props)
+                cell.children.map((child, i) =>
+                    $el(child.Component, Object.assign({}, child.props, {key: i}))
                 )
             );
         }
         render() {
-            return $el('div', {className: 'main'}, this.props.grid.map(row =>
-                $el('div', {className: 'row'},
-                    row.map(cell => this.newCell(cell)
+            return $el('div', {className: 'main'}, this.props.grid.map((row, ri) =>
+                $el('div', {className: 'row', key: ri},
+                    row.map((cell, ci) => this.newCell(cell, ri+'.'+ci)
                 ))
             ));
         }

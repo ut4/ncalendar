@@ -9,14 +9,15 @@
     <body>
         <div id="qunit"></div>
         <div id="qunit-fixture"></div>
-        <!-- App sorsat -->
-        <script src="vendor/app-vendor.js"></script>
-        <script>window.$el = Inferno.createElement;</script>
-        <!-- Vain testeihin tarvittavat sorsat -->
-        <script src="vendor/test-vendor.js"></script>
+        <!-- 1. Inferno setup --> <script src="vendor/app-vendor-inferno.js"></script><script src="vendor/test-vendor-inferno.js"></script>
+        <!-- 3. React setup <script src="vendor/app-vendor-react.js"></script> -->
+        <script src="vendor/test-vendor-common.js"></script>
+        <script src="vendor/require.js"></script>
+        <script src="app-header.js"></script>
+        <script src="test-header.js"></script>
         <script>
             QUnit.config.autostart = false;
-            // Siivoaa elementit, jotka Inferno.TestUtils renderöi documentin
+            // Siivoaa elementit, jotka ReactTestUtils renderöi documentin
             // loppuun (<script id="test-boot">-elementin perään) testien
             // aikana.
             QUnit.moduleDone(() => {
@@ -28,7 +29,6 @@
                 }
             });
         </script>
-        <script src="vendor/require.js"></script>
         <!-- Itse testien lataus -->
         <script id="test-boot">require([
             'test/CalendarLayoutComponentTests',

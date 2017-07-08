@@ -1,43 +1,47 @@
 define(['src/Modal', 'src/ComponentConstruct'], (Modal, ComponentConstruct) => {
     'use strict';
-    const itu = Inferno.TestUtils;
-    const someComponent = () => $el('span', null, 'foo');
+    const rtu = ReactTestUtils;
+    class SomeModalContent extends React.Component {
+        render() {
+            return $el('span', null, 'foo');
+        }
+    }
     QUnit.module('ModalComponent', () => {
         QUnit.test('.open renderöi sisällön, ja .close unrenderöi sen', assert => {
-            const rendered = itu.renderIntoDocument($el(Modal.default));
+            const rendered = rtu.renderIntoDocument($el(Modal.default));
             assert.equal(
-                itu.findRenderedVNodeWithType(rendered, someComponent), undefined,
+                rtu.scryRenderedComponentsWithType(rendered, SomeModalContent).length, 0,
                 'Ei pitäisi renderöidä oletuksena mitään'
             );
             // Avaa modal
-            const modal = itu.findRenderedVNodeWithType(rendered, Modal.default);
-            modal.children.open(new ComponentConstruct.default(someComponent));
+            const modal = rtu.findRenderedComponentWithType(rendered, Modal.default);
+            modal.open(new ComponentConstruct.default(SomeModalContent));
             // Assertoi että renderöi
             assert.notEqual(
-                itu.findRenderedVNodeWithType(rendered, someComponent), undefined,
+                rtu.scryRenderedComponentsWithType(rendered, SomeModalContent).length, 0,
                 'Pitäisi renderöidä passattu vNode'
             );
             // Sulje modal
-            modal.children.close();
+            modal.close();
             // Assertoi että sulkeutui
             assert.equal(
-                itu.findRenderedVNodeWithType(rendered, someComponent), undefined,
+                rtu.scryRenderedComponentsWithType(rendered, SomeModalContent).length, 0,
                 'Ei pitäisi renderöidä sulkemisen jälkeen mitään'
             );
         });
         QUnit.test('.open lisää renderöitävän sisällön propseihin funktion, jolla voi sulkea modalin', assert => {
-            const rendered = itu.renderIntoDocument($el(Modal.default));
-            const someComponentSpy = sinon.spy(someComponent);
-            const modal = itu.findRenderedVNodeWithType(rendered, Modal.default);
+            const rendered = rtu.renderIntoDocument($el(Modal.default));
+            const modal = rtu.findRenderedComponentWithType(rendered, Modal.default);
             // Avaa modal
-            modal.children.open(new ComponentConstruct.default(someComponentSpy));
+            modal.open(new ComponentConstruct.default(SomeModalContent));
             // Assertoi että incluudasi funktion
-            const closeFnProp = someComponentSpy.firstCall.args[0].closeModal;
+            const renderedSomeModalContent = rtu.findRenderedComponentWithType(rendered, SomeModalContent);
+            const closeFnProp = renderedSomeModalContent.props.closeModal;
             assert.equal(typeof closeFnProp, 'function', 'Pitäisi lisätä propseihin closeModal-funktion');
             // Testaa että funktio sulkee modalin
             closeFnProp();
             assert.equal(
-                itu.findRenderedVNodeWithType(rendered, someComponent), undefined,
+                rtu.scryRenderedComponentsWithType(rendered, SomeModalContent).length, 0,
                 'props.closeModal pitäisi sulkea modalin'
             );
         });

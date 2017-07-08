@@ -10,7 +10,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
      * |         Content           |
      * |___________________________|
      */
-    class DayHeader extends Inferno.Component {
+    class DayHeader extends React.Component {
         /**
          * @param {object} props {dateCursor: {DateCursor}}
          */
@@ -45,7 +45,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
     /*
      * Headerline week-muodossa.
      */
-    class WeekHeader extends Inferno.Component {
+    class WeekHeader extends React.Component {
         /**
          * @param {object} props
          */
@@ -63,7 +63,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             return $el('div', {className: 'header'},
                 $el('div', {className: 'row'},
                     ([''].concat(this.DAYS)).map(content =>
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, content))
+                        $el('div', {key: content, className: 'col'}, $el('div', {className: 'cell'}, content))
                     )
                 )
             );
@@ -72,7 +72,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
     /*
      * Headerline month-muodossa.
      */
-    class MonthHeader extends Inferno.Component {
+    class MonthHeader extends React.Component {
         /**
          * @param {object} props
          */
@@ -90,7 +90,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             return $el('div', {className: 'header'},
                 $el('div', {className: 'row'},
                     this.DAYS.map(weekDay =>
-                        $el('div', {className: 'col'}, $el('div', {className: 'cell'}, weekDay))
+                        $el('div', {key: weekDay ,className: 'col'}, $el('div', {className: 'cell'}, weekDay))
                     )
                 )
             );
