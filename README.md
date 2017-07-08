@@ -56,7 +56,7 @@ const mySettings = {
 };
 ```
 
-##Extending
+## Extending
 
 ```javascript
 class MyContentLayer {
