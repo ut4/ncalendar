@@ -18,9 +18,8 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             super(props);
         }
         /**
-         * Renderöi 1 * 2 headerlinen
-         *
-         * @access private
+         * Renderöi 2-sarakkellisen headerlinen, jossa yksi tyhjä solu tuntisara-
+         * ketta varten, ja yksi viikonpäiväsolu.
          */
         render() {
             return $el('div', {className: 'header'},
@@ -31,8 +30,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             );
         }
         /**
-         * Palauttaa {cursorStart} Date-objektista täydellisen viikonpäivän
-         * nimen.
+         * Palauttaa {cursorStart} Date-objektista täydellisen viikonpäivän nimen.
          *
          * @access private
          * @param {Date} cursorStart
@@ -51,18 +49,19 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          */
         constructor(props) {
             super(props);
-            this.DAYS = dateUtils.getFormattedWeekDays(
+            this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
                 this.props.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'short'})
             );
         }
         /**
-         * Renderöi 1 * 2 headerlinen
+         * Renderöi 8-sarakkellisen headerlinen, jossa yksi tyhjä solu tuntisara-
+         * ketta varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
          */
         render() {
             return $el('div', {className: 'header'},
                 $el('div', {className: 'row'},
-                    ([''].concat(this.DAYS)).map(content =>
+                    ([''].concat(this.SHORT_DAY_NAMES)).map(content =>
                         $el('div', {key: content, className: 'col'}, $el('div', {className: 'cell'}, content))
                     )
                 )
@@ -78,18 +77,19 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          */
         constructor(props) {
             super(props);
-            this.DAYS = dateUtils.getFormattedWeekDays(
+            this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
                 this.props.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'long'})
             );
         }
         /**
-         * Renderöi 1 * 2 headerlinen
+         * Renderöi 8-sarakkellisen headerlinen, jossa yksi tyhjä solu viikkonu-
+         * merosaraketta varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
          */
         render() {
             return $el('div', {className: 'header'},
                 $el('div', {className: 'row'},
-                    this.DAYS.map(weekDay =>
+                    ([''].concat(this.SHORT_DAY_NAMES)).map(weekDay =>
                         $el('div', {key: weekDay ,className: 'col'}, $el('div', {className: 'cell'}, weekDay))
                     )
                 )

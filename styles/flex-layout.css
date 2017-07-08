@@ -15,11 +15,13 @@
     .cal .header { height: 40px; overflow-y: scroll; text-align: center; border: 1px solid #DDD; border-bottom: none }
             .cal .header .cell { height: 20px/*; border-bottom: 1px solid #DDD*/ }
 /* -- main ------------------------------------------------------------------ */
-.cal .main { height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
+.cal .main { min-height: 343px; max-height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
     .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; height: 100%; position: relative }
     .main > .row:first-of-type .cell { border-top: none }
 /* -- month-view ------------------------------------------------------------ */
     .cal.month .main .cell { min-height: 80px }
+    .cal.month .header .col:first-of-type,
+    .cal.month .main .col:first-of-type { flex: 0 0 21px }
 /* -- week-view ------------------------------------------------------------- */
     .cal.week .header .col:first-of-type,
     .cal.week .main .col:first-of-type,

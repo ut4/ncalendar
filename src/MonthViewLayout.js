@@ -1,5 +1,6 @@
-define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractViewLayout, Content, Constants) => {
+define(['src/AbstractViewLayout', 'src/Content', 'src/ioc', 'src/Constants'], (AbstractViewLayout, Content, ioc, Constants) => {
     'use strict';
+    const dateUtils = ioc.default.dateUtils();
     /*
      * Kalenterin pääsisältö month, ja month-compact -muodossa
      */
@@ -16,9 +17,16 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
          * @returns {Array}
          */
         generateFullGrid() {
+            const d = new Date(this.dateCursor.range.start);
+            // Generoi rivit viikonpäiville
             return this.generateGrid(Constants.DAYS_IN_WEEK, d =>
                 new Content.Cell(d.getDate(), new Date(d))
-            );
+            // Lisää jokaisen rivi alkuun viikkonumero
+            ).map(row => {
+                row.unshift(new Content.ImmutableCell(dateUtils.getWeekNumber(d)));
+                d.setDate(d.getDate() + 7);
+                return row;
+            });
         }
         /**
          * Generoi kuukauden päivät muodossa `{pvmNumeerinen} + {viikonPäiväLyhyt}`

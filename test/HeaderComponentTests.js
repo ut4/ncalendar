@@ -23,18 +23,19 @@ define(['src/Header', 'src/DateCursors', 'src/Constants', 'src/ioc'], (Header, D
             assert.equal(renderedCells[6].textContent, getDayNameAndAddADay(monday));
             assert.equal(renderedCells[7].textContent, getDayNameAndAddADay(monday));
         });
-        QUnit.test('.month renderöi jokaisen viikonpäivän täydellisen nimen', assert => {
+        QUnit.test('.month renderöi viikkonumerosarakkeen, ja jokaisen viikonpäivän täydellisen nimen', assert => {
             const dateCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH);
             const renderedCells = getRenderedCells(ReactTestUtils.renderIntoDocument($el(Header.month, {dateCursor})));
-            assert.equal(renderedCells.length, 7);
+            assert.equal(renderedCells.length, 8);
             const monday = dateUtils.getStartOfWeek(dateCursor.range.start);
-            assert.equal(renderedCells[0].textContent, getLongDayNameAndAddADay(monday));
+            assert.equal(renderedCells[0].textContent, '');
             assert.equal(renderedCells[1].textContent, getLongDayNameAndAddADay(monday));
             assert.equal(renderedCells[2].textContent, getLongDayNameAndAddADay(monday));
             assert.equal(renderedCells[3].textContent, getLongDayNameAndAddADay(monday));
             assert.equal(renderedCells[4].textContent, getLongDayNameAndAddADay(monday));
             assert.equal(renderedCells[5].textContent, getLongDayNameAndAddADay(monday));
             assert.equal(renderedCells[6].textContent, getLongDayNameAndAddADay(monday));
+            assert.equal(renderedCells[7].textContent, getLongDayNameAndAddADay(monday));
         });
     });
     function getRenderedCells(rendered) {
