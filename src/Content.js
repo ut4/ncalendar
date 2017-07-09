@@ -1,6 +1,11 @@
 define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
     'use strict';
     const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
+    const LoadType = Object.freeze({
+        INITIAL: 'initial',
+        NAVIGATION: 'navigation',
+        VIEW_CHANGE: 'view-change'
+    });
     /*
      * Kalenterin pääsisältö, renderöi ViewLayoutin generoiman gridin, ja lisää
      * valittujen sisältökerroksien (jos niitä on) luoman sisällön gridin soluihin.
@@ -15,7 +20,8 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         /**
          * @param {object} props {
          *     grid: {Array},
-         *     calendarController: {Object}
+         *     calendarController: {Object},
+         *     currentView: {string}
          * }
          */
         constructor(props) {
@@ -27,14 +33,11 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                 const contentLayerFactory = ioc.default.contentLayerFactory();
                 this.contentLayers = selectedLayers.map(name =>
                     contentLayerFactory.make(name, [
-                        {refresh: () => {
-                            this.applyAsyncContent();
-                            this.forceUpdate();
-                        }},
+                        this.newController(),
                         this.props.calendarController
                     ])
                 );
-                this.loadAsyncContent();
+                this.loadAsyncContent(LoadType.INITIAL);
             }
         }
         /**
@@ -52,10 +55,13 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         /**
          * Triggeröi sisältökerroksien päivityksen, jos niitä on.
          */
-        componentWillReceiveProps() {
+        componentWillReceiveProps(props) {
             if (this.hasAsyncContent) {
                 this.setState({loading: true});
-                this.loadAsyncContent();
+                this.loadAsyncContent(props.currentView === this.props.currentView
+                    ? LoadType.NAVIGATION
+                    : LoadType.VIEW_CHANGE
+                );
             }
         }
         /**
@@ -63,8 +69,8 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          *
          * @access private
          */
-        loadAsyncContent() {
-            return Promise.all(this.contentLayers.map(l => l.load())).then(() => {
+        loadAsyncContent(loadType) {
+            return Promise.all(this.contentLayers.map(l => l.load(loadType))).then(() => {
                 this.applyAsyncContent();
                 this.setState({loading: false});
             });
@@ -127,6 +133,20 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                 )
             );
         }
+        /**
+         * Public API-versio tästä luokasta sisältökerroksia varten.
+         */
+        newController() {
+            return {
+                LoadType,
+                Cell,
+                PlaceholderCell,
+                refresh: () => {
+                    this.applyAsyncContent();
+                    this.forceUpdate();
+                }
+            };
+        }
         render() {
             return $el('div', {className: 'main'}, this.props.grid.map((row, ri) =>
                 $el('div', {className: 'row', key: ri},
@@ -149,5 +169,5 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             this.content = content;
         }
     }
-    return {default: Content, Cell, ImmutableCell, PlaceholderCell, HOURS_ARRAY};
+    return {default: Content, Cell, ImmutableCell, PlaceholderCell, LoadType, HOURS_ARRAY};
 });

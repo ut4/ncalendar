@@ -1,12 +1,12 @@
 # Nullcalendar
 
-Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Vaatii modernin selaimen.
+Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa.
 
 ## Features
 
 - Inferno, preact, ja React yhteensopiva
 - Minimaalinen devausympäristö, ei build toolia, ei JSX:ää, ei nodejs:ää!
-- Laajennettavissa, ks. [Extending](#extending)
+- Laajennettavissa, ks. [extending](#extending)
 
 ## Usage
 
@@ -61,8 +61,8 @@ const mySettings = {
 ```javascript
 class MyContentLayer {
     /**
-     * @param {Object} contentController Vastaa mm. sisällön päivityksestä
-     * @param {Object} calendarController Vastaa yhden kalenterin ohjailusta. Sama kuin nullcalendar.newCalendar() paluuarvo.
+     * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
+     * @param {Object} calendarController Vastaa yhden kalenterin ohjailusta. Sama kuin nullcalendar.newCalendar() paluuarvo. @see https://github.com/ut4/ncalendar#calendarcontroller-api
      */
     constructor(contentController, calendarController) {
         console.log(typeof contentController.refresh);     // function
@@ -75,9 +75,14 @@ class MyContentLayer {
      * kalenterin cursorRange päivittyy. Hyvä paikka ladata jotain esim.
      * backendistä...
      *
-     * @returns {Promise}
+     * @param {string} loadType 'initial'|'navigation'|'view-change'
+     * @returns {Promise|undefined}
      */
-    load() {
+    load(loadType) {
+        console.log('Loadtype:' + loadType);
+        if (loadType !== this.contentController.LoadType.INITIAL) {
+            return;
+        }
         return Promise.resolve().then(() => {
             console.log('Valmis!');
         });
@@ -87,10 +92,13 @@ class MyContentLayer {
      * kalenterin latautuessa, tai navigaatiotapahtuman yhteydessä. Hyvä paikka
      * modifioida cellin children, clickHandlers, tai content -arvoja.
      *
-     * @param {Object}
+     * @param {Object} cell Kalenterin yksi sisältösolu, Cell|PlaceholderCell
      * @returns {void}
      */
     decorateCell(cell) {
+        if (cell instanceof this.contentController.PlaceholderCell) {
+            return;
+        }
         if (cell.date.getDay() === 5) {
             cell.content = `Friday, ${this.content}!`;
             cell.clickHandlers.push(e => {
@@ -103,6 +111,33 @@ class MyContentLayer {
 nullcalendar.registerContentLayer('foo', MyContentLayer);
 nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['foo']});
 ```
+
+## CalendarController-API
+
+### Methods
+
+- calendarController.changeView(to)
+- calendarController.openModal(componentConstruct)
+- calendarController.closeModal()
+
+### Getters
+
+- calendarController.currentView
+- calendarController.dateCursor
+- calendarController.settings
+- calendarController.isCompactViewEnabled
+
+## ContentController-API
+
+### Methods
+
+- contentController.refresh()
+
+### Properties
+
+- contentController.LoadType
+- contentController.Cell
+- contentController.PlaceholderCell
 
 # License
 

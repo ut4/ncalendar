@@ -113,6 +113,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
                 ),
                 $el(content.Component, {
                     grid: content.props.gridGeneratorFn(),
+                    currentView: this.state.currentView,
                     calendarController: this.controller
                 })
             );

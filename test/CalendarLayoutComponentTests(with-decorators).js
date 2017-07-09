@@ -5,10 +5,12 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
     QUnit.module('CalendarLayoutComponent(with-decorators)', hooks => {
         hooks.beforeEach(() => {
             this.contentLoadCallSpy = sinon.spy(Content.default.prototype, 'loadAsyncContent');
+            this.contentLayerLoadCallSpy = sinon.spy(TestContentLayer.default.prototype, 'load');
             this.clickHandlerSpy = sinon.spy(TestContentLayer.default, 'testClickHandler');
         });
         hooks.afterEach(() => {
             this.contentLoadCallSpy.restore();
+            this.contentLayerLoadCallSpy.restore();
             TestContentLayer.default.testClickHandler.restore();
         });
         const render = (contentLayers = ['atest']) => {
@@ -26,17 +28,20 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             );
             assert.ok(
                 isProbablyContentController(expectedTestLayer.args[0]),
-                'Layerin 1. argumentti pitäisi olla contentController'
+                '1. sisältökerroksen konstruktoriin passattu argumentti pitäisi olla contentController-instanssi'
             );
             assert.ok(
                 isProbablyCalendarController(expectedTestLayer.args[1]),
-                'Layerin 2. argumentti pitäisi olla calendarController'
+                '2. sisältökerroksen konstruktoriin passattu argumentti pitäisi olla calendarController-instanssi'
             );
             //
-            assert.ok(this.contentLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerros');
             const done = assert.async();
             this.contentLoadCallSpy.firstCall.returnValue.then(() => {
                 const renderedRows = getRenderedRows(rendered);
+                assert.ok(this.contentLayerLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerros');
+                assert.deepEqual(this.contentLayerLoadCallSpy.firstCall.args, [Content.LoadType.INITIAL],
+                    'Pitäisi passata sisältökerroksen loadTypeksi LoadType.INITIAL'
+                );
                 assert.equal(renderedRows.length, Constants.HOURS_IN_DAY);
                 assert.ok(
                     isEveryCellDecoratedWith(rendered, expectedTestLayer.loadCount),
@@ -115,27 +120,32 @@ define(['src/ioc', 'src/CalendarLayout', 'src/Content', 'src/DateCursors', 'src/
             );
         });
         QUnit.test('Toolbarin next-sivutuspainike triggeröi sisältökerroksen päivityksen', assert => {
-            testButtonClickTriggersDecoratorRefresh.call(this, '>', assert);
+            testButtonClickTriggersDecoratorRefresh.call(this, '>', assert, Content.LoadType.NAVIGATION);
         });
         QUnit.test('Toolbarin prev-sivutuspainike triggeröi sisältökerroksen päivityksen', assert => {
-            testButtonClickTriggersDecoratorRefresh.call(this, '<', assert);
+            testButtonClickTriggersDecoratorRefresh.call(this, '<', assert, Content.LoadType.NAVIGATION);
         });
         QUnit.test('Toolbarin näkymänvaihtopainike triggeröi sisältökerroksen päivityksen', assert => {
-            testButtonClickTriggersDecoratorRefresh.call(this, 'Kuukausi', assert);
+            testButtonClickTriggersDecoratorRefresh.call(this, 'Kuukausi', assert, Content.LoadType.VIEW_CHANGE);
         });
-        function testButtonClickTriggersDecoratorRefresh(buttonContent, assert) {
+        function testButtonClickTriggersDecoratorRefresh(buttonContent, assert, expectedLoadType) {
             let contentBefore;
             const rendered = render();
             const done = assert.async();
             this.contentLoadCallSpy.firstCall.returnValue.then(() => {
                 contentBefore = domUtils.getElementContent(rendered, '.main');
-                this.contentLoadCallSpy.reset();
+                this.contentLoadCallSpy.reset(); // pyyhi initial load
+                this.contentLayerLoadCallSpy.reset();
                 // Triggöi navigaatiotapahtuma
                 ReactTestUtils.Simulate.click(domUtils.findButtonByContent(rendered, buttonContent));
                 //
-                assert.ok(this.contentLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerros uudelleen');
+                assert.ok(this.contentLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerrokset uudelleen');
                 return this.contentLoadCallSpy.firstCall.returnValue;
             }).then(() => {
+                assert.ok(this.contentLayerLoadCallSpy.calledOnce, 'Pitäisi triggeröidä sisältökerroksen load uudelleen');
+                assert.deepEqual(this.contentLayerLoadCallSpy.firstCall.args, [expectedLoadType],
+                    'Pitäisi passata sisältökerroksen LoadType:ksi ' + expectedLoadType
+                );
                 const contentAfter = domUtils.getElementContent(rendered, '.main');
                 assert.notEqual(contentAfter, contentBefore);
                 done();
