@@ -2,6 +2,9 @@
 
 .cal.month-compact .main { margin-top: 0; border-radius: 2px }
         .cal.month-compact .main .cell { min-height: 60px }
+        /* Week number */
+        .cal.month-compact .main .cell > span { margin-left: 1px; font-size: 12px;
+            color: #888 }
             .month-compact  .event { height: auto }
 
 .cal.week-compact .main { height: auto; margin-top: 0; border-radius: 2px }

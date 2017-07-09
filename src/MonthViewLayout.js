@@ -40,9 +40,14 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/ioc', 'src/Constants'], (A
                 this.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'short'})
             );
-            return this.generateGrid(2, d => new Content.Cell(
-                d.getDate() + ' ' + dayNames[(d.getDay() || 7) - 1], new Date(d)
-            ));
+            return this.generateGrid(2, d => {
+                const dateAndDayName = d.getDate() + ' ' + dayNames[(d.getDay() || 7) - 1];
+                // Lisää viikkonumero ensimmäisen solun-, ja viikon ensimmäisten päivien perään
+                return new Content.Cell(d.getDay() !== 1 && d.getDate() > 1
+                    ? dateAndDayName
+                    : [dateAndDayName, $el('span', null, ' / Vk' + dateUtils.getWeekNumber(d))]
+                , new Date(d));
+            });
         }
         /**
          * Generoi kuukauden kaikki päivät {gridWidth} * {?} taulukkoon. Ensimmäisen

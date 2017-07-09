@@ -101,9 +101,13 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
         return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'row');
     }
     function getExpectedCompactMonthCellTitle(date, currentDate) {
-        return date.getMonth() === currentDate.getMonth()
-            ? date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date)
-            : '';
+        if (date.getMonth() !== currentDate.getMonth()) {
+            return '';
+        }
+        const isFirstCell = date.toISOString() === currentDate.toISOString();
+        return date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date) +
+            // Pitäisi sisältää viikkonumero, jos viikon ensimmäinen päivä, tai gridin ensimmäinen solu
+            (date.getDay() !== 1 && !isFirstCell ? '' : ' / Vk' + dateUtils.getWeekNumber(date));
     }
     function getExpectedMonthCellCount(dateCursor, gridWidth) {
         let expectedCellCount = dateCursor.range.end.getDate();
