@@ -45,22 +45,32 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
             assert.equal(renderedRows[3].children[1].textContent, '');
         });
         QUnit.test('month-gridillä renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
+            const expectedRowLength = 1 + Constants.DAYS_IN_WEEK; // viikkonumerosarake + viikonpäivät
             const dateCursor = newDateCursor(Constants.VIEW_MONTH);
             const renderedRows = getRenderedRows(ReactTestUtils.renderIntoDocument(
                 $el(Content.default, makeProps(Constants.VIEW_MONTH))
             ));
             const currentDate = new Date(dateCursor.range.start);
             // Assertoi, että generoi oikean määrän rivejä
-            assert.equal(renderedRows.length, getExpectedMonthCellCount(dateCursor, 7) / 7);
-            // Assertoi, että renderöi päivänumeron vain tämän kuukauden soluihin
+            assert.equal(renderedRows.length, getExpectedMonthCellCount(dateCursor, 7) / expectedRowLength);
+            // Assertoi, että renderöi päivänumeron vain tämän kuukauden soluihin, ja renderöi viikkonumeron
+            // jokaisen rivin alkuun
             const rollingDate = new Date(currentDate);
             rollingDate.setDate(2 - (rollingDate.getDay() || 7));// tyhjien solujen lukumäärä
             renderedRows.forEach(row => {
-                Array.from(row.children).forEach(col => {
-                    assert.equal(col.textContent, rollingDate.getMonth() === currentDate.getMonth() ? rollingDate.getDate() : '');
-                    rollingDate.setDate(rollingDate.getDate() + 1);
+                Array.from(row.children).forEach((col, i) => {
+                    if (i) {
+                        assert.equal(col.textContent, rollingDate.getMonth() === currentDate.getMonth() ? rollingDate.getDate() : '');
+                        rollingDate.setDate(rollingDate.getDate() + 1);
+                    } else {
+                        assert.equal(col.textContent, dateUtils.getWeekNumber(rollingDate),
+                            'Rivin ensimmäisessä solussa tulisi olla viikkonumero'
+                        );
+                    }
                 });
-                assert.equal(row.children.length, 7);
+                assert.equal(row.children.length, expectedRowLength,
+                    'Jokaisen rivin pitäisi olla tämän pituinen'
+                );
             });
         });
         QUnit.test('compact month-gridillä renderöi solun jokaiselle kuukauden päivälle 2-levyisinä riveinä otsikkona numeerinen kuukauden päivä ja viikonpäivän nimi', assert => {
@@ -91,16 +101,25 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
         return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'row');
     }
     function getExpectedCompactMonthCellTitle(date, currentDate) {
-        return date.getMonth() === currentDate.getMonth()
-            ? date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date)
-            : '';
+        if (date.getMonth() !== currentDate.getMonth()) {
+            return '';
+        }
+        const isFirstCell = date.toISOString() === currentDate.toISOString();
+        return date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date) +
+            // Pitäisi sisältää viikkonumero, jos viikon ensimmäinen päivä, tai gridin ensimmäinen solu
+            (date.getDay() !== 1 && !isFirstCell ? '' : ' / Vk' + dateUtils.getWeekNumber(date));
     }
     function getExpectedMonthCellCount(dateCursor, gridWidth) {
         let expectedCellCount = dateCursor.range.end.getDate();
+        // Ensimmäisen viikon tyhjät
         if (gridWidth === Constants.DAYS_IN_WEEK) {
             expectedCellCount += dateCursor.range.start.getDay() || 6;
         }
         expectedCellCount += gridWidth - (expectedCellCount % gridWidth || gridWidth);
+        // Yksi tyhjä (viikonpäivasarake) jokaiselle riville
+        if (gridWidth === Constants.DAYS_IN_WEEK) {
+            expectedCellCount += expectedCellCount / gridWidth;
+        }
         return expectedCellCount;
     }
 });

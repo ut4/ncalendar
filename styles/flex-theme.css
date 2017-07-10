@@ -1,7 +1,10 @@
-.cal { font-size: 14px; color: #343434; }
+.cal { font-size: 14px; color: #343; }
     .cal .toolbar .col:nth-of-type(2) { text-transform: capitalize; }
     .cal .header { border-radius: 2px 2px 0 0 }
     .cal .main { border-radius: 0 0 2px 2px }
+    .cal.month .header .col:first-of-type,
+    .cal.month .main .col:first-of-type { text-align: center; font-size: 12px }
+    .cal.month .main .col:first-of-type { color: #888 }
         .cal .main .cell:before { content: ""; position: absolute; width: 88%;
             border-bottom: 1px dotted #e0e0e0; margin: 0 4%; bottom: 50% }
         .cal .col { text-transform: capitalize; }
