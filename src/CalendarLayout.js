@@ -1,6 +1,5 @@
 define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 'src/settingsFactory'], (Modal, Toolbar, ViewLayouts, DateCursors, Constants, settingsFactory) => {
     'use strict';
-    const smallScreenCondition = window.matchMedia('(max-width:800px)');
     /*
      * Kalenterin juurikomponentti.
      */
@@ -10,25 +9,30 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          *     settings: {
          *         defaultView: {string},
          *         titleFormatters: {Object},
-         *         contentLayers: {Array}
+         *         contentLayers: {Array},
+         *         layoutChangeBreakPoint: {number}
          *     }=
          * }
          */
         constructor(props) {
             super(props);
+            // Settings & mediaQuery
             this.settings = settingsFactory.default(this.props.settings || {});
+            this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint || 800}px)`);
+            // State
             const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};
             state.currentView = this.settings.defaultView;
             state.viewLayout = this.newViewLayout(state.currentView, state.dateCursor);
-            state.smallScreenConditionMaches = smallScreenCondition.matches;
+            state.isWindowNarrowerThanBreakPoint = this.smallScreenMediaQuery.matches;
             this.state = state;
+            // Controller
             this.controller = newController(this);
         }
         /**
          * Lisää matchmedia-kuuntelijan.
          */
         componentWillMount() {
-            smallScreenCondition.addListener(this.viewPortListener.bind(this));
+            this.smallScreenMediaQuery.addListener(this.viewPortListener.bind(this));
         }
         /**
          * Palauttaa per-kalenteri-API:n, jonka kautta kalenteria pääsääntöisesti
@@ -56,17 +60,17 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
             this.setState(state);
         }
         /**
-         * Matchmedia-kuuntelija. Päivittää state.smallScreenConditionMaches:n
-         * arvoksi true, mikäli selaimen ikkuna on pienempi kuin {?}, tai false,
-         * jos se on suurempi kuin {?}.
+         * Matchmedia-kuuntelija. Päivittää state.isWindowNarrowerThanBreakPoint:n
+         * arvoksi true, mikäli selaimen ikkuna on pienempi kuin määritelty arvo,
+         * ja vastaavasti false, jos se on sitä suurempi.
          *
          * @access private
          * @param {MediaQueryList} newMatch
          */
         viewPortListener(newMatch) {
-            const newSmallScreenConditionMaches = newMatch.matches;
-            if (newSmallScreenConditionMaches !== this.state.smallScreenConditionMaches) {
-                this.setState({smallScreenConditionMaches: newSmallScreenConditionMaches});
+            const newIsNarrower = newMatch.matches;
+            if (newIsNarrower !== this.state.isWindowNarrowerThanBreakPoint) {
+                this.setState({isWindowNarrowerThanBreakPoint: newIsNarrower});
             }
         }
         /**
@@ -92,13 +96,13 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
         render() {
             //
             let className = 'cal ' + this.state.currentView;
-            if (this.state.smallScreenConditionMaches &&
+            if (this.state.isWindowNarrowerThanBreakPoint &&
                 this.state.currentView !== Constants.VIEW_DAY) {
                 className += '-compact compact';
             }
             //
             const [header, content] = this.state.viewLayout.getParts(
-                this.state.smallScreenConditionMaches
+                this.state.isWindowNarrowerThanBreakPoint
             );
             return $el('div', {className},
                 $el(Modal.default, {ref: cmp => {
@@ -135,7 +139,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
                 return component.settings;
             },
             get isCompactViewEnabled() {
-                return component.state.smallScreenConditionMaches;
+                return component.state.isWindowNarrowerThanBreakPoint;
             },
             changeView: to => {
                 return component.changeView(to);

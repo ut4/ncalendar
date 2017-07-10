@@ -46,13 +46,41 @@ Voidaan käyttää globaalista muuttujasta tai AMD-moduulina. Inferno, preact, t
 
 ```javascript
 const mySettings = {
-    defaultView: 'week',      // {string} week|month|day, default week
-    contentLayers: ['event'], // {Array}, default []
-    titleFormatters: {        // {Object} default null
+    /**
+     * Näkymän nimi, jossa kalenteri renderöityy oletuksena.
+     *
+     * @prop {string} 'week'|'month'|'day'
+     * @default 'week'
+     */
+    defaultView: 'week',
+    /**
+     * Ladattavien sisältökerroksien nimet.
+     *
+     * @prop {Array}
+     * @default []
+     */
+    contentLayers: ['event'],
+    /**
+     * Funktiot, joilla voi kustomoida kalenterin otsakkeiden formaattia.
+     *
+     * @prop {Object}
+     * @default null
+     */
+    titleFormatters: {
         day: dateCursorRange => dateCursorRange.start.getDate()
         // week: {Function}
         // month: {Function}
-    }
+    },
+    /**
+     * Leveys pikseleinä, jonka ikkuna täytyy olla vähintään, että kalenterin
+     * sisältö renderöidään täysiversiona. Vastaavasti ikkunan leveyden ollessa
+     * määriteltyä arvoa vähemmän, näytetään sisältö compact-muodossa. Day-näky-
+     * mällä ei ole erillistä compact-muotoa.
+     *
+     * @prop {number}
+     * @default 800
+     */
+    layoutChangeBreakPoint: 600
 };
 ```
 

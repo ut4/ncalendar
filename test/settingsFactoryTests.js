@@ -11,7 +11,7 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
                 () => {
                     settingsFactory.default({defaultView: 'bogus'});
                 },
-                'Näkymää "bogus" ei löytynyt'
+                'Pitäisi heittää error'
             );
         });
         QUnit.test('Asettaa contentLayers:in', assert => {
@@ -24,7 +24,7 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
                 () => {
                     settingsFactory.default({contentLayers: 'shh'});
                 },
-                'contentLayers pitäisi olla taulukko'
+                'Pitäisi heittää error'
             );
         });
         QUnit.test('Asettaa titleFormatters:in', assert => {
@@ -37,13 +37,26 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
                 () => {
                     settingsFactory.default({titleFormatters: {[Constants.VIEW_DAY]: 'bogus'}});
                 },
-                'titleFormatters[' + Constants.VIEW_DAY + '] pitäisi olla funktio'
+                'Pitäisi heittää error'
             );
             assert.throws(
                 () => {
                     settingsFactory.default({titleFormatters: {bogus: () => {}}});
                 },
-                '"bogus" ei ole validi näkymä'
+                'Pitäisi heittää error'
+            );
+        });
+        QUnit.test('Asettaa layoutChangeBreakPoint:in', assert => {
+            const input = {layoutChangeBreakPoint: 600};
+            const settings = settingsFactory.default(input);
+            assert.equal(settings.layoutChangeBreakPoint, input.layoutChangeBreakPoint);
+        });
+        QUnit.test('Validoi layoutChangeBreakPoint:in arvon', assert => {
+            assert.throws(
+                () => {
+                    settingsFactory.default({layoutChangeBreakPoint: 'bogus'});
+                },
+                'Pitäisi heittää error'
             );
         });
         QUnit.test('Asettaa oletusarvot jos puuttuu inputista', assert => {
@@ -51,6 +64,7 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
             assert.equal(settings.defaultView, Constants.VIEW_DEFAULT);
             assert.deepEqual(settings.contentLayers, []);
             assert.deepEqual(settings.titleFormatters, {});
+            assert.deepEqual(settings.layoutChangeBreakPoint, undefined);
         });
     });
 });

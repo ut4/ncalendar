@@ -57,23 +57,41 @@ define(['src/Constants'], (Constants) => {
         }
         return candidate;
     }
+    /**
+     * Palauttaa validin kokonaisluvun layoutChangeBreakPoint-settingsin arvoksi, tai
+     * heittää errorin jos {candidate} ei ollut validi.
+     *
+     * @param {number} candidate
+     * @throws {Error}
+     */
+    function getValidLayoutChangeBreakPoint(candidate) {
+        if (candidate === undefined) {
+            return undefined;
+        }
+        if (!Number.isInteger(candidate)) {
+            throw new Error('layoutChangeBreakPoint pitäisi olla kokonaisluku');
+        }
+        return candidate;
+    }
     return {
         /**
          * Palauttaa validin settings-objektin, tai heittää errorin jos jokin
          * {userSettings}in arvo ei ollut validi.
          *
-         * @param {Object=} userSettings
+         * @param {Object} userSettings
          * @returns {Object} {
-         *     defaultView: {string=},
-         *     contentLayers: {Array=},
-         *     titleFormatters: {Object=}
+         *     defaultView: {string},
+         *     contentLayers: {Array},
+         *     titleFormatters: {Object},
+         *     layoutChangeBreakPoint: {number}
          * }
          */
         default: function (userSettings) {
             return {
                 defaultView: getValidViewName(userSettings.defaultView || 'default'),
                 contentLayers: getValidContentLayers(userSettings.contentLayers),
-                titleFormatters: getValidTitleFormatters(userSettings.titleFormatters)
+                titleFormatters: getValidTitleFormatters(userSettings.titleFormatters),
+                layoutChangeBreakPoint: getValidLayoutChangeBreakPoint(userSettings.layoutChangeBreakPoint)
             };
         },
         getValidViewName
