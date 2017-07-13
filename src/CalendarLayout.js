@@ -54,7 +54,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
             if (this.state.currentView === newView) {
                 return;
             }
-            const state = {dateCursor: this.newDateCursor(newView)};
+            const state = {dateCursor: this.newDateCursor(newView, this.state.dateCursor.range)};
             state.currentView = newView;
             state.viewLayout = this.newViewLayout(newView, state.dateCursor);
             this.setState(state);
@@ -77,8 +77,8 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          * @access private
          * @returns {DateCursor}
          */
-        newDateCursor(viewName) {
-            return DateCursors.dateCursorFactory.newCursor(viewName, () => {
+        newDateCursor(viewName, lastViewsRange) {
+            return DateCursors.dateCursorFactory.newCursor(viewName, lastViewsRange, () => {
                 this.setState({dateCursor: this.state.dateCursor});
             });
         }

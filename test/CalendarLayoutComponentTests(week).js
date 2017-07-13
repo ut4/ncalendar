@@ -9,7 +9,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
                     titleFormatters: {[Constants.VIEW_WEEK]: titleFormatter}
                 }})
             );
-            this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK, () => {});
+            this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK, null, () => {});
         });
         QUnit.test('Toolbarin next-sivutuspainike päivittää titlen', assert => {
             // Paina nappia

@@ -10,7 +10,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
                     titleFormatters: {[Constants.VIEW_DAY]: titleFormatter}
                 }})
             );
-            this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY, () => {});
+            this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY, null, () => {});
         });
         QUnit.test('Toolbarin next-sivutuspainike päivittää titlen, ja päivä-headerin', assert => {
             const initialHeaderlineContent = domUtils.getElementContent(this.rendered, '.header');

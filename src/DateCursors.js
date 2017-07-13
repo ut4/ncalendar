@@ -1,10 +1,18 @@
 define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
     'use strict';
     const dateUtils = ioc.default.dateUtils();
+    const isWithinRange = (range, date) => date >= range.start && date <= range.end;
     class DayViewCursorRange {
-        constructor(currentDate) {
-            this.start = dateUtils.getStartOfDay(currentDate);
-            this.end = dateUtils.getEndOfDay(currentDate);
+        constructor(rangeFromPreviousView) {
+            if (!DayViewCursorRange.lastRange ||
+                !isWithinRange(rangeFromPreviousView, DayViewCursorRange.lastRange.start)) {
+                    const baseDate = rangeFromPreviousView.start || new Date();
+                    this.start = dateUtils.getStartOfDay(baseDate);
+                    this.end = dateUtils.getEndOfDay(baseDate);
+            } else {
+                this.start = DayViewCursorRange.lastRange.start;
+                this.end = DayViewCursorRange.lastRange.end;
+            }
         }
         goForward() {
             this.start.setDate(this.start.getDate() + 1);
@@ -16,10 +24,17 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         }
     }
     class WeekViewCursorRange {
-        constructor(currentDate) {
-            this.start = dateUtils.getStartOfWeek(dateUtils.getStartOfDay(currentDate));
-            this.end = dateUtils.getEndOfDay(this.start);
-            this.end.setDate(this.start.getDate() + 6);
+        constructor(rangeFromPreviousView) {
+            if (!WeekViewCursorRange.lastRange ||
+                !isWithinRange(rangeFromPreviousView, WeekViewCursorRange.lastRange.start)) {
+                    const baseDate = rangeFromPreviousView.start || new Date();
+                    this.start = dateUtils.getStartOfWeek(dateUtils.getStartOfDay(baseDate));
+                    this.end = dateUtils.getEndOfDay(this.start);
+                    this.end.setDate(this.start.getDate() + 6);
+            } else {
+                this.start = WeekViewCursorRange.lastRange.start;
+                this.end = WeekViewCursorRange.lastRange.end;
+            }
         }
         goForward() {
             this.start.setDate(this.start.getDate() + Constants.DAYS_IN_WEEK);
@@ -31,10 +46,11 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         }
     }
     class MonthViewCursorRange {
-        constructor(currentDate) {
-            this.start = dateUtils.getStartOfDay(currentDate);
+        constructor(rangeFromPreviousView) {
+            const baseDate = rangeFromPreviousView.start || new Date();
+            this.start = dateUtils.getStartOfDay(baseDate);
             this.start.setDate(1);
-            this.end = dateUtils.getEndOfDay(currentDate);
+            this.end = dateUtils.getEndOfDay(baseDate);
             // https://stackoverflow.com/questions/222309/calculate-last-day-of-month-in-javascript
             this.end.setMonth(this.start.getMonth() + 1);
             this.end.setDate(0);// 1. pvä - 1 (0) = edellisen kuun viimeinen
@@ -52,13 +68,13 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
         }
     }
     /*
-     * Luokka joka vastaa kalenterin aikakursorin manipuloinnista
-     * selaustoimintojen yhteydessä. Kuuluu osaksi Calendar-komponenttia, ja
-     * public API:a.
+     * Luokka, joka vastaa kalenterin aikakursorin manipuloinnista
+     * selaustoimintojen yhteydessä. Kuuluu osaksi public calendar-API:a.
      */
     class DateCursor {
         constructor(range, subsribeFn) {
             this.range = range;
+            saveRangeState(this.range);
             if (subsribeFn) {
                 this.subscribe(subsribeFn);
             }
@@ -76,6 +92,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          */
         next() {
             this.range.goForward();
+            saveRangeState(this.range);
             this.notify('next');
         }
         /**
@@ -84,6 +101,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          */
         prev() {
             this.range.goBackwards();
+            saveRangeState(this.range);
             this.notify('prev');
         }
         /**
@@ -97,13 +115,22 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             this.notify('goTo');
         }
     }
+    /**
+     * Päivittää rangeluokan lastRange -staattisen propertyn.
+     */
+    function saveRangeState(range) {
+        range.constructor.lastRange = {
+            start: new Date(range.start),
+            end: new Date(range.end)
+        };
+    }
     const cursorRanges = {
         [Constants.VIEW_DAY]: DayViewCursorRange,
         [Constants.VIEW_WEEK]: WeekViewCursorRange,
         [Constants.VIEW_MONTH]: MonthViewCursorRange
     };
-    const dateCursorFactory = {newCursor: (viewName, subscriberFn) => {
-        return new DateCursor(new cursorRanges[viewName](new Date()), subscriberFn);
+    const dateCursorFactory = {newCursor: (viewName, rangeFromPreviousView, subscriberFn) => {
+        return new DateCursor(new cursorRanges[viewName](rangeFromPreviousView || {}), subscriberFn);
     }};
     return {dateCursorFactory};
 });
