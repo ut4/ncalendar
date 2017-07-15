@@ -14,6 +14,19 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
                 'Pitäisi heittää error'
             );
         });
+        QUnit.test('Asettaa defaultDate:n', assert => {
+            const input = {defaultDate: new Date(2015, 3, 16)};
+            const settings = settingsFactory.default(input);
+            assert.equal(settings.defaultDate, input.defaultDate);
+        });
+        QUnit.test('Validoi defaultDate:n arvon', assert => {
+            assert.throws(
+                () => {
+                    settingsFactory.default({defaultDate: 'bogus'});
+                },
+                'Pitäisi heittää error'
+            );
+        });
         QUnit.test('Asettaa contentLayers:in', assert => {
             const input = {contentLayers: ['foo']};
             const settings = settingsFactory.default(input);
@@ -60,11 +73,13 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
             );
         });
         QUnit.test('Asettaa oletusarvot jos puuttuu inputista', assert => {
+            const now = new Date();
             const settings = settingsFactory.default({});
             assert.equal(settings.defaultView, Constants.VIEW_DEFAULT);
+            assert.deepEqual(settings.defaultDate, now);
             assert.deepEqual(settings.contentLayers, []);
             assert.deepEqual(settings.titleFormatters, {});
-            assert.deepEqual(settings.layoutChangeBreakPoint, undefined);
+            assert.deepEqual(settings.layoutChangeBreakPoint, 800);
         });
     });
 });

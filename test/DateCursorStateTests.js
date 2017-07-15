@@ -1,11 +1,24 @@
-define(['src/CalendarLayout', 'test/resources/Utils', 'src/ioc', 'src/Constants'], (CalendarLayout, Utils, ioc, Constants) => {
+define(['src/CalendarLayout', 'src/DateCursors', 'test/resources/Utils', 'src/ioc', 'src/Constants'], (CalendarLayout, DateCursors, Utils, ioc, Constants) => {
     'use strict';
     const rtu = ReactTestUtils;
     const dateUtils = ioc.default.dateUtils();
-    QUnit.module('DateCursorState', () => {
+    QUnit.module('DateCursorState', hooks => {
+        hooks.beforeEach(() => {
+            // Resetoi ranget
+            DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY).range.constructor.lastRange = null;
+            DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK).range.constructor.lastRange = null;
+            DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH).range.constructor.lastRange = null;
+        });
         const render = viewName => {
+            const settings = {defaultView: viewName};
+            if (viewName === Constants.VIEW_DAY) {
+                settings.defaultDate = dateUtils.getStartOfWeek(new Date());
+            } else if (viewName === Constants.VIEW_WEEK) {
+                settings.defaultDate = new Date();
+                settings.defaultDate.setDate(9);
+            }
             this.rendered = ReactTestUtils.renderIntoDocument(
-                $el(CalendarLayout.default, {settings: {defaultView: viewName}})
+                $el(CalendarLayout.default, {settings})
             );
             this.calendarController = rtu.findRenderedComponentWithType(this.rendered, CalendarLayout.default).controller;
         };
@@ -43,10 +56,9 @@ define(['src/CalendarLayout', 'test/resources/Utils', 'src/ioc', 'src/Constants'
         });
         QUnit.test('week-näkymästä day-näkymään vaihdettaessa day-näkymä adaptoi aiemmin tallennetun rangen', assert => {
             render(Constants.VIEW_DAY);
-            // Siirry yksi päivä initial-päivästä
+            // Siirry yksi päivä initial-päivästä eteenpäin
             const initialRangeStart = this.calendarController.dateCursor.range.start.getDate();
-            const safeDirection = getSafeDirectionForDayViewWhichDoesntChangeWeek(this.calendarController.dateCursor.range.start);
-            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, safeDirection));
+            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, '>'));
             const savedRangeStart = this.calendarController.dateCursor.range.start.getDate();
             assert.notEqual(savedRangeStart, initialRangeStart);// sanity check
             // Siirry viikkonäkymään ...
@@ -69,6 +81,26 @@ define(['src/CalendarLayout', 'test/resources/Utils', 'src/ioc', 'src/Constants'
                 'Ei pitäisi adaptoida week-viewin range.start'
             );
         });
+        QUnit.test('Tänään-painike triggeröi lastRange-tallennuksen', assert => {
+            render(Constants.VIEW_DAY);
+            // Triggeröi ensimmäinen range-tallennus
+            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, '>'));
+            const savedRangeStart = this.calendarController.dateCursor.range.start.getDate();
+            // Siirry takaisin nykypäivään
+            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, 'Tänään'));
+            const rangeStartToday = this.calendarController.dateCursor.range.start.getDate();
+            assert.notEqual(rangeStartToday, savedRangeStart);// sanity check
+            // Triggeröi lastRange-adaptointi siirtymällä viikkonäkymään, ja sitten takaisin ...
+            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, 'Viikko'));
+            assert.equal(this.calendarController.dateCursor.range.constructor.name, 'WeekViewCursorRange');// sanity check
+            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, 'Päivä'));
+            // Assertoi että adaptoi tänään-daten eikä ensimmäistä tallennusta
+            assert.equal(
+                this.calendarController.dateCursor.range.start.getDate(),
+                rangeStartToday,
+                'Pitäisi adaptoida viimeisin tallennettu range (tänään-date) range.start:in arvoksi'
+            );
+        });
         QUnit.test('month-näkymästä week-näkymään vaihdettaessa week-näkymä adaptoi month-näkymän range.start:n', assert => {
             // Renderöi ensin month-näkymä
             render(Constants.VIEW_MONTH);
@@ -87,10 +119,9 @@ define(['src/CalendarLayout', 'test/resources/Utils', 'src/ioc', 'src/Constants'
         });
         QUnit.test('month-näkymästä week-näkymään vaihdettaessa week-näkymä adaptoi aiemmin tallennetun rangen', assert => {
             render(Constants.VIEW_WEEK);
-            // Siirry yksi viikko initial-viikosta
+            // Siirry yksi viikko initial-viikosta eteenpäin
             const initialRangeStart = this.calendarController.dateCursor.range.start.getDate();
-            const safeDirection = getSafeDirectionForWeekViewWhichDoesntChangeMonth(this.calendarController.dateCursor.range);
-            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, safeDirection));
+            rtu.Simulate.click(Utils.domUtils.findButtonByContent(this.rendered, '>'));
             const savedRangeStart = this.calendarController.dateCursor.range.start.getDate();
             assert.notEqual(savedRangeStart, initialRangeStart);
             // Siirry kuukausinäkymään ...
@@ -113,11 +144,5 @@ define(['src/CalendarLayout', 'test/resources/Utils', 'src/ioc', 'src/Constants'
                 'Ei pitäisi adaptoida kuukausi-viewin range.start'
             );
         });
-        function getSafeDirectionForDayViewWhichDoesntChangeWeek(dayViewRangeStart) {
-            return dayViewRangeStart.getDay() > 2 ? '<' : '>';
-        }
-        function getSafeDirectionForWeekViewWhichDoesntChangeMonth(weekViewRange) {
-            return weekViewRange.end.getDate() > 14 ? '<' : '>';
-        }
     });
 });

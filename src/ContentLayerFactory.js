@@ -36,7 +36,7 @@ define(() => {
          * @access public
          * @param {string} name
          * @param {Array} args
-         * @return {Object} Uusi instanssi sisältölayerista {name}
+         * @returns {Object} Uusi instanssi sisältölayerista {name}
          */
         make(name, args) {
             if (!this.isRegistered(name)) {

@@ -47,12 +47,19 @@ Voidaan käyttää globaalista muuttujasta tai AMD-moduulina. Inferno, preact, t
 ```javascript
 const mySettings = {
     /**
-     * Näkymän nimi, jossa kalenteri renderöityy oletuksena.
+     * Näkymän nimi, johon kalenteri aluksi renderöityy.
      *
      * @prop {string} 'week'|'month'|'day'
      * @default 'week'
      */
     defaultView: 'week',
+    /**
+     * Ajankohta, jonka kalenteri käyttää alustavan aikakursorin luomisessa.
+     *
+     * @prop {Date}
+     * @default new Date()
+     */
+    defaultDate: new Date(2008, 6, 12),
     /**
      * Ladattavien sisältökerroksien nimet.
      *

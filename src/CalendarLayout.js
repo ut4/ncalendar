@@ -8,6 +8,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          * @param {object} props {
          *     settings: {
          *         defaultView: {string},
+         *         defaultDate: {Date},
          *         titleFormatters: {Object},
          *         contentLayers: {Array},
          *         layoutChangeBreakPoint: {number}
@@ -16,16 +17,16 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          */
         constructor(props) {
             super(props);
-            // Settings & mediaQuery
+            // Luo asetukset & rekisteröi mediaquery
             this.settings = settingsFactory.default(this.props.settings || {});
-            this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint || 800}px)`);
-            // State
+            this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
+            // Luo initial state
             const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};
             state.currentView = this.settings.defaultView;
             state.viewLayout = this.newViewLayout(state.currentView, state.dateCursor);
             state.isWindowNarrowerThanBreakPoint = this.smallScreenMediaQuery.matches;
             this.state = state;
-            // Controller
+            //
             this.controller = newController(this);
         }
         /**
@@ -78,13 +79,13 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          * @returns {DateCursor}
          */
         newDateCursor(viewName, lastViewsRange) {
-            return DateCursors.dateCursorFactory.newCursor(viewName, lastViewsRange, () => {
+            return DateCursors.dateCursorFactory.newCursor(viewName, lastViewsRange || this.settings.defaultDate, () => {
                 this.setState({dateCursor: this.state.dateCursor});
             });
         }
         /**
          * @access private
-         * @return {Day|Week|MonthViewLayout}
+         * @returns {Day|Week|MonthViewLayout}
          */
         newViewLayout(viewName, dateCursor) {
             return new ViewLayouts[viewName](dateCursor);
