@@ -72,14 +72,17 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
                 'Pitäisi heittää error'
             );
         });
-        QUnit.test('Asettaa oletusarvot jos puuttuu inputista', assert => {
+        QUnit.test('Asettaa oletusarvot määrittelemättömille asetuksille, ja ignorettaa tuntemattomat', assert => {
             const now = new Date();
-            const settings = settingsFactory.default({});
+            const settings = settingsFactory.default({foo: 'bar'});
             assert.equal(settings.defaultView, Constants.VIEW_DEFAULT);
             assert.equal(settings.defaultDate.toGMTString(), now.toGMTString());
             assert.deepEqual(settings.contentLayers, []);
             assert.deepEqual(settings.titleFormatters, {});
             assert.deepEqual(settings.layoutChangeBreakPoint, 800);
+            assert.equal(settings.hasOwnProperty('foo'), false,
+                'Pitäisi ignorettaa tuntemattomat asetukset'
+            );
         });
     });
 });

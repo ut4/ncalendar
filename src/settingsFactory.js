@@ -1,85 +1,56 @@
-define(['src/Constants'], (Constants) => {
+define(['src/Constants'], Constants => {
     'use strict';
-    /**
-     * @param {string} viewNameKey
-     * @returns {string}
-     * @throws {Error}
-     */
-    function getValidViewName(viewNameKey) {
+    function validateViewKey(viewNameKey) {
         const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
         if (!lookedUpViewName) {
-            throw new Error('Näkymää "' + viewNameKey + '" ei löytynyt');
+            return 'Näkymää "' + viewNameKey + '" ei löytynyt';
         }
-        return lookedUpViewName;
     }
-    /**
-     * @param {Date=} candidate
-     * @returns {Date}
-     * @throws {Error}
-     */
-    function getValidDefaultDate(candidate) {
-        if (!candidate) {
-            return new Date();
-        }
+    function validateDefaultDate(candidate) {
         if (!(candidate instanceof Date)) {
-            throw new Error('defaultDate pitäisi olla Date-instanssi');
+            return 'defaultDate-asetus tulisi olla Date-instanssi';
         }
-        return candidate;
     }
-    /**
-     * @param {Array=} candidate
-     * @returns {Array}
-     * @throws {Error}
-     */
-    function getValidContentLayers(candidate) {
-        if (!candidate) {
-            return [];
-        }
+    function validateLayers(candidate) {
         if (!Array.isArray(candidate)) {
-            throw new Error('contentLayers pitäisi olla taulukko');
+            return 'contentLayers-asetus tulisi olla taulukko';
         }
-        return candidate;
     }
-    /**
-     * @param {Object=} candidate
-     * @returns {Object}
-     * @throws {Error}
-     */
-    function getValidTitleFormatters(candidate) {
-        if (!candidate) {
-            return {};
-        }
+    function validateFormatters(candidate) {
         for (const viewNameKey in candidate) {
             if (typeof candidate[viewNameKey] !== 'function') {
-                throw new Error('titleFormatters[' + viewNameKey + '] pitäisi olla funktio');
+                return 'titleFormatters[' + viewNameKey + '] pitäisi olla funktio';
             }
-            if (viewNameKey !== Constants.VIEW_DAY &&
-                viewNameKey !== Constants.VIEW_WEEK &&
-                viewNameKey !== Constants.VIEW_MONTH) {
-                throw new Error('"' + viewNameKey + '" ei ole validi näkymä');
+            const hintForBadViewName = validateViewKey(viewNameKey);
+            if (hintForBadViewName) {
+                return hintForBadViewName;
             }
         }
-        return candidate;
+    }
+    function validateBreakPoint(candidate) {
+        if (!Number.isInteger(candidate)) {
+            return 'layoutChangeBreakPoint-asetus tulisi olla kokonaisluku';
+        }
     }
     /**
-     * @param {number=} candidate
-     * @returns {number}
+     * @param {any} value Asetuksen arvo
+     * @param {Function} validator Arvon validoija
+     * @param {any} defaultValue Oletusarvo asetukselle, jos value = undefined
+     * @returns {any} Käyttäjän määrittelemä-, tai oletusarvo
      * @throws {Error}
      */
-    function getValidLayoutChangeBreakPoint(candidate) {
-        if (candidate === undefined) {
-            return 800;
+    function getValidValue(value, validator, defaultValue) {
+        if (value === undefined) {
+            return defaultValue;
         }
-        if (!Number.isInteger(candidate)) {
-            throw new Error('layoutChangeBreakPoint pitäisi olla kokonaisluku');
+        const error = validator(value) || null;
+        if (error) {
+            throw new Error(error);
         }
-        return candidate;
+        return value;
     }
     return {
         /**
-         * Palauttaa settings-objektin, tai heittää poikkeuksen jos jokin käyttäjän
-         * määrittelemistä arvoista ei ollut validi.
-         *
          * @param {Object} userSettings
          * @returns {Object} {
          *     defaultView: {string},
@@ -88,16 +59,17 @@ define(['src/Constants'], (Constants) => {
          *     titleFormatters: {Object},
          *     layoutChangeBreakPoint: {number}
          * }
+         * @throws {Error}
          */
-        default: function (userSettings) {
+        default: function(userSettings) {
             return {
-                defaultView: getValidViewName(userSettings.defaultView || 'default'),
-                defaultDate: getValidDefaultDate(userSettings.defaultDate),
-                contentLayers: getValidContentLayers(userSettings.contentLayers),
-                titleFormatters: getValidTitleFormatters(userSettings.titleFormatters),
-                layoutChangeBreakPoint: getValidLayoutChangeBreakPoint(userSettings.layoutChangeBreakPoint)
+                defaultView: this.getValidViewName(userSettings.defaultView),
+                defaultDate: getValidValue(userSettings.defaultDate, validateDefaultDate, new Date()),
+                contentLayers: getValidValue(userSettings.contentLayers, validateLayers, []),
+                titleFormatters: getValidValue(userSettings.titleFormatters, validateFormatters, {}),
+                layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800)
             };
         },
-        getValidViewName
+        getValidViewName: value => getValidValue(value, validateViewKey, Constants.VIEW_DEFAULT)
     };
 });
