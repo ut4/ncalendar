@@ -1,15 +1,15 @@
 define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
     'use strict';
     const dateUtils = ioc.default.dateUtils();
-    const lastRangeCanBeAdapted = (lastSavedRange, startDateOrRangeOfPreviousView) => {
+    const lastRangeCanBeAdapted = (lastSavedRange, startDateOrRangeOfPreviousView) => (
         // Range täytyy olla ylipäätään tallennettu
-        return lastSavedRange &&
+        lastSavedRange &&
         // startDateOrRangeOfPreviousView tulee olla Day|Week|MonthViewCursorRange, eikä Date
                 !(startDateOrRangeOfPreviousView instanceof Date) &&
         // Tallennettu range ei saa olla liian kaukana edellisen viewin rangesta
                 (lastSavedRange.start >= startDateOrRangeOfPreviousView.start &&
-                lastSavedRange.start <= startDateOrRangeOfPreviousView.end);
-    };
+                lastSavedRange.start <= startDateOrRangeOfPreviousView.end)
+    );
     class DayViewCursorRange {
         /**
          * @param {Date|WeekViewCursorRange|MonthViewCursorRange} startDateOrRangeOfPreviousView

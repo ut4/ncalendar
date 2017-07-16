@@ -26,12 +26,12 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
          */
         constructor(props) {
             super(props);
-            this.state = {};
-            const selectedLayers = this.props.calendarController.settings.contentLayers;
-            this.hasAsyncContent = selectedLayers.length > 0;
+            const selectedContentLayers = this.props.calendarController.settings.contentLayers;
+            this.hasAsyncContent = selectedContentLayers.length > 0;
+            this.state = !this.hasAsyncContent ? {} : {loading: true};
             if (this.hasAsyncContent) {
                 const contentLayerFactory = ioc.default.contentLayerFactory();
-                this.contentLayers = selectedLayers.map(name =>
+                this.contentLayers = selectedContentLayers.map(name =>
                     contentLayerFactory.make(name, [
                         this.newController(),
                         this.props.calendarController
@@ -63,6 +63,13 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                     : LoadType.VIEW_CHANGE
                 );
             }
+        }
+        /**
+         * Disabloi renderöinnin silloin, kun sisältökerroksia lataus on
+         * käynnissä.
+         */
+        shouldComponentUpdate(_, state) {
+            return !state.hasOwnProperty('loading') || state.loading !== true;
         }
         /**
          * Lataa & ajaa sisältökerrokset, esim. eventLayerin tapahtumat.
@@ -107,15 +114,15 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             } else {
                 content = this.newTitledContent(cell);
             }
-            const cellAttrs = {className: 'cell'};
+            const attrs = {className: 'cell'};
             if (cell && cell.clickHandlers && cell.clickHandlers.length) {
-                cellAttrs.onClick = e => {
+                attrs.onClick = e => {
                     if (e.which && e.which !== 1) { return; }
                     cell.clickHandlers.forEach(fn => fn(cell, e));
                 };
             }
             return $el('div', {className: 'col', key},
-                $el('div', cellAttrs, content)
+                $el('div', attrs, content)
             );
         }
         /**
