@@ -3,7 +3,7 @@ define(['src/DateCursors', 'src/Constants', 'src/ioc'], (DateCursors, Constants,
     const dateUtils = ioc.default.dateUtils();
     QUnit.module('DateCursors.WeekViewCursorRange', hooks => {
         hooks.beforeEach(() => {
-            this.cursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK, () => {});
+            this.cursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_WEEK, null, () => {});
         });
         QUnit.test('.construct luo viikon pituisen rangen', assert => {
             const now = new Date();

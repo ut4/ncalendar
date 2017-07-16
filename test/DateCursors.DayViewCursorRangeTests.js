@@ -2,7 +2,7 @@ define(['src/DateCursors', 'src/Constants'], (DateCursors, Constants) => {
     'use strict';
     QUnit.module('DateCursors.DayViewCursorRange', hooks => {
         hooks.beforeEach(() => {
-            this.cursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY, () => {});
+            this.cursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY, null, () => {});
         });
         QUnit.test('.construct luo päivän pituisen rangen', assert => {
             const now = new Date();
@@ -45,7 +45,7 @@ define(['src/DateCursors', 'src/Constants'], (DateCursors, Constants) => {
             assert.deepEqual(this.cursor.range.start, expectedStartDate);
             assert.deepEqual(this.cursor.range.end, expectedEndDate);
         });
-        QUnit.test('.reset asettaa rangen takaisin nykyiselle viikolle', assert => {
+        QUnit.test('.reset asettaa rangen takaisin kuluvaan päivään', assert => {
             const initialStart = new Date(this.cursor.range.start);
             const initialEnd = new Date(this.cursor.range.end);
             // Siirrä rangea jonnekkin.

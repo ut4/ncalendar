@@ -1,10 +1,8 @@
 define(['src/Constants'], (Constants) => {
     'use strict';
     /**
-     * Palauttaa validin näkymän nimen, tai heittää errorin jos sitä ei löytynyt
-     * Constants-objektista (VIEW_{viewNameKeyIsoillaKirjaimilla}).
-     *
-     * @param {String} viewNameKey
+     * @param {string} viewNameKey
+     * @returns {string}
      * @throws {Error}
      */
     function getValidViewName(viewNameKey) {
@@ -15,10 +13,22 @@ define(['src/Constants'], (Constants) => {
         return lookedUpViewName;
     }
     /**
-     * Palattaa validin contentLayers-arvon, tai heittää errorin jos {candidate}
-     * ei ollut validi.
-     *
-     * @param {Array} candidate
+     * @param {Date=} candidate
+     * @returns {Date}
+     * @throws {Error}
+     */
+    function getValidDefaultDate(candidate) {
+        if (!candidate) {
+            return new Date();
+        }
+        if (!(candidate instanceof Date)) {
+            throw new Error('defaultDate pitäisi olla Date-instanssi');
+        }
+        return candidate;
+    }
+    /**
+     * @param {Array=} candidate
+     * @returns {Array}
      * @throws {Error}
      */
     function getValidContentLayers(candidate) {
@@ -31,14 +41,8 @@ define(['src/Constants'], (Constants) => {
         return candidate;
     }
     /**
-     * Palauttaa validin titleFormatters-, tai tyhjän objektin, tai heittää
-     * errorin jos jokin {candidaten} arvoista ei ollut validi.
-     *
-     * @param {Object} candidate {
-     *     [Constants.VIEW_DAY]: {Function},
-     *     [Constants.VIEW_WEEK]: {Function},
-     *     [Constants.VIEW_MONTH]: {Function}
-     * }
+     * @param {Object=} candidate
+     * @returns {Object}
      * @throws {Error}
      */
     function getValidTitleFormatters(candidate) {
@@ -58,15 +62,13 @@ define(['src/Constants'], (Constants) => {
         return candidate;
     }
     /**
-     * Palauttaa validin kokonaisluvun layoutChangeBreakPoint-settingsin arvoksi, tai
-     * heittää errorin jos {candidate} ei ollut validi.
-     *
-     * @param {number} candidate
+     * @param {number=} candidate
+     * @returns {number}
      * @throws {Error}
      */
     function getValidLayoutChangeBreakPoint(candidate) {
         if (candidate === undefined) {
-            return undefined;
+            return 800;
         }
         if (!Number.isInteger(candidate)) {
             throw new Error('layoutChangeBreakPoint pitäisi olla kokonaisluku');
@@ -75,12 +77,13 @@ define(['src/Constants'], (Constants) => {
     }
     return {
         /**
-         * Palauttaa validin settings-objektin, tai heittää errorin jos jokin
-         * {userSettings}in arvo ei ollut validi.
+         * Palauttaa settings-objektin, tai heittää poikkeuksen jos jokin käyttäjän
+         * määrittelemistä arvoista ei ollut validi.
          *
          * @param {Object} userSettings
          * @returns {Object} {
          *     defaultView: {string},
+         *     defaultDate: {Date},
          *     contentLayers: {Array},
          *     titleFormatters: {Object},
          *     layoutChangeBreakPoint: {number}
@@ -89,6 +92,7 @@ define(['src/Constants'], (Constants) => {
         default: function (userSettings) {
             return {
                 defaultView: getValidViewName(userSettings.defaultView || 'default'),
+                defaultDate: getValidDefaultDate(userSettings.defaultDate),
                 contentLayers: getValidContentLayers(userSettings.contentLayers),
                 titleFormatters: getValidTitleFormatters(userSettings.titleFormatters),
                 layoutChangeBreakPoint: getValidLayoutChangeBreakPoint(userSettings.layoutChangeBreakPoint)

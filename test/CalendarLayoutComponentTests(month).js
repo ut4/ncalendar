@@ -10,7 +10,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
                     titleFormatters: {[Constants.VIEW_MONTH]: titleFormatter}
                 }})
             );
-            this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH, () => {});
+            this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH, null, () => {});
         });
         QUnit.test('Toolbarin next-sivutuspainike päivittää titlen', assert => {
             // Paina nappia

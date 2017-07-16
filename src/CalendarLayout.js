@@ -8,6 +8,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          * @param {object} props {
          *     settings: {
          *         defaultView: {string},
+         *         defaultDate: {Date},
          *         titleFormatters: {Object},
          *         contentLayers: {Array},
          *         layoutChangeBreakPoint: {number}
@@ -16,16 +17,16 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          */
         constructor(props) {
             super(props);
-            // Settings & mediaQuery
+            // Luo asetukset & rekisteröi mediaquery
             this.settings = settingsFactory.default(this.props.settings || {});
-            this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint || 800}px)`);
-            // State
+            this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
+            // Luo initial state
             const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};
             state.currentView = this.settings.defaultView;
             state.viewLayout = this.newViewLayout(state.currentView, state.dateCursor);
             state.isWindowNarrowerThanBreakPoint = this.smallScreenMediaQuery.matches;
             this.state = state;
-            // Controller
+            //
             this.controller = newController(this);
         }
         /**
@@ -54,7 +55,7 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
             if (this.state.currentView === newView) {
                 return;
             }
-            const state = {dateCursor: this.newDateCursor(newView)};
+            const state = {dateCursor: this.newDateCursor(newView, this.state.dateCursor.range)};
             state.currentView = newView;
             state.viewLayout = this.newViewLayout(newView, state.dateCursor);
             this.setState(state);
@@ -77,14 +78,14 @@ define(['src/Modal', 'src/Toolbar', 'src/ViewLayouts', 'src/DateCursors', 'src/C
          * @access private
          * @returns {DateCursor}
          */
-        newDateCursor(viewName) {
-            return DateCursors.dateCursorFactory.newCursor(viewName, () => {
+        newDateCursor(viewName, lastViewsRange) {
+            return DateCursors.dateCursorFactory.newCursor(viewName, lastViewsRange || this.settings.defaultDate, () => {
                 this.setState({dateCursor: this.state.dateCursor});
             });
         }
         /**
          * @access private
-         * @return {Day|Week|MonthViewLayout}
+         * @returns {Day|Week|MonthViewLayout}
          */
         newViewLayout(viewName, dateCursor) {
             return new ViewLayouts[viewName](dateCursor);
