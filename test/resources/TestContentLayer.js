@@ -7,7 +7,7 @@ define(['src/ComponentConstruct'], (ComponentConstruct) => {
      */
     class TestContentLayer {
         constructor(contentController, calendarController) {
-            this.args = arguments;
+            this.args = [...arguments];
             this.contentController = contentController;
             this.calendarController = calendarController;
             this.loadCount = 0;

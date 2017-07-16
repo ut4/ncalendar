@@ -5,18 +5,21 @@ define(() => {
             this.registrar = {};
         }
         /**
-         * Rekisteröi sisältökerros-luokan {clazz} nimellä {name}, tai heittää
-         * errorin jos {name} on jo rekisteröity.
+         * Rekisteröi sisältökerroksen {ConstructorOrFactory} nimellä {name},
+         * tai heittää poikkeuksen jos {name} on jo rekisteröity.
          *
          * @access public
          * @param {string} name
-         * @param {Function} clazz
+         * @param {Function} ConstructorOrFactory
          */
-        register(name, clazz) {
+        register(name, ConstructorOrFactory) {
             if (this.isRegistered(name)) {
                 throw new Error(`Layer "${name}" on jo rekisteröity.`);
             }
-            this.registrar[name] = clazz;
+            if (typeof ConstructorOrFactory !== 'function') {
+                throw new Error('Rekisteröitävä itemi tulisi olla luokka, tai funktio.');
+            }
+            this.registrar[name] = ConstructorOrFactory;
         }
         /**
          * Palauttaa tiedon löytyykö rekisteristä sisältökerros nimeltä {name}.
@@ -29,9 +32,9 @@ define(() => {
             return this.registrar.hasOwnProperty(name);
         }
         /**
-         * Palauttaa uuden instanssin sisältökerros-luokasta argumenteilla {...args},
-         * joka löytyy rekisteristä nimellä {name}, tai heittää errorin mikäli
-         * luokkaa ei ole rekisteröity.
+         * Luo uuden sisältökerroksen käyttäen rekisteröityä konstruktoria tai
+         * factoryä {name}, tai heittää poikkeuksen mikäli rekisteröityä itemiä
+         * ei löytynyt, tai se oli virheellinen.
          *
          * @access public
          * @param {string} name
@@ -39,11 +42,24 @@ define(() => {
          * @returns {Object} Uusi instanssi sisältölayerista {name}
          */
         make(name, args) {
-            if (!this.isRegistered(name)) {
+            const item = this.registrar[name];
+            if (!item) {
                 throw new Error(`Layeria "${name}" ei ole rekisteröity.`);
             }
-            return new this.registrar[name](...args);
+            if (!isValidContentLayer(item.prototype)) {
+                const providedLayer = item(...args);
+                if (!isValidContentLayer(providedLayer)) {
+                    throw new Error('Sisältökerros-factory:n palauttama instanssi ' +
+                        ' tulisi implementoida metodit "load", ja "decorateCell"');
+                }
+                return providedLayer;
+            } else {
+                return new item(...args);
+            }
         }
+    }
+    function isValidContentLayer(obj) {
+        return obj && typeof obj.load === 'function' && typeof obj.decorateCell === 'function';
     }
     return {default: ContentLayerFactory};
 });

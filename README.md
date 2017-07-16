@@ -94,6 +94,7 @@ const mySettings = {
 ## Extending
 
 ```javascript
+// 1. Implementoi
 class MyContentLayer {
     /**
      * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
@@ -143,7 +144,13 @@ class MyContentLayer {
         }
     }
 }
+
+// 2. Rekisteröi
 nullcalendar.registerContentLayer('foo', MyContentLayer);
+// tai
+nullcalendar.registerContentLayer('foo', (a, b) => new MyContentLayer('something', a, b));
+
+// 3. Ota käyttöön
 nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['foo']});
 ```
 

@@ -76,7 +76,7 @@ define(['src/settingsFactory', 'src/Constants'], (settingsFactory, Constants) =>
             const now = new Date();
             const settings = settingsFactory.default({});
             assert.equal(settings.defaultView, Constants.VIEW_DEFAULT);
-            assert.deepEqual(settings.defaultDate, now);
+            assert.equal(settings.defaultDate.toGMTString(), now.toGMTString());
             assert.deepEqual(settings.contentLayers, []);
             assert.deepEqual(settings.titleFormatters, {});
             assert.deepEqual(settings.layoutChangeBreakPoint, 800);
