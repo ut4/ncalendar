@@ -13,6 +13,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_MONTH, null, () => {});
         });
         QUnit.test('Toolbarin next-sivutuspainike päivittää titlen', assert => {
+            assert.ok(containsCurrentDayColumns(this.rendered), 'Pitäisi sisältää ".current"-sarake');
             // Paina nappia
             const nextMonthButton = domUtils.findButtonByContent(this.rendered, '>');
             ReactTestUtils.Simulate.click(nextMonthButton);
@@ -21,6 +22,9 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             // Assertoi että title päivittyi seuraavaan kuukauteen
             const expectedTitleContent = titleFormatter(this.replicatedCursor.range);
             assert.equal(domUtils.getElementContent(this.rendered, 'h2'), expectedTitleContent);
+            assert.notOk(containsCurrentDayColumns(this.rendered),
+                'Ei pitäisi sisältää ".current"-saraketta, jos kyseessä ei kuluva kuukausi'
+            );
         });
         QUnit.test('Toolbarin prev-sivutuspainike päivittää titlen', assert => {
             // Paina nappia
@@ -45,5 +49,8 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             const titleContentAfter = domUtils.getElementContent(this.rendered, 'h2');
             assert.equal(titleContentAfter, initialTitleContent);
         });
+        function containsCurrentDayColumns(rendered) {
+           return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'current').length > 0;
+        }
     });
 });

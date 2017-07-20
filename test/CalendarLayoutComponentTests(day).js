@@ -1,6 +1,7 @@
-define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resources/Utils'], (CalendarLayout, DateCursors, Constants, Utils) => {
+define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resources/Utils', 'src/ioc'], (CalendarLayout, DateCursors, Constants, Utils, ioc) => {
     'use strict';
     const domUtils = Utils.domUtils;
+    const dateUtils = ioc.default.dateUtils();
     QUnit.module('CalendarLayoutComponent(day)', hooks => {
         const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
         hooks.beforeEach(() => {
@@ -13,7 +14,7 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             this.replicatedCursor = DateCursors.dateCursorFactory.newCursor(Constants.VIEW_DAY, null, () => {});
         });
         QUnit.test('Toolbarin next-sivutuspainike päivittää titlen, ja päivä-headerin', assert => {
-            const initialHeaderlineContent = domUtils.getElementContent(this.rendered, '.header');
+            assert.ok(containsCurrentDayColumns(this.rendered), 'Pitäisi sisältää ".current"-sarake');
             // Paina nappia
             const nextDayButton = domUtils.findButtonByContent(this.rendered, '>');
             ReactTestUtils.Simulate.click(nextDayButton);
@@ -24,11 +25,13 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             assert.equal(domUtils.getElementContent(this.rendered, 'h2'), expectedTitleContent);
             // Assertoi, että headerline päivittyi
             const headerlineContentAfter = domUtils.getElementContent(this.rendered, '.header');
-            assert.notEqual(headerlineContentAfter, initialHeaderlineContent);
-            // TODO assertoi että headerline meni eteenpäin
+            const expectedHeaderContent = getWeekDay(this.replicatedCursor.range.start);
+            assert.equal(headerlineContentAfter, expectedHeaderContent);
+            assert.notOk(containsCurrentDayColumns(this.rendered),
+                'Ei pitäisi sisältää ".current"-saraketta, jos kyseessä ei kuluva päivä'
+            );
         });
         QUnit.test('Toolbarin prev-sivutuspainike päivittää titlen, ja päivä-headerin', assert => {
-            const initialHeaderlineContent = domUtils.getElementContent(this.rendered, '.header');
             // Paina nappia
             const prevDayButton = domUtils.findButtonByContent(this.rendered, '<');
             ReactTestUtils.Simulate.click(prevDayButton);
@@ -39,8 +42,8 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             assert.equal(domUtils.getElementContent(this.rendered, 'h2'), expectedTitleContent);
             // Assertoi, että headerline päivittyi
             const headerlineContentAfter = domUtils.getElementContent(this.rendered, '.header');
-            assert.notEqual(headerlineContentAfter, initialHeaderlineContent);
-            // TODO assertoi että headerline meni taaksepäin
+            const expectedHeaderContent = getWeekDay(this.replicatedCursor.range.start);
+            assert.equal(headerlineContentAfter, expectedHeaderContent);
         });
         QUnit.test('Toolbarin tänään-sivutuspainike vie takaisin tähän päivään', assert => {
             const initialTitleContent = domUtils.getElementContent(this.rendered, 'h2');
@@ -49,6 +52,8 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             const nextDayButton = domUtils.findButtonByContent(this.rendered, '>');
             ReactTestUtils.Simulate.click(nextDayButton);
             ReactTestUtils.Simulate.click(nextDayButton);
+            assert.notEqual(domUtils.getElementContent(this.rendered, 'h2'), initialTitleContent);
+            assert.notEqual(domUtils.getElementContent(this.rendered, '.header'), initialHeaderlineContent);
             // Siirrä takaisin tälle viikolle
             const currentDayButton = domUtils.findButtonByContent(this.rendered, 'Tänään');
             ReactTestUtils.Simulate.click(currentDayButton);
@@ -58,5 +63,11 @@ define(['src/CalendarLayout', 'src/DateCursors', 'src/Constants', 'test/resource
             const headerlineContentAfter = domUtils.getElementContent(this.rendered, '.header');
             assert.equal(headerlineContentAfter, initialHeaderlineContent);
         });
+        function containsCurrentDayColumns(rendered) {
+           return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'current').length > 0;
+        }
+        function getWeekDay(date) {
+            return dateUtils.format({weekday: 'long'}, date);
+        }
     });
 });

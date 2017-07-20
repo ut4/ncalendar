@@ -18,7 +18,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
          */
         generateFullGrid() {
             // Vuorokauden jokaiselle tunnille rivi, ...
-            return Content.HOURS_ARRAY.map(hour => {
+            return this.markCurrentDayColumn(Content.HOURS_ARRAY.map(hour => {
                 const rollingDate = new Date(this.dateCursor.range.start);
                 rollingDate.setHours(hour);
                 // jossa tuntisarake, ...
@@ -28,7 +28,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
                     rollingDate.setDate(rollingDate.getDate() + 1);
                 }
                 return row;
-            });
+            }));
         }
         /**
          * Generoi viikonpäivien nimet täydellisessä muodossa 2 * 4 taulukkoon
@@ -48,7 +48,7 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
                 rollingDate.setDate(rollingDate.getDate() + 1);
                 return d;
             };
-            return [
+            return this.markCurrentDayColumn([
                 [
                     new Content.Cell(dayNames[0], getDateAndMoveToNexDay()),
                     new Content.Cell(dayNames[1], getDateAndMoveToNexDay())
@@ -62,7 +62,27 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
                     new Content.Cell(dayNames[6], getDateAndMoveToNexDay()),
                     new Content.PlaceholderCell(null, null)
                 ]
-            ];
+            ], true);
+        }
+        /**
+         * Asettaa kuluvalle päivälle kuuluvien Cell-instanssien
+         * isCurrentDay -> true.
+         *
+         * @access private
+         */
+        markCurrentDayColumn(grid, isCompactView) {
+            const now = new Date();
+            // range == kuluva viikko?
+            if (this.dateUtils.getStartOfWeek(now).toDateString() ===
+                this.dateCursor.range.start.toDateString()) {
+                const colIndex = now.getDay() || 7;
+                if (!isCompactView) {
+                    grid.forEach(row => { row[colIndex].isCurrentDay = true; });
+                } else {
+                    grid[Math.round(colIndex / 2) - 1][!(colIndex % 2) ? 1 : 0].isCurrentDay = true;
+                }
+            }
+            return grid;
         }
     }
     return {default: WeekViewLayout};

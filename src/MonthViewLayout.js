@@ -18,9 +18,10 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/ioc', 'src/Constants'], (A
          */
         generateFullGrid() {
             const d = new Date(this.dateCursor.range.start);
+            const currentDayDateStr = new Date().toDateString();
             // Generoi rivit viikonpäiville
             return this.generateGrid(Constants.DAYS_IN_WEEK, d =>
-                new Content.Cell(d.getDate(), new Date(d))
+                new Content.Cell(d.getDate(), new Date(d), d.toDateString() === currentDayDateStr)
             // Lisää jokaisen rivi alkuun viikkonumero
             ).map(row => {
                 row.unshift(new Content.ImmutableCell(dateUtils.getWeekNumber(d)));
@@ -40,13 +41,14 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/ioc', 'src/Constants'], (A
                 this.dateCursor.range.start,
                 Intl.DateTimeFormat('fi', {weekday: 'short'})
             );
+            const currentDayDateStr = new Date().toDateString();
             return this.generateGrid(2, d => {
                 const dateAndDayName = d.getDate() + ' ' + dayNames[(d.getDay() || 7) - 1];
                 // Lisää viikkonumero ensimmäisen solun-, ja viikon ensimmäisten päivien perään
                 return new Content.Cell(d.getDay() !== 1 && d.getDate() > 1
                     ? dateAndDayName
                     : [dateAndDayName, $el('span', null, ' / Vk' + dateUtils.getWeekNumber(d))]
-                , new Date(d));
+                , new Date(d), d.toDateString() === currentDayDateStr);
             });
         }
         /**

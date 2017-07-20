@@ -121,7 +121,7 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
                     cell.clickHandlers.forEach(fn => fn(cell, e));
                 };
             }
-            return $el('div', {className: 'col', key},
+            return $el('div', {className: 'col' + (cell && cell.isCurrentDay ? ' current' : ''), key},
                 $el('div', attrs, content)
             );
         }
@@ -155,17 +155,18 @@ define(['src/Constants', 'src/ioc'], (Constants, ioc) => {
             };
         }
         render() {
-            return $el('div', {className: 'main'}, this.props.grid.map((row, ri) =>
-                $el('div', {className: 'row', key: ri},
-                    row.map((cell, ci) => this.newCell(cell, ri+'.'+ci)
+            return $el('div', {className: 'main'}, this.props.grid.map((row, rowIndex) =>
+                $el('div', {className: 'row', key: rowIndex},
+                    row.map((cell, colIndex) => this.newCell(cell, rowIndex + '.' + colIndex)
                 ))
             ));
         }
     }
     class Cell {
-        constructor(content, date) {
-            this.date = date;
+        constructor(content, date, isCurrentDay) {
             this.content = content;
+            this.date = date;
+            this.isCurrentDay = isCurrentDay;
             this.children = [];
             this.clickHandlers = [];
         }

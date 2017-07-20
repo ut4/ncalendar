@@ -27,13 +27,14 @@ define(['src/AbstractViewLayout', 'src/Content', 'src/Constants'], (AbstractView
          */
         generateFullGrid() {
             const rollingDate = new Date(this.dateCursor.range.start);
+            const isToday = rollingDate.toDateString() === new Date().toDateString();
             // Päivän jokaiselle tunnille rivi, ...
             return Content.HOURS_ARRAY.map(hour => {
                 rollingDate.setHours(hour);
                 // jossa tuntisarake, ja sisältösarake.
                 return [
                     new Content.ImmutableCell(this.dateUtils.formatHour(hour)),
-                    new Content.Cell(null, new Date(rollingDate))
+                    new Content.Cell(null, new Date(rollingDate), isToday)
                 ];
             });
         }

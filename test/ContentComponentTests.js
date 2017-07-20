@@ -2,15 +2,26 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
     'use strict';
     const dateUtils = ioc.default.dateUtils();
     const newDateCursor = DateCursors.dateCursorFactory.newCursor;
-    QUnit.module('ContentComponent', () => {
+    QUnit.module('ContentComponent', hooks => {
+        hooks.afterEach(assert => {
+            if (!this.expectedCurrentDayColEls.length) {
+                throw new Error('Nyt on Sepon logiikka pettänyt.. gridillä pitäisi olla ' +
+                'ainakin yksi sarake, jossa CSS-luokka ".current"');
+            }
+            assert.ok(this.expectedCurrentDayColEls.every(el => el.classList.contains('current')),
+                'Pitäisi asettaa kuluvan päivän sarakkeisiin CSS-luokka ".current"'
+            );
+        });
         QUnit.test('day-gridillä renderöi 24-riviä joissa tuntisolu, ja 1 sisältösolu', assert => {
             const renderedRows = getRenderedRows(ReactTestUtils.renderIntoDocument(
                 $el(Content.default, makeProps(Constants.VIEW_DAY))
             ));
             assert.equal(renderedRows.length, 24);
+            this.expectedCurrentDayColEls = [];
             renderedRows.forEach((row, hour) => {
                 assert.equal(row.children[0].textContent, dateUtils.formatHour(hour)); // Tuntisarake
                 assert.equal(row.children[1].textContent, '');                         // Sisältösolu
+                this.expectedCurrentDayColEls.push(row.children[1]);
                 assert.equal(row.children.length, 2);
             });
         });
@@ -19,11 +30,14 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
                 $el(Content.default, makeProps(Constants.VIEW_WEEK))
             ));
             assert.equal(renderedRows.length, 24);
+            this.expectedCurrentDayColEls = [];
+            const expectedCurrentDayColIndex = new Date().getDay() || 7;
             renderedRows.forEach((row, hour) => {
                 assert.equal(row.children[0].textContent, dateUtils.formatHour(hour)); // Tuntisarake
                 assert.equal(row.children[1].textContent, '');                         // Sisältösolu (maanantai)
                 // kertaa 7
                 assert.equal(row.children.length, 8);
+                this.expectedCurrentDayColEls.push(row.children[expectedCurrentDayColIndex]);
             });
         });
         QUnit.test('compact week-gridillä renderöi 4-riviä joissa 2 päiväsolua otsikkona täydellinen viikonpäivän nimi', assert => {
@@ -35,13 +49,13 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
                 new Date(),
                 Intl.DateTimeFormat('fi', {weekday: 'long'})
             );
-            assert.equal(renderedRows[0].children[0].textContent, dayNames[0]);
-            assert.equal(renderedRows[0].children[1].textContent, dayNames[1]);
-            assert.equal(renderedRows[1].children[0].textContent, dayNames[2]);
-            assert.equal(renderedRows[1].children[1].textContent, dayNames[3]);
-            assert.equal(renderedRows[2].children[0].textContent, dayNames[4]);
-            assert.equal(renderedRows[2].children[1].textContent, dayNames[5]);
-            assert.equal(renderedRows[3].children[0].textContent, dayNames[6]);
+            const expectedCurrentDayColIndex = new Date().getDay() || 7;
+            [[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[3,0]].forEach(([rowIdx, colIdx], i) => {
+                assert.equal(renderedRows[rowIdx].children[colIdx].textContent, dayNames[i]);
+                if (i + 1 === expectedCurrentDayColIndex) {
+                    this.expectedCurrentDayColEls = [renderedRows[rowIdx].children[colIdx]];
+                }
+            });
             assert.equal(renderedRows[3].children[1].textContent, '');
         });
         QUnit.test('month-gridillä renderöi solun jokaiselle kuukauden päivälle 7-levyisinä riveinä', assert => {
@@ -50,17 +64,21 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
             const renderedRows = getRenderedRows(ReactTestUtils.renderIntoDocument(
                 $el(Content.default, makeProps(Constants.VIEW_MONTH))
             ));
-            const currentDate = new Date(dateCursor.range.start);
+            const rangeStart = new Date(dateCursor.range.start);
             // Assertoi, että generoi oikean määrän rivejä
             assert.equal(renderedRows.length, getExpectedMonthCellCount(dateCursor, 7) / expectedRowLength);
             // Assertoi, että renderöi päivänumeron vain tämän kuukauden soluihin, ja renderöi viikkonumeron
             // jokaisen rivin alkuun
-            const rollingDate = new Date(currentDate);
+            const currentDayDateStr = new Date().toDateString();
+            const rollingDate = new Date(rangeStart);
             rollingDate.setDate(2 - (rollingDate.getDay() || 7));// tyhjien solujen lukumäärä
             renderedRows.forEach(row => {
                 Array.from(row.children).forEach((col, i) => {
                     if (i) {
-                        assert.equal(col.textContent, rollingDate.getMonth() === currentDate.getMonth() ? rollingDate.getDate() : '');
+                        assert.equal(col.textContent, rollingDate.getMonth() === rangeStart.getMonth() ? rollingDate.getDate() : '');
+                        if (rollingDate.toDateString() === currentDayDateStr) {
+                            this.expectedCurrentDayColEls = [col];
+                        }
                         rollingDate.setDate(rollingDate.getDate() + 1);
                     } else {
                         assert.equal(col.textContent, dateUtils.getWeekNumber(rollingDate),
@@ -79,13 +97,17 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
                 $el(Content.default, makeProps(Constants.VIEW_MONTH, true))
             ));
             assert.equal(renderedRows.length, getExpectedMonthCellCount(dateCursor, 2) / 2);
-            const currentDate = new Date(dateCursor.range.start);
+            const currentDayDateStr = new Date().toDateString();
+            const rangeStart = new Date(dateCursor.range.start);
             const rollingDate = new Date(dateCursor.range.start);
             renderedRows.forEach(row => {
-                assert.equal(row.children[0].textContent, getExpectedCompactMonthCellTitle(rollingDate, currentDate));
-                rollingDate.setDate(rollingDate.getDate() + 1);
-                assert.equal(row.children[1].textContent, getExpectedCompactMonthCellTitle(rollingDate, currentDate));
-                rollingDate.setDate(rollingDate.getDate() + 1);
+                [0,1].forEach(i => {
+                    assert.equal(row.children[i].textContent, getExpectedCompactMonthCellTitle(rollingDate, rangeStart));
+                    if (rollingDate.toDateString() === currentDayDateStr) {
+                        this.expectedCurrentDayColEls = [row.children[i]];
+                    }
+                    rollingDate.setDate(rollingDate.getDate() + 1);
+                });
                 assert.equal(row.children.length, 2);
             });
         });
@@ -100,11 +122,11 @@ define(['src/Content', 'src/ViewLayouts', 'src/DateCursors', 'src/Constants', 's
     function getRenderedRows(rendered) {
         return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'row');
     }
-    function getExpectedCompactMonthCellTitle(date, currentDate) {
-        if (date.getMonth() !== currentDate.getMonth()) {
+    function getExpectedCompactMonthCellTitle(date, rangeStart) {
+        if (date.getMonth() !== rangeStart.getMonth()) {
             return '';
         }
-        const isFirstCell = date.toISOString() === currentDate.toISOString();
+        const isFirstCell = date.toISOString() === rangeStart.toISOString();
         return date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date) +
             // Pitäisi sisältää viikkonumero, jos viikon ensimmäinen päivä, tai gridin ensimmäinen solu
             (date.getDay() !== 1 && !isFirstCell ? '' : ' / Vk' + dateUtils.getWeekNumber(date));
