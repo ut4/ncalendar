@@ -18,6 +18,10 @@ define(['src/CalendarLayout', 'src/ioc'], (CalendarLayout, ioc) => {
          * @param {Object} Class Sisältökerroksen implementaatio @see https://github.com/ut4/ncalendar#extending
          */
         registerContentLayer: (name, Class) =>
-            contentLayerFactory.register(name, Class)
+            contentLayerFactory.register(name, Class),
+        /**
+         * @prop {React.Component} Kalenterin juurikomponentti @see https://github.com/ut4/ncalendar#usage-jsx
+         */
+        Calendar: CalendarLayout
     };
 });

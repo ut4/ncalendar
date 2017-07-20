@@ -10,7 +10,7 @@ Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMA
 
 ## Usage
 
-Voidaan käyttää globaalista muuttujasta tai AMD-moduulina. Inferno, preact, tai React tulee ladata ennen nullcalendaria.
+Voidaan käyttää globaalista muuttujasta, AMD-moduulina, tai suoraan react-komponenttina. Inferno, preact, tai React tulee ladata ennen nullcalendaria.
 
 ### Usage - Inferno
 
@@ -40,6 +40,19 @@ Voidaan käyttää globaalista muuttujasta tai AMD-moduulina. Inferno, preact, t
 <script src="unpkg.com/react-dom@0.14.9/dist/react-dom.min.js"></script>
 <script src="dist/nullcalendar.min.js"></script>
 <script>nullcalendar.newCalendar(document.getElementById('foo')/*, settings*/);</script>
+```
+
+### Usage - JSX
+
+```jsx
+class SomeComponent extends React.Component {
+    render() {
+        return <div>
+            <h1>Hurrdurr</h1>
+            <nullcalendar.Calendar settings={/*settings*/}/>
+        </div>;
+    }
+}
 ```
 
 ### Example settings
