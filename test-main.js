@@ -1,5 +1,8 @@
 import './app-header.js';
 import './test-header.js';
+import './test/event/CalendarLayoutComponentTests(with-eventlayer)';
+import './test/event/EventLayerTests';
+import './test/event/EventModalComponentTests';
 import './test/CalendarLayoutComponentTests';
 import './test/CalendarLayoutComponentTests(day)';
 import './test/CalendarLayoutComponentTests(month)';
