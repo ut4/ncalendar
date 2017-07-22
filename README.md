@@ -1,6 +1,6 @@
 # Nullcalendar
 
-Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa.
+Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa. Dev-ympäristö vaatii selaimen, joka tulee ES6-moduuleja natiivisti; ks [lista](https://jakearchibald.com/2017/es-modules-in-browsers/).
 
 ## Features
 
@@ -10,7 +10,7 @@ Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMA
 
 ## Usage
 
-Voidaan käyttää globaalista muuttujasta tai AMD-moduulina. Inferno, preact, tai React tulee ladata ennen nullcalendaria.
+Voidaan käyttää globaalista muuttujasta, AMD-moduulina, tai suoraan react-komponenttina. Inferno, preact, tai React tulee ladata ennen nullcalendaria.
 
 ### Usage - Inferno
 
@@ -40,6 +40,19 @@ Voidaan käyttää globaalista muuttujasta tai AMD-moduulina. Inferno, preact, t
 <script src="unpkg.com/react-dom@0.14.9/dist/react-dom.min.js"></script>
 <script src="dist/nullcalendar.min.js"></script>
 <script>nullcalendar.newCalendar(document.getElementById('foo')/*, settings*/);</script>
+```
+
+### Usage - JSX
+
+```jsx
+class SomeComponent extends React.Component {
+    render() {
+        return <div>
+            <h1>Hurrdurr</h1>
+            <nullcalendar.Calendar settings={/*settings*/}/>
+        </div>;
+    }
+}
 ```
 
 ### Example settings
@@ -94,6 +107,7 @@ const mySettings = {
 ## Extending
 
 ```javascript
+// 1. Implementoi
 class MyContentLayer {
     /**
      * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
@@ -143,7 +157,13 @@ class MyContentLayer {
         }
     }
 }
+
+// 2. Rekisteröi
 nullcalendar.registerContentLayer('foo', MyContentLayer);
+// tai
+nullcalendar.registerContentLayer('foo', (a, b) => new MyContentLayer('something', a, b));
+
+// 3. Ota käyttöön
 nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['foo']});
 ```
 

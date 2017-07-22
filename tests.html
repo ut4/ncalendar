@@ -12,9 +12,6 @@
         <!-- 1. Inferno setup --> <script src="vendor/app-vendor-inferno.js"></script><script src="vendor/test-vendor-inferno.js"></script>
         <!-- 3. React setup <script src="vendor/app-vendor-react.js"></script> -->
         <script src="vendor/test-vendor-common.js"></script>
-        <script src="vendor/require.js"></script>
-        <script src="app-header.js"></script>
-        <script src="test-header.js"></script>
         <script>
             QUnit.config.autostart = false;
             // Siivoaa elementit, jotka ReactTestUtils renderöi documentin
@@ -30,24 +27,6 @@
             });
         </script>
         <!-- Itse testien lataus -->
-        <script id="test-boot">require([
-            'test/event/CalendarLayoutComponentTests(with-eventlayer)',
-            'test/event/EventLayerTests',
-            'test/event/EventModalComponentTests',
-            'test/CalendarLayoutComponentTests',
-            'test/CalendarLayoutComponentTests(day)',
-            'test/CalendarLayoutComponentTests(month)',
-            'test/CalendarLayoutComponentTests(week)',
-            'test/CalendarLayoutComponentTests(with-decorators)',
-            'test/ContentComponentTests',
-            'test/DateCursors.dateCursorFactoryTests',
-            'test/DateCursors.DayViewCursorRangeTests',
-            'test/DateCursors.MonthViewCursorRangeTests',
-            'test/DateCursors.WeekViewCursorRangeTests',
-            'test/DateCursorStateTests',
-            'test/HeaderComponentTests',
-            'test/ModalComponentTests',
-            'test/settingsFactoryTests'
-        ], QUnit.start);</script>
+        <script type="module" src="test-main.js" id="test-boot"></script>
     </body>
 </html>

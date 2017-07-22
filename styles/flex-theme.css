@@ -8,6 +8,7 @@
         .cal .main .cell:before { content: ""; position: absolute; width: 88%;
             border-bottom: 1px dotted #e0e0e0; margin: 0 4%; bottom: 50% }
         .cal .col { text-transform: capitalize; }
+        .cal .col.current { background-color: #efefef }
         .cal .col:first-of-type .cell:before { display: none }
         .cal.week .col.today { background-color: #FCF8E3 }
             .cal.month .main .cell:before { content: initial }

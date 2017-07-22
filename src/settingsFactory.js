@@ -1,103 +1,71 @@
-define(['src/Constants'], (Constants) => {
-    'use strict';
-    /**
-     * @param {string} viewNameKey
-     * @returns {string}
-     * @throws {Error}
-     */
-    function getValidViewName(viewNameKey) {
-        const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
-        if (!lookedUpViewName) {
-            throw new Error('Näkymää "' + viewNameKey + '" ei löytynyt');
-        }
-        return lookedUpViewName;
+import Constants from './Constants.js';
+
+function validateViewKey(viewNameKey) {
+    const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
+    if (!lookedUpViewName) {
+        return 'Näkymää "' + viewNameKey + '" ei löytynyt';
     }
-    /**
-     * @param {Date=} candidate
-     * @returns {Date}
-     * @throws {Error}
-     */
-    function getValidDefaultDate(candidate) {
-        if (!candidate) {
-            return new Date();
-        }
-        if (!(candidate instanceof Date)) {
-            throw new Error('defaultDate pitäisi olla Date-instanssi');
-        }
-        return candidate;
+}
+function validateDefaultDate(candidate) {
+    if (!(candidate instanceof Date)) {
+        return 'defaultDate-asetus tulisi olla Date-instanssi';
     }
-    /**
-     * @param {Array=} candidate
-     * @returns {Array}
-     * @throws {Error}
-     */
-    function getValidContentLayers(candidate) {
-        if (!candidate) {
-            return [];
-        }
-        if (!Array.isArray(candidate)) {
-            throw new Error('contentLayers pitäisi olla taulukko');
-        }
-        return candidate;
+}
+function validateLayers(candidate) {
+    if (!Array.isArray(candidate)) {
+        return 'contentLayers-asetus tulisi olla taulukko';
     }
-    /**
-     * @param {Object=} candidate
-     * @returns {Object}
-     * @throws {Error}
-     */
-    function getValidTitleFormatters(candidate) {
-        if (!candidate) {
-            return {};
+}
+function validateFormatters(candidate) {
+    for (const viewNameKey in candidate) {
+        if (typeof candidate[viewNameKey] !== 'function') {
+            return 'titleFormatters[' + viewNameKey + '] pitäisi olla funktio';
         }
-        for (const viewNameKey in candidate) {
-            if (typeof candidate[viewNameKey] !== 'function') {
-                throw new Error('titleFormatters[' + viewNameKey + '] pitäisi olla funktio');
-            }
-            if (viewNameKey !== Constants.VIEW_DAY &&
-                viewNameKey !== Constants.VIEW_WEEK &&
-                viewNameKey !== Constants.VIEW_MONTH) {
-                throw new Error('"' + viewNameKey + '" ei ole validi näkymä');
-            }
+        const hintForBadViewName = validateViewKey(viewNameKey);
+        if (hintForBadViewName) {
+            return hintForBadViewName;
         }
-        return candidate;
     }
-    /**
-     * @param {number=} candidate
-     * @returns {number}
-     * @throws {Error}
-     */
-    function getValidLayoutChangeBreakPoint(candidate) {
-        if (candidate === undefined) {
-            return 800;
-        }
-        if (!Number.isInteger(candidate)) {
-            throw new Error('layoutChangeBreakPoint pitäisi olla kokonaisluku');
-        }
-        return candidate;
+}
+function validateBreakPoint(candidate) {
+    if (!Number.isInteger(candidate)) {
+        return 'layoutChangeBreakPoint-asetus tulisi olla kokonaisluku';
     }
-    return {
-        /**
-         * Palauttaa settings-objektin, tai heittää poikkeuksen jos jokin käyttäjän
-         * määrittelemistä arvoista ei ollut validi.
-         *
-         * @param {Object} userSettings
-         * @returns {Object} {
-         *     defaultView: {string},
-         *     defaultDate: {Date},
-         *     contentLayers: {Array},
-         *     titleFormatters: {Object},
-         *     layoutChangeBreakPoint: {number}
-         * }
-         */
-        default: function (userSettings) {
-            return {
-                defaultView: getValidViewName(userSettings.defaultView || 'default'),
-                defaultDate: getValidDefaultDate(userSettings.defaultDate),
-                contentLayers: getValidContentLayers(userSettings.contentLayers),
-                titleFormatters: getValidTitleFormatters(userSettings.titleFormatters),
-                layoutChangeBreakPoint: getValidLayoutChangeBreakPoint(userSettings.layoutChangeBreakPoint)
-            };
-        },
-        getValidViewName
-    };
+}
+/**
+ * @param {any} value Asetuksen arvo
+ * @param {Function} validator Arvon validoija
+ * @param {any} defaultValue Oletusarvo asetukselle, jos value = undefined
+ * @returns {any} Käyttäjän määrittelemä-, tai oletusarvo
+ * @throws {Error}
+ */
+function getValidValue(value, validator, defaultValue) {
+    if (value === undefined) {
+        return defaultValue;
+    }
+    const error = validator(value) || null;
+    if (error) {
+        throw new Error(error);
+    }
+    return value;
+}
+const getValidViewName = value => getValidValue(value, validateViewKey, Constants.VIEW_DEFAULT);
+/**
+ * @param {Object} userSettings
+ * @returns {Object} {
+ *     defaultView: {string},
+ *     defaultDate: {Date},
+ *     contentLayers: {Array},
+ *     titleFormatters: {Object},
+ *     layoutChangeBreakPoint: {number}
+ * }
+ * @throws {Error}
+ */
+export default userSettings => ({
+    defaultView: getValidViewName(userSettings.defaultView),
+    defaultDate: getValidValue(userSettings.defaultDate, validateDefaultDate, new Date()),
+    contentLayers: getValidValue(userSettings.contentLayers, validateLayers, []),
+    titleFormatters: getValidValue(userSettings.titleFormatters, validateFormatters, {}),
+    layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800)
 });
+export {getValidViewName};
