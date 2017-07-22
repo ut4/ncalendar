@@ -1,6 +1,6 @@
 # Nullcalendar
 
-Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa.
+Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa. Dev-ympäristö vaatii selaimen, joka tulee ES6-moduuleja natiivisti; ks [lista](https://jakearchibald.com/2017/es-modules-in-browsers/).
 
 ## Features
 

@@ -1,4 +1,3 @@
-require(['nullcalendar'], (nullcalendar) => {
-    'use strict';
-    nullcalendar.newCalendar(document.getElementById('cal'));
-});
+import nullcalendar from './nullcalendar.js';
+
+nullcalendar.newCalendar(document.getElementById('cal'));
