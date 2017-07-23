@@ -117,7 +117,7 @@ class MyContentLayer {
         console.log(typeof contentController.refresh);     // function
         console.log(typeof calendarController.changeView); // function
         this.contentController = contentController;
-        this.content = 'yayy';
+        this.text = 'yayy';
     }
     /**
      * Triggeröityy aina kun sivu ladataan, kalenterin view vaihtuu, tai
@@ -149,10 +149,19 @@ class MyContentLayer {
             return;
         }
         if (cell.date.getDay() === 5) {
-            cell.content = `Friday, ${this.content}!`;
-            cell.clickHandlers.push(e => {
-                this.content = this.content === 'yayy' ? 'nyayy' : 'yayy';
-                this.contentController.refresh();
+            cell.content = `Friday, ${this.text}!`;
+            // contentController.refresh = dekoroi & renderöi layerit uudelleen
+            // contentController.reRender = pelkästään renderöi layerit uudelleen
+            cell.clickHandlers.push((cell, e) => {
+                if (Math.random() > 0.5) {
+                    console.log('Refreshing...');
+                    this.text = this.text === 'yayy' ? 'nyayy' : 'yayy';
+                    this.contentController.refresh();
+                } else {
+                    console.log('ReRendering...');
+                    cell.content += '!';
+                    this.contentController.reRender();
+                }
             });
         }
     }
@@ -187,6 +196,7 @@ nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['foo']
 ### Methods
 
 - contentController.refresh()
+- contentController.reRender()
 
 ### Properties
 

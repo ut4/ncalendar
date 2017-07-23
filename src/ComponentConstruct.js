@@ -1,7 +1,8 @@
 class ComponentConstruct {
-    constructor(Component, props) {
+    constructor(Component, props, content) {
         this.Component = Component;
         this.props = props;
+        this.content = content;
     }
 }
 

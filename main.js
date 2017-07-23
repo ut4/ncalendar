@@ -1,3 +1,4 @@
+import './app-header.js';
 import nullcalendar from './nullcalendar.js';
 
-nullcalendar.newCalendar(document.getElementById('cal'));
+export default nullcalendar;

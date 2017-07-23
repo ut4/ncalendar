@@ -66,7 +66,7 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             // Päivitä dekoroitava luku, ja triggeröi contentController.refresh
             const newDecorating = 45;
             expectedTestLayer.setLoadCount(newDecorating);
-            expectedTestLayer.triggerContentRefresh();
+            expectedTestLayer.getContentController().refresh();
             assert.ok(
                 decoratingSpy.callCount,
                 Constants.DAYS_IN_WEEK * Constants.HOURS_IN_DAY,
@@ -80,6 +80,27 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
                 this.contentLoadCallSpy.notCalled,
                 'Ei pitäisi uudelleenladata sisältöä'
             );
+            done();
+        });
+    });
+    QUnit.test('contentController.reRender renderöi sisällön uudestaan', assert => {
+        const rendered = render();
+        const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+        //
+        const done = assert.async();
+        this.contentLoadCallSpy.firstCall.returnValue.then(() => {
+            const decoratingSpy = sinon.spy(expectedTestLayer, 'decorateCell');
+            // Päivitä ensimmäisen solun sisältö & kutsu reRender
+            const updatedFirstCellContent = 'klyu';
+            expectedTestLayer.getFirstCell().content = updatedFirstCellContent;
+            expectedTestLayer.getContentController().reRender();
+            // Assertoi, että renderöi päivitetyn sisällön
+            assert.ok(
+                getRenderedRows(rendered)[0].textContent.indexOf(updatedFirstCellContent) > -1,
+                updatedFirstCellContent,
+                'Pitäisi renderöidä päivitetty sisältö'
+            );
+            assert.ok(decoratingSpy.notCalled, 'Ei pitäisi dekoroida uudelleen');
             done();
         });
     });

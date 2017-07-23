@@ -1,6 +1,4 @@
-import ComponentConstruct from '../.././src/ComponentConstruct.js';
-
-const someComponent = props => $el('span', null, props.loadCount);
+import ComponentConstruct from '../../src/ComponentConstruct.js';
 
 /*
  * Testisisältökerros, joka dekoroi kalenterin jokaisen solun komponentilla,
@@ -11,6 +9,7 @@ class TestContentLayer {
         this.args = [...arguments];
         this.contentController = contentController;
         this.calendarController = calendarController;
+        this.firstCell = null;
         this.loadCount = 0;
     }
     load() {
@@ -21,16 +20,18 @@ class TestContentLayer {
     setLoadCount(loadCount) {
         this.loadCount = loadCount;
     }
-    triggerContentRefresh() {
-        this.contentController.refresh();
+    getContentController() {
+        return this.contentController;
+    }
+    getFirstCell() {
+        return this.firstCell;
     }
     decorateCell(cell) {
-        cell.children.push(
-            new ComponentConstruct(someComponent, {loadCount: this.loadCount})
-        );
+        cell.children.push(new ComponentConstruct('span', null, this.loadCount));
         if (cell && !this.hasOneClickHandler) {
             cell.clickHandlers.push(TestContentLayer.testClickHandler);
             this.hasOneClickHandler = true;
+            this.firstCell = cell;
         }
     }
     static testClickHandler() {
