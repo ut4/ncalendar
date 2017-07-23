@@ -1,41 +1,4 @@
+import './app-header.js';
 import nullcalendar from './nullcalendar.js';
-import InMemoryEventRepository from './src/event/InMemoryEventRepository.js';
-import EventLayer from './src/event/EventLayer.js';
 
-// Custom-layeri, joka loggaa duunailujaan consoleen.
-class MyEventLayer extends EventLayer {
-    constructor() {
-        const now = new Date();
-        super(new InMemoryEventRepository([
-            {date: new Date(now.getFullYear(), now.getMonth(), now.getDate()-2, 4, 0, 0, 0), title: 'Event 1'},
-            {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 2'},
-            {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 30, 0, 0), title: 'Event 3'}
-        ]), ...arguments);
-    }
-    load() {
-        console.info('Ladataan tapahtumia');
-        return super.load();
-    }
-    decorateCell(cell) {
-        //console.info('Lisätään tapahtumia soluun');
-        return super.decorateCell(cell);
-    }
-    createEvent(data) {
-        console.info('Luodaan tapahtuma', data);
-        super.createEvent(data);
-    }
-    updateEvent(currentEvent, data) {
-        console.info('Päivitetään tapahtuma', data);
-        super.updateEvent(currentEvent, data);
-    }
-    deleteEvent(event) {
-        console.info('Poistetaan tapahtuma', event);
-        super.deleteEvent(event);
-    }
-}
-// Rekisteröi layeri, että siihen voidaan viitata settingsin contentLayers-arvossa.
-nullcalendar.registerContentLayer('event', MyEventLayer);
-// Määrittele rekisteröity layeri ladattavaksi.
-nullcalendar.newCalendar(document.getElementById('cal'),
-    {contentLayers: ['event']}
-);
+export default nullcalendar;
