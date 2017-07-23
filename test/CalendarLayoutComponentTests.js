@@ -12,7 +12,7 @@ QUnit.module('CalendarLayoutComponent', function () {
             viewName ? $el(CalendarLayout, {settings: {defaultView: viewName}}) : $el(CalendarLayout)
         );
     };
-    QUnit.only('renderöi kalenterin Constants.VIEW_DEFAULT-muodossa', assert => {
+    QUnit.test('renderöi kalenterin Constants.VIEW_DEFAULT-muodossa', assert => {
         render();
         const expectedView = this.initialView;
         assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Modal), undefined);

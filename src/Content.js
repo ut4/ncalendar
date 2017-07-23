@@ -138,7 +138,7 @@ class Content extends React.Component {
             cell.content,
             // Sisältö
             cell.children.map((child, i) =>
-                $el(child.Component, Object.assign({}, child.props, {key: i}))
+                $el(child.Component, Object.assign({}, child.props, {key: i}), child.content)
             )
         );
     }
@@ -152,6 +152,9 @@ class Content extends React.Component {
             PlaceholderCell,
             refresh: () => {
                 this.applyAsyncContent();
+                this.forceUpdate();
+            },
+            reRender: () => {
                 this.forceUpdate();
             }
         };
