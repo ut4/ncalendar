@@ -1,23 +1,33 @@
 import EventLayer from '../../src/event/EventLayer.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
 
-QUnit.module('event/EventLayer', function(hooks) {
-    hooks.beforeEach(() => {
-        this.repository = new InMemoryEventRepository();
-        this.fakeCalendarController = {dateCursor: {range: {}}};
-        this.eventLayer = new EventLayer(this.repository, null, this.fakeCalendarController);
+const fakeCalendarController = {dateCursor: {range: {}}};
+
+QUnit.module('event/EventLayer', function() {
+    QUnit.test('construct luo repositoryn settings-objektin perusteella', assert => {
+        const settings = {repository: 'memory', defaultEvents: [{date: new Date(), title: 'foo'}]};
+        const constructedRepository = new EventLayer(settings, null, null).repository;
+        //
+        assert.ok(constructedRepository instanceof InMemoryEventRepository,
+            'Pitäisi luoda settings.repository:yn määritelty repository'
+        );
+        assert.deepEqual(constructedRepository.events, settings.defaultEvents,
+            'Pitäisi passata memory-repositorylle defaultEvents:t'
+        );
     });
-    QUnit.test('Load normalisoi repositoryn palauttamat eventit', assert => {
+    QUnit.test('load normalisoi repositoryn palauttamat eventit', assert => {
+        const repository = new InMemoryEventRepository();
+        const eventLayer = new EventLayer(repository, null, fakeCalendarController);
         const someEvents = [
             {date: (new Date()).getTime()},
             {date: (new Date()).toISOString()}
         ];
-        sinon.stub(this.repository, 'getAll').returns(Promise.resolve(someEvents));
+        sinon.stub(repository, 'getAll').returns(Promise.resolve(someEvents));
         //
         const done = assert.async();
-        this.eventLayer.load().then(() => {
+        eventLayer.load().then(() => {
             assert.ok(
-                this.eventLayer.events.every(ev => ev.date instanceof Date),
+                eventLayer.events.every(ev => ev.date instanceof Date),
                 'Pitäisi muuntaa jokaisen event.daten tyypiksi Date'
             );
             done();

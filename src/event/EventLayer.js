@@ -1,5 +1,6 @@
 import Event from './Event.js';
 import EventModal from './EventModal.js';
+import RepositoryFactory from './RepositoryFactory.js';
 import ComponentConstruct from '../ComponentConstruct.js';
 import {PlaceholderCell} from '../Content.js';
 import Constants from '../Constants.js';
@@ -10,12 +11,14 @@ import Constants from '../Constants.js';
  */
 class EventLayer {
     /**
-     * @param {Object} repository Luokka, joka tarjoaa & tallentaa tapahtumadatan
+     * @param {Object} repositoryOrSettings Luokka, joka tarjoaa & tallentaa tapahtumadatan | configuraatio, jonka perusteella em. luokan voi tehdä
      * @param {Object} contentController Kalenterisisällön API
      * @param {Object} calendarController Kalenterin API
      */
-    constructor(repository, contentController, calendarController) {
-        this.repository = repository;
+    constructor(repositoryOrSettings, contentController, calendarController) {
+        this.repository = !isValidRepository(repositoryOrSettings)
+            ? new RepositoryFactory().make(repositoryOrSettings.repository, repositoryOrSettings)
+            : repositoryOrSettings;
         this.contentController = contentController;
         this.calendarController = calendarController;
     }
@@ -41,8 +44,8 @@ class EventLayer {
      */
     decorateCell(cell) {
         if (cell instanceof PlaceholderCell) {
-            cell.children.push(new ComponentConstruct(
-                () => `Tällä viikolla ${this.events.length} tapahtumaa`
+            cell.children.push(new ComponentConstruct('div', null,
+                `Tällä viikolla ${this.events.length} tapahtumaa`
             ));
             return;
         }
@@ -52,7 +55,7 @@ class EventLayer {
                 this.newEventConstruct(event)
             ));
         }
-        cell.clickHandlers.push(cell => this.calendarController.openModal(new ComponentConstruct(
+        cell.clickHandlers.push(() => this.calendarController.openModal(new ComponentConstruct(
             EventModal,
             {event: {title: '', date: new Date(cell.date)}, confirm: data => this.createEvent(data)}
         )));
@@ -159,6 +162,10 @@ class EventLayer {
             (hour === undefined || event.date.getHours() === hour)
         );
     }
+}
+
+function isValidRepository(obj) {
+    return obj && typeof obj.getAll === 'function';
 }
 
 export default EventLayer;

@@ -204,6 +204,18 @@ nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['foo']
 - contentController.Cell
 - contentController.PlaceholderCell
 
+## Events-extension
+
+### Usage
+
+```javascript
+<script src="inferno-preact-or-react.js"></script>
+<script src="dist/nullcalendar+events.min.js"></script>
+nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: [
+    {name: 'event', settings: {repository: 'memory'}}
+]});
+```
+
 # License
 
 BSD-3-Clause

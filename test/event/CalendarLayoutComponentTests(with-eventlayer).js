@@ -13,13 +13,10 @@ const testEvents = [
     {date: new Date(now.getFullYear(), now.getMonth()-1, now.getDate(), 0, 0, 0, 1), title: 'Event 3'}
 ];
 const repository = new InMemoryEventRepository(testEvents);
-class EventLayerWithInitialEvents extends EventLayer {
-    constructor() {
-        super(repository, ...arguments);
-    }
-}
 //
-ioc.contentLayerFactory().register('eventasd', EventLayerWithInitialEvents);
+ioc.contentLayerFactory().register('eventasd', (conCtrl, calCtrl) =>
+    new EventLayer(repository, conCtrl, calCtrl)
+);
 //
 QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
     hooks.beforeEach(() => {
@@ -41,7 +38,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             assert.equal(events.length, 1);
             assert.ok(
                 new RegExp(testEvents[0]).test(events[0].textContent),
-                'Pitäisi renderöidä oikean tapahtuman'
+                'Pitäisi renderöidä oikea tapahtuma'
             );
             done();
         });
@@ -57,7 +54,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             rtu.Simulate.click(mondayAt0Am);
             const inputs = getRenderedInputs(this.rendered);
             assert.equal(inputs.length, 2, 'Pitäisi avata modal');
-            const data = {title: 'Foo', date: getSomeDateString()};
+            const data = {title: 'Foo', date: getTestDateString()};
             // Triggeröi lomakkeen submit
             inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
             inputs[1].value = data.date; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
@@ -96,7 +93,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             const inputs = getRenderedInputs(this.rendered);
             assert.equal(inputs.length, 2, 'Pitäisi avata modalin');
             // Simuloi lomakkeen submit
-            const data = {title: 'Holyy', date: getSomeDateString()};
+            const data = {title: 'Holyy', date: getTestDateString()};
             inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
             inputs[1].value = data.date; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
             const expectedCurrentEvent = testEvents[0];
@@ -167,7 +164,7 @@ function getRenderedEvents(rendered) {
 function getRenderedRows(rendered) {
     return rtu.findRenderedDOMComponentWithClass(rendered, 'main').children;
 }
-function getSomeDateString(hour = 2) {
+function getTestDateString(hour = 2) {
     const date = new Date(testEvents[0].date);
     date.setHours(hour);
     return date.toISOString();
