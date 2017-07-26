@@ -12,7 +12,7 @@ export default {
      * @returns {Object} Kalenteri-instanssin kontrolleri/API
      */
     newCalendar: (el, settings) => {
-        return ReactDOM.render($el(CalendarLayout, settings ? {settings} : undefined), el).getController();
+        return ReactDOM.render($el(CalendarLayout, settings), el).getController();
     },
     /**
      * @param {string} name Nimi, jolla rekisteröidään

@@ -7,9 +7,9 @@ QUnit.module('CalendarLayoutComponent(week)', function (hooks) {
     const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
     hooks.beforeEach(() => {
         this.rendered = ReactTestUtils.renderIntoDocument(
-            $el(CalendarLayout, {settings: {
+            $el(CalendarLayout, {
                 titleFormatters: {[Constants.VIEW_WEEK]: titleFormatter}
-            }})
+            })
         );
         this.replicatedCursor = dateCursorFactory.newCursor(Constants.VIEW_WEEK, null, () => {});
     });

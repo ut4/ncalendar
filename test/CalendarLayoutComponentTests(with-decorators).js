@@ -19,10 +19,10 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
         TestContentLayer.testClickHandler.restore();
     });
     const render = (contentLayers = ['atest']) => {
-        return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {settings: {
+        return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {
             defaultView: Constants.VIEW_WEEK,
             contentLayers: contentLayers
-        }}));
+        }));
     };
     QUnit.test('Instantioi & lataa & ajaa sisältökerroksen', assert => {
         const rendered = render();

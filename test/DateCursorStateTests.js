@@ -24,7 +24,7 @@ QUnit.module('DateCursorState', function (hooks) {
             settings.defaultDate.setDate(9);
         }
         this.rendered = ReactTestUtils.renderIntoDocument(
-            $el(CalendarLayout, {settings})
+            $el(CalendarLayout, settings)
         );
         this.calendarController = rtu.findRenderedComponentWithType(this.rendered, CalendarLayout).controller;
     };

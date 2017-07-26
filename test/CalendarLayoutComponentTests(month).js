@@ -7,10 +7,10 @@ QUnit.module('CalendarLayoutComponent(month)', function (hooks) {
     const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
     hooks.beforeEach(() => {
         this.rendered = ReactTestUtils.renderIntoDocument(
-            $el(CalendarLayout, {settings: {
+            $el(CalendarLayout, {
                 defaultView: Constants.VIEW_MONTH,
                 titleFormatters: {[Constants.VIEW_MONTH]: titleFormatter}
-            }})
+            })
         );
         this.replicatedCursor = dateCursorFactory.newCursor(Constants.VIEW_MONTH, null, () => {});
     });

@@ -11,19 +11,17 @@ import settingsFactory, {getValidViewName} from './settingsFactory.js';
 class CalendarLayout extends React.Component {
     /**
      * @param {object} props {
-     *     settings: {
-     *         defaultView: {string},
-     *         defaultDate: {Date},
-     *         titleFormatters: {Object},
-     *         contentLayers: {Array},
-     *         layoutChangeBreakPoint: {number}
-     *     }=
+     *     defaultView: {string=},
+     *     defaultDate: {Date=},
+     *     titleFormatters: {Object=},
+     *     contentLayers: {Array=},
+     *     layoutChangeBreakPoint: {number=}
      * }
      */
     constructor(props) {
         super(props);
         // Luo asetukset & rekisteröi mediaquery
-        this.settings = settingsFactory(this.props.settings || {});
+        this.settings = settingsFactory(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
         // Luo initial state
         const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};

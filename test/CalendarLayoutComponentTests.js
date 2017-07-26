@@ -9,7 +9,7 @@ QUnit.module('CalendarLayoutComponent', function () {
     const render = viewName => {
         this.initialView = viewName || Constants.VIEW_DEFAULT;
         this.rendered = ReactTestUtils.renderIntoDocument(
-            viewName ? $el(CalendarLayout, {settings: {defaultView: viewName}}) : $el(CalendarLayout)
+            viewName ? $el(CalendarLayout, {defaultView: viewName}) : $el(CalendarLayout)
         );
     };
     QUnit.test('renderöi kalenterin Constants.VIEW_DEFAULT-muodossa', assert => {
@@ -21,7 +21,7 @@ QUnit.module('CalendarLayoutComponent', function () {
         const calendarLayout = ReactTestUtils.findRenderedComponentWithType(this.rendered, CalendarLayout);
         assert.equal(calendarLayout.state.viewLayout instanceof ViewLayouts[expectedView], true);
     });
-    QUnit.test('renderöi kalenterin props.settings.defaultView-muodossa', assert => {
+    QUnit.test('renderöi kalenterin props.defaultView-muodossa', assert => {
         const expectedInitialView = Constants.VIEW_DAY;
         render(expectedInitialView);
         assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Modal), undefined);

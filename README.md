@@ -49,7 +49,7 @@ class SomeComponent extends React.Component {
     render() {
         return <div>
             <h1>Hurrdurr</h1>
-            <nullcalendar.Calendar settings={/*settings*/}/>
+            <nullcalendar.Calendar /*defaultView="week" someOtherSetting={ asd }*//>
         </div>;
     }
 }
