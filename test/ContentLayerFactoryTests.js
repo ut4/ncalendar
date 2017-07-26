@@ -42,4 +42,28 @@ QUnit.module('ContentLayerFactory', function (hooks) {
             'Pitäisi heittää poikkeus, jos rekisteröidyn factory:n palauttama arvo ei ollut validi'
         );
     });
+    QUnit.test('.make handlaa myös object-notaation', assert => {
+        this.contentLayerFactory.register('test1', TestContentLayer);
+        this.contentLayerFactory.register('test2', function() { return new TestContentLayer('a', ...arguments); });
+        //
+        const defaultArgs1 = ['a', 'b'];
+        const defaultArgs2 = ['c', 'd'];
+        const customArgs1 = {foo: 'bar'};
+        const customArgs2 = {baz: 'hax'};
+        const result1 = this.contentLayerFactory.make({name: 'test1', args: (a, b) => [customArgs1, a, b]}, defaultArgs1);
+        const result2 = this.contentLayerFactory.make({name: 'test2', args: (c, d) => [customArgs2, c, d]}, defaultArgs2);
+        //
+        assert.ok(result1 instanceof TestContentLayer,
+            'Pitäisi luoda sisältökerros'
+        );
+        assert.ok(result2 instanceof TestContentLayer,
+            'Pitäisi luoda sisältökerros'
+        );
+        assert.deepEqual(result1.args, [customArgs1, ...defaultArgs1],
+            'Pitäisi passata konstruktorille custom-argumentit'
+        );
+        assert.deepEqual(result2.args, ['a', customArgs2, ...defaultArgs2],
+            'Pitäisi passata factorylle custom-argumentit'
+        );
+    });
 });

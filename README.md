@@ -107,17 +107,19 @@ const mySettings = {
 ## Extending
 
 ```javascript
-// 1. Implementoi
+// -- 1. Implementoi ----
+// -----------------------------------------------------------------------------
 class MyContentLayer {
     /**
+     * @param {string} configurableArgument
      * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
      * @param {Object} calendarController Vastaa yhden kalenterin ohjailusta. Sama kuin nullcalendar.newCalendar() paluuarvo. @see https://github.com/ut4/ncalendar#calendarcontroller-api
      */
-    constructor(contentController, calendarController) {
+    constructor(configurableArgument, contentController, calendarController) {
         console.log(typeof contentController.refresh);     // function
         console.log(typeof calendarController.changeView); // function
         this.contentController = contentController;
-        this.text = 'yayy';
+        this.text = configurableArgument;
     }
     /**
      * Triggeröityy aina kun sivu ladataan, kalenterin view vaihtuu, tai
@@ -167,13 +169,24 @@ class MyContentLayer {
     }
 }
 
-// 2. Rekisteröi
-nullcalendar.registerContentLayer('foo', MyContentLayer);
-// tai
-nullcalendar.registerContentLayer('foo', (a, b) => new MyContentLayer('something', a, b));
+// -- 2. Rekisteröi ----
+// -----------------------------------------------------------------------------
+// (a) - preconfiguroitu
+nullcalendar.registerContentLayer('foo1', (contentCtrl, calendarCtrl) =>
+    new MyContentLayer('yayy', contentCtrl, calendarCtrl)
+);
+// (b) - configuroimaton
+nullcalendar.registerContentLayer('foo2', MyContentLayer);
 
-// 3. Ota käyttöön
-nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['foo']});
+
+// -- 3. Ota käyttöön ----
+// -----------------------------------------------------------------------------
+// (a) - preconfiguroitu
+nullcalendar.newCalendar(myEl, {contentLayers: ['foo1']});
+// (b) - configuroimaton
+nullcalendar.newCalendar(myEl, {contentLayers: [
+    {name:'foo2', args: (contentCtrl, calendarCtrl) => ['yayy', contentCtrl, calendarCtrl]}
+]});
 ```
 
 ## CalendarController-API

@@ -55,6 +55,14 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             done();
         });
     });
+    QUnit.test('Lataa myös object-notaatiolla configuroidun sisältökerroksen', assert => {
+        const rendered = render([{name: 'atest'}]);// [{name: 'atest'}] eikä ['atest']
+        const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+        //
+        assert.ok(expectedTestLayer instanceof TestContentLayer,
+            'Pitäisi osata ladata myös object-notaatiolla configuroitu layer'
+        );
+    });
     QUnit.test('contentController.refresh ajaa sisältökerroksen uudestaan', assert => {
         const rendered = render();
         const expectedTestLayer = getInstantiatedLayers(rendered)[0];

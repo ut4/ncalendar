@@ -15,11 +15,12 @@ QUnit.module('DateCursorState', function (hooks) {
         dateCursorFactory.newCursor(Constants.VIEW_MONTH).range.constructor.lastRange = null;
     });
     const render = viewName => {
+        const now = new Date();
         const settings = {defaultView: viewName};
         if (viewName === Constants.VIEW_DAY) {
-            settings.defaultDate = dateUtils.getStartOfWeek(new Date());
+            settings.defaultDate = now.getDay() !== 2 ? dateUtils.getStartOfWeek(now) : now;
         } else if (viewName === Constants.VIEW_WEEK) {
-            settings.defaultDate = new Date();
+            settings.defaultDate = now;
             settings.defaultDate.setDate(9);
         }
         this.rendered = ReactTestUtils.renderIntoDocument(
