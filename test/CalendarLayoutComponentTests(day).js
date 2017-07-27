@@ -10,10 +10,10 @@ QUnit.module('CalendarLayoutComponent(day)', function (hooks) {
     const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
     hooks.beforeEach(() => {
         this.rendered = ReactTestUtils.renderIntoDocument(
-            $el(CalendarLayout, {settings: {
+            $el(CalendarLayout, {
                 defaultView: Constants.VIEW_DAY,
                 titleFormatters: {[Constants.VIEW_DAY]: titleFormatter}
-            }})
+            })
         );
         this.replicatedCursor = dateCursorFactory.newCursor(Constants.VIEW_DAY, null, () => {});
     });

@@ -31,18 +31,22 @@ class ContentLayerFactory {
     }
     /**
      * Luo uuden sisältökerroksen käyttäen rekisteröityä konstruktoria tai
-     * factoryä {name}, tai heittää poikkeuksen mikäli rekisteröityä itemiä
-     * ei löytynyt, tai se oli virheellinen.
+     * factoryä {layer|layer.name}, tai heittää poikkeuksen mikäli rekisteröityä
+     * itemiä ei löytynyt, tai se oli virheellinen.
      *
      * @access public
-     * @param {string} name
+     * @param {string|Object} layer
      * @param {Array} args
-     * @returns {Object} Uusi instanssi sisältölayerista {name}
+     * @returns {Object} Uusi instanssi sisältölayerista {layer|layer.name}
      */
-    make(name, args) {
-        const item = this.registrar[name];
+    make(layer, args) {
+        if (typeof layer !== 'string') {
+            layer.args && (args = layer.args(...args));
+            layer = layer.name || '';
+        }
+        const item = this.registrar[layer];
         if (!item) {
-            throw new Error(`Layeria "${name}" ei ole rekisteröity.`);
+            throw new Error(`Layeria "${layer}" ei ole rekisteröity.`);
         }
         if (!isValidContentLayer(item.prototype)) {
             const providedLayer = item(...args);

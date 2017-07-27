@@ -1,5 +1,5 @@
 export default {
-    entry: 'nullcalendar.js',
+    entry: 'main.js',
     moduleName: 'nullcalendar',
     format: 'umd',
     dest: 'dist/nullcalendar.js',

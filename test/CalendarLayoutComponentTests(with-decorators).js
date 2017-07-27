@@ -19,10 +19,10 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
         TestContentLayer.testClickHandler.restore();
     });
     const render = (contentLayers = ['atest']) => {
-        return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {settings: {
+        return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {
             defaultView: Constants.VIEW_WEEK,
             contentLayers: contentLayers
-        }}));
+        }));
     };
     QUnit.test('Instantioi & lataa & ajaa sisältökerroksen', assert => {
         const rendered = render();
@@ -54,6 +54,14 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             );
             done();
         });
+    });
+    QUnit.test('Lataa myös object-notaatiolla configuroidun sisältökerroksen', assert => {
+        const rendered = render([{name: 'atest'}]);// [{name: 'atest'}] eikä ['atest']
+        const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+        //
+        assert.ok(expectedTestLayer instanceof TestContentLayer,
+            'Pitäisi osata ladata myös object-notaatiolla configuroitu layer'
+        );
     });
     QUnit.test('contentController.refresh ajaa sisältökerroksen uudestaan', assert => {
         const rendered = render();

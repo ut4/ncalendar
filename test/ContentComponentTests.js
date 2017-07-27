@@ -121,7 +121,7 @@ function makeProps(selectedView, compactFormShouldBeUsed) {
     return {
         grid: (new ViewLayouts[selectedView](newDateCursor(selectedView)))
             .getParts(compactFormShouldBeUsed)[1].props.gridGeneratorFn(),
-        calendarController: {settings: {contentLayers: []}}
+        calendarController: {settings: {contentLayers: []}}// fake calendarController
     };
 }
 function getRenderedRows(rendered) {

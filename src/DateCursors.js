@@ -2,27 +2,19 @@ import Constants from './Constants.js';
 import ioc from './ioc.js';
 
 const dateUtils = ioc.dateUtils();
-const lastRangeCanBeAdapted = (lastSavedRange, startDateOrRangeOfPreviousView) => (
-    // Range täytyy olla ylipäätään tallennettu
-    lastSavedRange &&
-    // startDateOrRangeOfPreviousView tulee olla Day|Week|MonthViewCursorRange, eikä Date
-            !(startDateOrRangeOfPreviousView instanceof Date) &&
-    // Tallennettu range ei saa olla liian kaukana edellisen viewin rangesta
-            (lastSavedRange.start >= startDateOrRangeOfPreviousView.start &&
-            lastSavedRange.start <= startDateOrRangeOfPreviousView.end)
-);
+
 class DayViewCursorRange {
     /**
      * @param {Date|WeekViewCursorRange|MonthViewCursorRange} startDateOrRangeOfPreviousView
      */
     constructor(startDateOrRangeOfPreviousView) {
-        if (!lastRangeCanBeAdapted(DayViewCursorRange.lastRange, startDateOrRangeOfPreviousView)) {
-            const baseDate = startDateOrRangeOfPreviousView.start || startDateOrRangeOfPreviousView;
-            this.start = dateUtils.getStartOfDay(baseDate);
-            this.end = dateUtils.getEndOfDay(baseDate);
+        const d = getBasedate(startDateOrRangeOfPreviousView, DayViewCursorRange.lastRange);
+        if (d instanceof Date) {
+            this.start = dateUtils.getStartOfDay(d);
+            this.end = dateUtils.getEndOfDay(d);
         } else {
-            this.start = DayViewCursorRange.lastRange.start;
-            this.end = DayViewCursorRange.lastRange.end;
+            this.start = d.start;
+            this.end = d.end;
         }
     }
     goForward() {
@@ -39,14 +31,14 @@ class WeekViewCursorRange {
      * @param {Date|DayViewCursorRange|MonthViewCursorRange} startDateOrRangeOfPreviousView
      */
     constructor(startDateOrRangeOfPreviousView) {
-        if (!lastRangeCanBeAdapted(WeekViewCursorRange.lastRange, startDateOrRangeOfPreviousView)) {
-            const baseDate = startDateOrRangeOfPreviousView.start || startDateOrRangeOfPreviousView;
-            this.start = dateUtils.getStartOfWeek(dateUtils.getStartOfDay(baseDate));
+        const d = getBasedate(startDateOrRangeOfPreviousView, WeekViewCursorRange.lastRange);
+        if (d instanceof Date) {
+            this.start = dateUtils.getStartOfWeek(dateUtils.getStartOfDay(d));
             this.end = dateUtils.getEndOfDay(this.start);
             this.end.setDate(this.start.getDate() + 6);
         } else {
-            this.start = WeekViewCursorRange.lastRange.start;
-            this.end = WeekViewCursorRange.lastRange.end;
+            this.start = d.start;
+            this.end = d.end;
         }
     }
     goForward() {
@@ -83,6 +75,25 @@ class MonthViewCursorRange {
         this.end.setDate(0);
     }
 }
+function getBasedate(startDateOrRangeOfPreviousView, lastSavedRange) {
+    if (startDateOrRangeOfPreviousView instanceof Date) {
+        return startDateOrRangeOfPreviousView;
+    }
+    // Käytä aiemmin tallennettua rangea, jos ei poikkea edellisen näkymän rangesta liikaa
+    if (lastSavedRange && isWithinRange(lastSavedRange.start, startDateOrRangeOfPreviousView)) {
+        return lastSavedRange;
+    }
+    const d = new Date();
+    // Käytä nykyhetkeä, jos se sattuu edellisen näkymän kanssa samalle viikolle/
+    // kuukaudelle, muutoin käytä edellisen näkymän range.start:ia
+    return !isWithinRange(d, startDateOrRangeOfPreviousView)
+        ? startDateOrRangeOfPreviousView.start
+        : d;
+}
+function isWithinRange(date, range) {
+    return (date >= range.start && date <= range.end);
+}
+
 /*
  * Luokka, joka vastaa kalenterin aikakursorin manipuloinnista
  * selaustoimintojen yhteydessä. Kuuluu osaksi public calendar-API:a.

@@ -33,8 +33,8 @@ class Content extends React.Component {
         this.state = !this.hasAsyncContent ? {} : {loading: true};
         if (this.hasAsyncContent) {
             const contentLayerFactory = ioc.contentLayerFactory();
-            this.contentLayers = selectedContentLayers.map(name =>
-                contentLayerFactory.make(name, [
+            this.contentLayers = selectedContentLayers.map(layerConfig =>
+                contentLayerFactory.make(layerConfig, [
                     this.newController(),
                     this.props.calendarController
                 ])
