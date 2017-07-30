@@ -1,6 +1,6 @@
 # Nullcalendar
 
-Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa. Dev-ympäristö vaatii selaimen, joka tulee ES6-moduuleja natiivisti; ks [lista](https://jakearchibald.com/2017/es-modules-in-browsers/).
+Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa. Dev-ympäristö vaatii selaimen, joka tukee ES6-moduuleja natiivisti; ks. [lista](https://jakearchibald.com/2017/es-modules-in-browsers/).
 
 ## Features
 
@@ -67,19 +67,23 @@ const mySettings = {
      */
     defaultView: 'week',
     /**
-     * Ajankohta, jonka kalenteri käyttää alustavan aikakursorin luomisessa.
+     * Ajankohta, jota kalenteri käyttää alustavan aikakursorin luomisessa.
      *
      * @prop {Date}
      * @default new Date()
      */
-    defaultDate: new Date(2008, 6, 12),
+    defaultDate: new Date(2017, 6, 30),
     /**
-     * Ladattavien sisältökerroksien nimet.
+     * Ladattavat sisältökerrokset.
      *
-     * @prop {Array}
+     * @prop {string|Object[]}
      * @default []
      */
-    contentLayers: ['event'],
+    contentLayers: [
+        'event',
+        // tai
+        {name: 'event'}
+    ],
     /**
      * Funktiot, joilla voi kustomoida kalenterin otsakkeiden formaattia.
      *
@@ -111,28 +115,31 @@ const mySettings = {
 // -----------------------------------------------------------------------------
 class MyContentLayer {
     /**
-     * @param {string} configurableArgument
+     * @param {string} myArgument
      * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
      * @param {Object} calendarController Vastaa yhden kalenterin ohjailusta. Sama kuin nullcalendar.newCalendar() paluuarvo. @see https://github.com/ut4/ncalendar#calendarcontroller-api
      */
-    constructor(configurableArgument, contentController, calendarController) {
+    constructor(myArgument, contentController, calendarController) {
         console.log(typeof contentController.refresh);     // function
         console.log(typeof calendarController.changeView); // function
         this.contentController = contentController;
-        this.text = configurableArgument;
+        this.text = myArgument;
     }
     /**
-     * Triggeröityy aina kun sivu ladataan, kalenterin view vaihtuu, tai
+     * Triggeröityy aina kun sivu ladataan, kalenterin näkymä vaihtuu, tai
      * kalenterin cursorRange päivittyy. Hyvä paikka ladata jotain esim.
-     * backendistä...
+     * backendistä..
+     *
+     * Jos metodi palauttaa false|promisejokaresolvaafalse, layerin dekorointi ja
+     * renderöinti ohitetaan, muussa tapauksessa paluuarvoa ei huomioida mitenkään.
      *
      * @param {string} loadType 'initial'|'navigation'|'view-change'
-     * @returns {Promise|undefined}
+     * @returns {any}
      */
     load(loadType) {
         console.log('Loadtype:' + loadType);
         if (loadType !== this.contentController.LoadType.INITIAL) {
-            return;
+            return false;
         }
         return Promise.resolve().then(() => {
             console.log('Valmis!');
@@ -141,7 +148,7 @@ class MyContentLayer {
     /**
      * Kutsutaan aina, kun kalenterisisältö renderöi sisältösolut aka. gridin
      * kalenterin latautuessa, tai navigaatiotapahtuman yhteydessä. Hyvä paikka
-     * modifioida cellin children, clickHandlers, tai content -arvoja.
+     * modifioida cellin children, clickHandlers, tai content -arvoja..
      *
      * @param {Object} cell Kalenterin yksi sisältösolu, Cell|PlaceholderCell
      * @returns {void}

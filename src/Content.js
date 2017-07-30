@@ -30,7 +30,7 @@ class Content extends React.Component {
         super(props);
         const selectedContentLayers = this.props.calendarController.settings.contentLayers;
         this.hasAsyncContent = selectedContentLayers.length > 0;
-        this.state = !this.hasAsyncContent ? {} : {loading: true};
+        this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
             const contentLayerFactory = ioc.contentLayerFactory();
             this.contentLayers = selectedContentLayers.map(layerConfig =>
@@ -59,7 +59,7 @@ class Content extends React.Component {
      */
     componentWillReceiveProps(props) {
         if (this.hasAsyncContent) {
-            this.setState({loading: true});
+            this.setState({currentlyHasAsyncContent: undefined});
             this.loadAsyncContent(props.currentView === this.props.currentView
                 ? LoadType.NAVIGATION
                 : LoadType.VIEW_CHANGE
@@ -67,11 +67,11 @@ class Content extends React.Component {
         }
     }
     /**
-     * Disabloi renderöinnin silloin, kun sisältökerroksia lataus on
-     * käynnissä.
+     * Disabloi sisältökerroksien lataustapahtuman jälkeisen renderöinnin, jos
+     * yksikään ladatuista kerroksista ei palauttanut sisältöä.
      */
     shouldComponentUpdate(_, state) {
-        return !state.hasOwnProperty('loading') || state.loading !== true;
+        return state.currentlyHasAsyncContent !== false;
     }
     /**
      * Lataa & ajaa sisältökerrokset, esim. eventLayerin tapahtumat.
@@ -79,9 +79,19 @@ class Content extends React.Component {
      * @access private
      */
     loadAsyncContent(loadType) {
-        return Promise.all(this.contentLayers.map(l => l.load(loadType))).then(() => {
-            this.applyAsyncContent();
-            this.setState({loading: false});
+        return Promise.all(
+            this.contentLayers.map(layer => layer.load(loadType))
+        ).then(returnValues => {
+            const layersWhichMaybeHadContent = this.contentLayers.filter((layer, i) =>
+                // Layerit, joiden load palautti false, skipataan. Jos layer
+                // ei palauttanut mitään, tai jotain muuta kuin false, ladataan
+                // normaalisti.
+                returnValues[i] !== false
+            );
+            if (layersWhichMaybeHadContent.length > 0) {
+                this.applyAsyncContent(layersWhichMaybeHadContent);
+                this.setState({currentlyHasAsyncContent: true});
+            }
         });
     }
     /**
@@ -91,9 +101,9 @@ class Content extends React.Component {
      *
      * @access private
      */
-    applyAsyncContent() {
+    applyAsyncContent(layersToLoad) {
         this.resetGrid();
-        this.contentLayers.forEach(layer => {
+        (layersToLoad || this.contentLayers).forEach(layer => {
             this.props.grid.forEach(row => {
                 row.forEach(cell => {
                     (cell instanceof Cell) && layer.decorateCell(cell);
