@@ -5,17 +5,18 @@ import ComponentConstruct from '../../src/ComponentConstruct.js';
  * johon renderöityy kerroksen latauskerrat.
  */
 class TestContentLayer {
-    constructor(contentController, calendarController) {
+    constructor(contentController, calendarController, loadReturnValue = 'foo') {
         this.args = [...arguments];
         this.contentController = contentController;
         this.calendarController = calendarController;
         this.firstCell = null;
         this.loadCount = 0;
+        this.loadReturnValue = loadReturnValue;
     }
     load() {
         this.hasOneClickHandler = false;
         this.loadCount++;
-        return Promise.resolve('foo');
+        return Promise.resolve(this.loadReturnValue);
     }
     setLoadCount(loadCount) {
         this.loadCount = loadCount;

@@ -50,10 +50,7 @@ QUnit.module('ContentComponent', function (hooks) {
             $el(Content, makeProps(Constants.VIEW_WEEK, true))
         ));
         assert.equal(renderedRows.length, 4);
-        const dayNames = dateUtils.getFormattedWeekDays(
-            new Date(),
-            Intl.DateTimeFormat('fi', {weekday: 'long'})
-        );
+        const dayNames = dateUtils.getFormattedWeekDays(new Date(), 'long');
         const expectedCurrentDayColIndex = new Date().getDay() || 7;
         [[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[3,0]].forEach(([rowIdx, colIdx], i) => {
             assert.equal(renderedRows[rowIdx].children[colIdx].textContent, dayNames[i]);
@@ -132,7 +129,7 @@ function getExpectedCompactMonthCellTitle(date, rangeStart) {
         return '';
     }
     const isFirstCell = date.toISOString() === rangeStart.toISOString();
-    return date.getDate() + ' ' + dateUtils.format({weekday: 'short'}, date) +
+    return date.getDate() + ' ' + dateUtils.format(date, {weekday: 'short'}) +
         // Pitäisi sisältää viikkonumero, jos viikon ensimmäinen päivä, tai gridin ensimmäinen solu
         (date.getDay() !== 1 && !isFirstCell ? '' : ' / Vk' + dateUtils.getWeekNumber(date));
 }

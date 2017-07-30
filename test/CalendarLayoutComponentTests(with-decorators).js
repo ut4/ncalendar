@@ -10,11 +10,13 @@ ioc.contentLayerFactory().register('atest', TestContentLayer);
 QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
     hooks.beforeEach(() => {
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
+        this.contentApplyCallSpy = sinon.spy(Content.prototype, 'applyAsyncContent');
         this.contentLayerLoadCallSpy = sinon.spy(TestContentLayer.prototype, 'load');
         this.clickHandlerSpy = sinon.spy(TestContentLayer, 'testClickHandler');
     });
     hooks.afterEach(() => {
         this.contentLoadCallSpy.restore();
+        this.contentApplyCallSpy.restore();
         this.contentLayerLoadCallSpy.restore();
         TestContentLayer.testClickHandler.restore();
     });
@@ -47,6 +49,7 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             assert.deepEqual(this.contentLayerLoadCallSpy.firstCall.args, [LoadType.INITIAL],
                 'Pitäisi passata sisältökerroksen loadTypeksi LoadType.INITIAL'
             );
+            assert.ok(this.contentApplyCallSpy.calledOnce, 'Pitäisi ajaa ladattu sisältö');
             assert.equal(renderedRows.length, Constants.HOURS_IN_DAY);
             assert.ok(
                 isEveryCellDecoratedWith(rendered, expectedTestLayer.loadCount),
@@ -59,9 +62,22 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
         const rendered = render([{name: 'atest'}]);// [{name: 'atest'}] eikä ['atest']
         const expectedTestLayer = getInstantiatedLayers(rendered)[0];
         //
-        assert.ok(expectedTestLayer instanceof TestContentLayer,
-            'Pitäisi osata ladata myös object-notaatiolla configuroitu layer'
-        );
+        const done = assert.async();
+        this.contentLoadCallSpy.firstCall.returnValue.then(() => {
+            assert.ok(expectedTestLayer instanceof TestContentLayer,
+                'Pitäisi osata ladata myös object-notaatiolla configuroitu layer'
+            );
+            done();
+        });
+    });
+    QUnit.test('Skippaa renderöinnin, jos layerin .load palautti false', assert => {
+        render([{name: 'atest', args: (a, b) => [a, b, false]}]);
+        //
+        const done = assert.async();
+        this.contentLoadCallSpy.firstCall.returnValue.then(() => {
+            assert.ok(this.contentApplyCallSpy.notCalled, 'Ei pitäisi ajaa sisältöä');
+            done();
+        });
     });
     QUnit.test('contentController.refresh ajaa sisältökerroksen uudestaan', assert => {
         const rendered = render();
