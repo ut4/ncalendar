@@ -22,9 +22,9 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
     hooks.beforeEach(() => {
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.rendered = rtu.renderIntoDocument(
-            $el(CalendarLayout, {settings: {
+            $el(CalendarLayout, {
                 contentLayers: ['eventasd']
-            }})
+            })
         );
     });
     hooks.afterEach(() => {

@@ -14,5 +14,5 @@ nullcalendar.registerContentLayer('myevent', (a, b) =>
 nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['myevent']});*/
 // Tapa 2
 nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: [
-    {name: 'event', settings: {repository: 'memory', defaultEvents}}
+    {name: 'event', args: (a, b) => [{repository: 'memory', defaultEvents}, a, b]}
 ]});

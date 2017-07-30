@@ -232,7 +232,9 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 <script src="inferno-preact-or-react.js"></script>
 <script src="dist/nullcalendar+events.min.js"></script>
 nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: [
-    {name: 'event', settings: {repository: 'memory'}}
+    {name: 'event', args: (contentCtrl, calCtrl) =>
+        [{repository: 'memory'}, contentCtrl, calCtrl]
+    }
 ]});
 ```
 
