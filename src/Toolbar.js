@@ -1,20 +1,23 @@
 import Constants from './Constants.js';
+import ioc from './ioc.js';
+
+const dateUtils = ioc.dateUtils();
 
 const titleFormatters = {
     [Constants.VIEW_DAY]: dateCursorRange => {
         return '%1, %2'
-            .replace('%1', Intl.DateTimeFormat('fi', {day: 'numeric', month: 'long'}).format(dateCursorRange.start))
+            .replace('%1', dateUtils.format(dateCursorRange.start, {day: 'numeric', month: 'long'}))
             .replace('%2', dateCursorRange.start.getFullYear());
     },
     [Constants.VIEW_WEEK]: dateCursorRange => {
         return '%1 %2 - %3 %4'
-            .replace('%1', Intl.DateTimeFormat('fi', {month: 'short'}).format(dateCursorRange.start))
+            .replace('%1', dateUtils.format(dateCursorRange.start, {month: 'short'}))
             .replace('%2', dateCursorRange.start.getDate())
             .replace('%3', dateCursorRange.end.getDate())
             .replace('%4', dateCursorRange.start.getFullYear());
     },
     [Constants.VIEW_MONTH]: dateCursorRange => {
-        return Intl.DateTimeFormat('fi', {month: 'long', year: 'numeric'}).format(dateCursorRange.start);
+        return dateUtils.format(dateCursorRange.start, {month: 'long', year: 'numeric'});
     }
 };
 /*

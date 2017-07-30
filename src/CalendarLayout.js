@@ -51,7 +51,7 @@ class CalendarLayout extends React.Component {
      * uudelleenlatauksen.
      *
      * @access public
-     * @param {string} to Constants.VIEW_DAY | Constants.VIEW_WEEK | Constants.VIEW_MONTH
+     * @param {string} to 'day'|'week'|'month'
      */
     changeView(to) {
         const newView = getValidViewName(to);

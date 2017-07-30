@@ -11,7 +11,7 @@ const cachify = (key, fn) => {
 
 export default {
     dateUtils: () => {
-        return cachify('dateUtils', () => new DateUtils());
+        return cachify('dateUtils', () => new DateUtils('fi'));
     },
     contentLayerFactory: () => {
         return cachify('contentLayerFactory', () => new ContentLayerFactory());

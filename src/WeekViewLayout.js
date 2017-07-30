@@ -42,7 +42,7 @@ class WeekViewLayout extends AbstractViewLayout {
     generateCompactGrid() {
         const dayNames = this.dateUtils.getFormattedWeekDays(
             this.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'long'})
+            'long'
         );
         const rollingDate = new Date(this.dateCursor.range.start);
         const getDateAndMoveToNexDay = () => {

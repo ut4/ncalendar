@@ -1,6 +1,12 @@
 const EMPTY_WEEK = Array.from(Array(7));
 
 class DateUtils {
+    /**
+     * @param {string|string[]} locale 'fi', 'en-US' etc.
+     */
+    constructor(locale) {
+        this.locale = locale;
+    }
     // https://stackoverflow.com/questions/6117814/get-week-of-year-in-javascript-like-in-php#answer-6117889
     getWeekNumber(date) {
         // Copy date so don't modify original
@@ -22,10 +28,10 @@ class DateUtils {
         d.setDate(date.getDate() - (7 + date.getDay() - firstDay) % 7);
         return d;
     }
-    getFormattedWeekDays(date, format) {
+    getFormattedWeekDays(date, form) {
         const d = this.getStartOfWeek(date);
         return EMPTY_WEEK.map(() => {
-            const formatted = format.format(d);
+            const formatted = this.format(d, {weekday: form});
             d.setDate(d.getDate() + 1);
             return formatted;
         });
@@ -49,8 +55,8 @@ class DateUtils {
     formatHour(hour) {
         return (hour < 10 ? '0' : '') + hour + ':00';
     }
-    format(options, date) {
-        return Intl.DateTimeFormat('fi', options).format(date);
+    format(date, options) {
+        return date.toLocaleString(this.locale, options);
     }
 }
 

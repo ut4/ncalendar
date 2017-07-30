@@ -11,7 +11,7 @@ QUnit.module('HeaderComponent', function () {
         const renderedCells = getRenderedCells(ReactTestUtils.renderIntoDocument($el(Header.day, {dateCursor})));
         assert.equal(renderedCells.length, 2);
         assert.equal(renderedCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
-        assert.equal(renderedCells[1].textContent, dateUtils.format({weekday: 'long'}, dateCursor.range.start));
+        assert.equal(renderedCells[1].textContent, dateUtils.format(dateCursor.range.start, {weekday: 'long'}));
     });
     QUnit.test('.week renderöi tuntisarakkeen ja jokaisen viikonpäivän nimen lyhyessä muodossa', assert => {
         const dateCursor = dateCursorFactory.newCursor(Constants.VIEW_WEEK);
@@ -46,7 +46,7 @@ function getRenderedCells(rendered) {
     return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'cell');
 }
 function getDayNameAndAddADay(date, format = 'short') {
-    const dayName = dateUtils.format({weekday: format}, date);
+    const dayName = dateUtils.format(date, {weekday: format});
     date.setDate(date.getDate() + 1);
     return dayName;
 }

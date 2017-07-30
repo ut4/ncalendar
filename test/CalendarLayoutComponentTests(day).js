@@ -71,6 +71,6 @@ QUnit.module('CalendarLayoutComponent(day)', function (hooks) {
        return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'current').length > 0;
     }
     function getWeekDay(date) {
-        return dateUtils.format({weekday: 'long'}, date);
+        return dateUtils.format(date, {weekday: 'long'});
     }
 });

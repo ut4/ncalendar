@@ -42,7 +42,7 @@ class MonthViewLayout extends AbstractViewLayout {
     generateCompactGrid() {
         const dayNames = this.dateUtils.getFormattedWeekDays(
             this.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'short'})
+            'short'
         );
         const currentDayDateStr = new Date().toDateString();
         return this.generateGrid(2, d => {

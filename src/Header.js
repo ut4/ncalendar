@@ -39,7 +39,7 @@ class DayHeader extends React.Component {
      * @returns {string}
      */
     formatDay(cursorStart) {
-        return Intl.DateTimeFormat('fi', {weekday: 'long'}).format(cursorStart);
+        return dateUtils.format(cursorStart, {weekday: 'long'});
     }
 }
 /*
@@ -53,7 +53,7 @@ class WeekHeader extends React.Component {
         super(props);
         this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
             this.props.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'short'})
+            'short'
         );
     }
     /**
@@ -81,7 +81,7 @@ class MonthHeader extends React.Component {
         super(props);
         this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
             this.props.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'long'})
+            'long'
         );
     }
     /**
