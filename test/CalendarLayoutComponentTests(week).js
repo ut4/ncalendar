@@ -1,7 +1,7 @@
 import CalendarLayout from '../src/CalendarLayout.js';
-import {dateCursorFactory} from '../src/DateCursors.js';
+import {DateCursorFactory} from '../src/DateCursors.js';
 import Constants from '../src/Constants.js';
-import {domUtils} from './resources/Utils.js';
+import {domUtils, dateUtils} from './resources/Utils.js';
 
 QUnit.module('CalendarLayoutComponent(week)', function (hooks) {
     const titleFormatter = dateCursorRange => dateCursorRange.start.toISOString().split('T')[0];
@@ -11,7 +11,9 @@ QUnit.module('CalendarLayoutComponent(week)', function (hooks) {
                 titleFormatters: {[Constants.VIEW_WEEK]: titleFormatter}
             })
         );
-        this.replicatedCursor = dateCursorFactory.newCursor(Constants.VIEW_WEEK, null, () => {});
+        this.replicatedCursor = new DateCursorFactory(dateUtils).newCursor(
+            Constants.VIEW_WEEK, null, () => {}
+        );
     });
     QUnit.test('Toolbarin next-sivutuspainike päivittää titlen', assert => {
         assert.ok(containsCurrentDayColumns(this.rendered), 'Pitäisi sisältää ".current"-sarake');

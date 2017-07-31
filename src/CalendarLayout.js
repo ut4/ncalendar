@@ -1,9 +1,10 @@
 import Modal from './Modal.js';
 import Toolbar from './Toolbar.js';
 import ViewLayouts from './ViewLayouts.js';
-import {dateCursorFactory} from './DateCursors.js';
+import {DateCursorFactory} from './DateCursors.js';
 import Constants from './Constants.js';
 import settingsFactory, {getValidViewName} from './settingsFactory.js';
+import DateUtils from './DateUtils.js';
 
 /*
  * Kalenterin juurikomponentti.
@@ -23,6 +24,8 @@ class CalendarLayout extends React.Component {
         // Luo asetukset & rekisteröi mediaquery
         this.settings = settingsFactory(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
+        this.dateUtils = new DateUtils('fi');
+        this.dateCursorFactory = new DateCursorFactory(this.dateUtils);
         // Luo initial state
         const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};
         state.currentView = this.settings.defaultView;
@@ -82,7 +85,7 @@ class CalendarLayout extends React.Component {
      * @returns {DateCursor}
      */
     newDateCursor(viewName, lastViewsRange) {
-        return dateCursorFactory.newCursor(viewName, lastViewsRange || this.settings.defaultDate, () => {
+        return this.dateCursorFactory.newCursor(viewName, lastViewsRange || this.settings.defaultDate, () => {
             this.setState({dateCursor: this.state.dateCursor});
         });
     }
@@ -91,7 +94,7 @@ class CalendarLayout extends React.Component {
      * @returns {Day|Week|MonthViewLayout}
      */
     newViewLayout(viewName, dateCursor) {
-        return new ViewLayouts[viewName](dateCursor);
+        return new ViewLayouts[viewName](dateCursor, this.dateUtils);
     }
     /**
      * Renderöi kalenterin kokonaisuudessaan mutaatiossa day, week,
@@ -114,6 +117,7 @@ class CalendarLayout extends React.Component {
             }}),
             $el(Toolbar, {
                 calendarController: this.controller,
+                dateUtils: this.dateUtils,
                 titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
             }),
             header !== null && $el(header.Component,

@@ -1,25 +1,22 @@
 import Constants from './Constants.js';
-import ioc from './ioc.js';
-
-const dateUtils = ioc.dateUtils();
 
 const titleFormatters = {
-    [Constants.VIEW_DAY]: dateCursorRange => {
-        return '%1, %2'
+    [Constants.VIEW_DAY]: (dateCursorRange, dateUtils) =>
+        '%1, %2'
             .replace('%1', dateUtils.format(dateCursorRange.start, {day: 'numeric', month: 'long'}))
-            .replace('%2', dateCursorRange.start.getFullYear());
-    },
-    [Constants.VIEW_WEEK]: dateCursorRange => {
-        return '%1 %2 - %3 %4'
+            .replace('%2', dateCursorRange.start.getFullYear())
+    ,
+    [Constants.VIEW_WEEK]: (dateCursorRange, dateUtils) =>
+        '%1 %2 - %3 %4'
             .replace('%1', dateUtils.format(dateCursorRange.start, {month: 'short'}))
             .replace('%2', dateCursorRange.start.getDate())
             .replace('%3', dateCursorRange.end.getDate())
-            .replace('%4', dateCursorRange.start.getFullYear());
-    },
-    [Constants.VIEW_MONTH]: dateCursorRange => {
-        return dateUtils.format(dateCursorRange.start, {month: 'long', year: 'numeric'});
-    }
+            .replace('%4', dateCursorRange.start.getFullYear())
+    ,
+    [Constants.VIEW_MONTH]: (dateCursorRange, dateUtils) =>
+        dateUtils.format(dateCursorRange.start, {month: 'long', year: 'numeric'})
 };
+
 /*
  * Kalenterilayoutin ylin osa. Sisältää päänavigaatiopainikkeet, otsakkeen,
  * ja näkymänavigaatiopainikkeet.
@@ -34,6 +31,7 @@ class Toolbar extends React.Component {
     /**
      * @param {object} props {
      *     calendarController: {Object},
+     *     dateUtils: {Object},
      *     titleFormatter: {Function=}
      * }
      */
@@ -50,7 +48,9 @@ class Toolbar extends React.Component {
                     $el('button', {onClick: () => ctrl.dateCursor.reset() }, 'Tänään')
                 ),
                 $el('div', {className: 'col'},
-                    $el('h2', null, (this.props.titleFormatter || titleFormatters[ctrl.currentView])(ctrl.dateCursor.range))
+                    $el('h2', null, (this.props.titleFormatter || titleFormatters[ctrl.currentView])(
+                        ctrl.dateCursor.range, this.props.dateUtils
+                    ))
                 ),
                 $el('div', {className: 'col'},
                     $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_MONTH); }}, 'Kuukausi'),
@@ -63,4 +63,3 @@ class Toolbar extends React.Component {
 }
 
 export default Toolbar;
-export {titleFormatters};

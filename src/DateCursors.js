@@ -1,13 +1,11 @@
 import Constants from './Constants.js';
-import ioc from './ioc.js';
-
-const dateUtils = ioc.dateUtils();
 
 class DayViewCursorRange {
     /**
+     * @param {DateUtils} dateUtils
      * @param {Date|WeekViewCursorRange|MonthViewCursorRange} startDateOrRangeOfPreviousView
      */
-    constructor(startDateOrRangeOfPreviousView) {
+    constructor(dateUtils, startDateOrRangeOfPreviousView) {
         const d = getBasedate(startDateOrRangeOfPreviousView, DayViewCursorRange.lastRange);
         if (d instanceof Date) {
             this.start = dateUtils.getStartOfDay(d);
@@ -28,9 +26,10 @@ class DayViewCursorRange {
 }
 class WeekViewCursorRange {
     /**
+     * @param {DateUtils} dateUtils
      * @param {Date|DayViewCursorRange|MonthViewCursorRange} startDateOrRangeOfPreviousView
      */
-    constructor(startDateOrRangeOfPreviousView) {
+    constructor(dateUtils, startDateOrRangeOfPreviousView) {
         const d = getBasedate(startDateOrRangeOfPreviousView, WeekViewCursorRange.lastRange);
         if (d instanceof Date) {
             this.start = dateUtils.getStartOfWeek(dateUtils.getStartOfDay(d));
@@ -52,9 +51,10 @@ class WeekViewCursorRange {
 }
 class MonthViewCursorRange {
     /**
+     * @param {DateUtils} dateUtils
      * @param {Date|DayViewCursorRange|WeekViewCursorRange} startDateOrRangeOfPreviousView
      */
-    constructor(startDateOrRangeOfPreviousView) {
+    constructor(dateUtils, startDateOrRangeOfPreviousView) {
         const baseDate = startDateOrRangeOfPreviousView.start || startDateOrRangeOfPreviousView;
         this.start = dateUtils.getStartOfDay(baseDate);
         this.start.setDate(1);
@@ -99,8 +99,9 @@ function isWithinRange(date, range) {
  * selaustoimintojen yhteydessä. Kuuluu osaksi public calendar-API:a.
  */
 class DateCursor {
-    constructor(range, subscribeFn) {
+    constructor(range, dateUtils, subscribeFn) {
         this.range = range;
+        this.dateUtils = dateUtils;
         saveRange(this.range);
         if (subscribeFn) {
             this.notify = subscribeFn;
@@ -128,7 +129,7 @@ class DateCursor {
      * Siirtää kursorin takaisin nykyhetkeen.
      */
     reset() {
-        this.range = new this.range.constructor(new Date());
+        this.range = new this.range.constructor(this.dateUtils, new Date());
         saveRange(this.range);
         this.notify('reset');
     }
@@ -150,8 +151,26 @@ const cursorRanges = {
     [Constants.VIEW_WEEK]: WeekViewCursorRange,
     [Constants.VIEW_MONTH]: MonthViewCursorRange
 };
-const dateCursorFactory = {newCursor: (viewName, startDateOrRangeFromPreviousView, subscriberFn) => {
-    return new DateCursor(new cursorRanges[viewName](startDateOrRangeFromPreviousView || new Date()), subscriberFn);
-}};
 
-export {dateCursorFactory};
+class DateCursorFactory {
+    /**
+     * @param {DateUtils} dateUtils
+     */
+    constructor(dateUtils) {
+        this.dateUtils = dateUtils;
+    }
+    /**
+     * @param {string} viewName 'day'|'week'|'month'
+     * @param {Date|DayViewCursorRange|WeekViewCursorRange|MonthViewCursorRange} startDateOrRangeFromPreviousView
+     * @param {Function} subscriberFn
+     */
+    newCursor(viewName, startDateOrRangeFromPreviousView, subscriberFn) {
+        return new DateCursor(
+            new cursorRanges[viewName](this.dateUtils, startDateOrRangeFromPreviousView || new Date()),
+            this.dateUtils,
+            subscriberFn
+        );
+    }
+}
+
+export {DateCursorFactory, DayViewCursorRange, WeekViewCursorRange, MonthViewCursorRange};

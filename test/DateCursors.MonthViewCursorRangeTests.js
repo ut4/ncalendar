@@ -1,9 +1,12 @@
-import {dateCursorFactory} from '../src/DateCursors.js';
+import {DateCursorFactory} from '../src/DateCursors.js';
 import Constants from '../src/Constants.js';
+import {dateUtils} from './resources/Utils.js';
 
 QUnit.module('DateCursors.MonthViewCursorRange', function (hooks) {
     hooks.beforeEach(() => {
-        this.cursor = dateCursorFactory.newCursor(Constants.VIEW_MONTH, null, () => {});
+        this.cursor = new DateCursorFactory(dateUtils).newCursor(
+            Constants.VIEW_MONTH, null, () => {}
+        );
     });
     QUnit.test('.construct luo kuukauden pituisen rangen', assert => {
         const now = new Date();

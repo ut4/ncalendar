@@ -8,7 +8,7 @@ import './test/CalendarLayoutComponentTests(with-decorators)';
 import './test/ContentClassTests';
 import './test/ContentComponentTests';
 import './test/ContentLayerFactoryTests';
-import './test/DateCursors.dateCursorFactoryTests';
+import './test/DateCursors.DateCursorFactoryTests';
 import './test/DateCursors.DayViewCursorRangeTests';
 import './test/DateCursors.MonthViewCursorRangeTests';
 import './test/DateCursors.WeekViewCursorRangeTests';

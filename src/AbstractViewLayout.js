@@ -1,7 +1,6 @@
 import Header from './Header.js';
 import Content from './Content.js';
 import ComponentConstruct from './ComponentConstruct.js';
-import ioc from './ioc.js';
 
 /*
  * ViewLayoutien juuriluokka
@@ -9,10 +8,11 @@ import ioc from './ioc.js';
 class AbstractViewLayout {
     /**
      * @param {DateCursor} dateCursor
+     * @param {DateUtils} dateUtils
      */
-    constructor(dateCursor) {
+    constructor(dateCursor, dateUtils) {
         this.dateCursor = dateCursor;
-        this.dateUtils = ioc.dateUtils();
+        this.dateUtils = dateUtils;
     }
     /**
      * @access public
@@ -28,7 +28,10 @@ class AbstractViewLayout {
      */
     getFullLayout() {
         return [
-            new ComponentConstruct(Header[this.getName()], {dateCursor: this.dateCursor}),
+            new ComponentConstruct(Header[this.getName()], {
+                dateCursor: this.dateCursor,
+                dateUtils: this.dateUtils
+            }),
             new ComponentConstruct(Content, {gridGeneratorFn: () => this.generateFullGrid()})
         ];
     }

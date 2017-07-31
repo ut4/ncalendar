@@ -1,9 +1,7 @@
 import AbstractViewLayout from './AbstractViewLayout.js';
 import {Cell, ImmutableCell} from './Content.js';
-import ioc from './ioc.js';
 import Constants from './Constants.js';
 
-const dateUtils = ioc.dateUtils();
 /*
  * Kalenterin pääsisältö month, ja month-compact -muodossa
  */
@@ -27,7 +25,7 @@ class MonthViewLayout extends AbstractViewLayout {
             new Cell(d.getDate(), new Date(d), d.toDateString() === currentDayDateStr)
         // Lisää jokaisen rivi alkuun viikkonumero
         ).map(row => {
-            row.unshift(new ImmutableCell(dateUtils.getWeekNumber(d)));
+            row.unshift(new ImmutableCell(this.dateUtils.getWeekNumber(d)));
             d.setDate(d.getDate() + 7);
             return row;
         });
@@ -50,7 +48,7 @@ class MonthViewLayout extends AbstractViewLayout {
             // Lisää viikkonumero ensimmäisen solun-, ja viikon ensimmäisten päivien perään
             return new Cell(d.getDay() !== 1 && d.getDate() > 1
                 ? dateAndDayName
-                : [dateAndDayName, $el('span', null, ' / Vk' + dateUtils.getWeekNumber(d))]
+                : [dateAndDayName, $el('span', null, ' / Vk' + this.dateUtils.getWeekNumber(d))]
             , new Date(d), d.toDateString() === currentDayDateStr);
         });
     }

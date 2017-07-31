@@ -1,5 +1,4 @@
 import ContentLayerFactory from './ContentLayerFactory.js';
-import DateUtils from './DateUtils.js';
 
 const cache = {};
 const cachify = (key, fn) => {
@@ -10,9 +9,6 @@ const cachify = (key, fn) => {
 };
 
 export default {
-    dateUtils: () => {
-        return cachify('dateUtils', () => new DateUtils('fi'));
-    },
     contentLayerFactory: () => {
         return cachify('contentLayerFactory', () => new ContentLayerFactory());
     }

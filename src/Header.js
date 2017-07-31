@@ -1,7 +1,4 @@
 import Constants from './Constants.js';
-import ioc from './ioc.js';
-
-const dateUtils = ioc.dateUtils();
 
 /*
  * Kalenterin toolbarin alapuolelle renderöitävä headerline day-muodossa.
@@ -14,7 +11,7 @@ const dateUtils = ioc.dateUtils();
  */
 class DayHeader extends React.Component {
     /**
-     * @param {object} props {dateCursor: {DateCursor}}
+     * @param {object} props {dateCursor: {DateCursor}, dateUtils: {DateUtils}}
      */
     constructor(props) {
         super(props);
@@ -39,7 +36,7 @@ class DayHeader extends React.Component {
      * @returns {string}
      */
     formatDay(cursorStart) {
-        return dateUtils.format(cursorStart, {weekday: 'long'});
+        return this.props.dateUtils.format(cursorStart, {weekday: 'long'});
     }
 }
 /*
@@ -51,7 +48,7 @@ class WeekHeader extends React.Component {
      */
     constructor(props) {
         super(props);
-        this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
+        this.SHORT_DAY_NAMES = this.props.dateUtils.getFormattedWeekDays(
             this.props.dateCursor.range.start,
             'short'
         );
@@ -79,7 +76,7 @@ class MonthHeader extends React.Component {
      */
     constructor(props) {
         super(props);
-        this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
+        this.SHORT_DAY_NAMES = this.props.dateUtils.getFormattedWeekDays(
             this.props.dateCursor.range.start,
             'long'
         );
