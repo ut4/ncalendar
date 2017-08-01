@@ -17,6 +17,7 @@ class CalendarLayout extends React.Component {
      *     titleFormatters: {Object=},
      *     contentLayers: {Array=},
      *     layoutChangeBreakPoint: {number=}
+     *     locale: {string|string[]=}
      * }
      */
     constructor(props) {
@@ -24,7 +25,7 @@ class CalendarLayout extends React.Component {
         // Luo asetukset & rekisteröi mediaquery
         this.settings = settingsFactory(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
-        this.dateUtils = new DateUtils('fi');
+        this.dateUtils = new DateUtils(this.settings.locale);
         this.dateCursorFactory = new DateCursorFactory(this.dateUtils);
         // Luo initial state
         const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};

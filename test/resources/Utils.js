@@ -26,6 +26,6 @@ const domUtils = {
     }
 };
 
-const dateUtils = new Dateutils('fi');
+const dateUtils = new Dateutils();
 
 export {domUtils, dateUtils};

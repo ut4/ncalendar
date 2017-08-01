@@ -16,10 +16,9 @@ export default {
     },
     /**
      * @param {string} name Nimi, jolla rekisteröidään
-     * @param {Object} Class Sisältökerroksen implementaatio @see https://github.com/ut4/ncalendar#extending
+     * @param {Object|Function} layer Sisältökerroksen implementaatio @see https://github.com/ut4/ncalendar#extending
      */
-    registerContentLayer: (name, Class) =>
-        contentLayerFactory.register(name, Class),
+    registerContentLayer: (name, layer) => contentLayerFactory.register(name, layer),
     /**
      * @prop {React.Component} Kalenterin juurikomponentti @see https://github.com/ut4/ncalendar#usage-jsx
      */

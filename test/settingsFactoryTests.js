@@ -2,76 +2,35 @@ import settingsFactory from '../src/settingsFactory.js';
 import Constants from '../src/Constants.js';
 
 QUnit.module('settingsFactory', function() {
-    QUnit.test('Asettaa defaultView:in', assert => {
-        const input = {defaultView: Constants.VIEW_DAY};
-        const settings = settingsFactory(input);
-        assert.equal(settings.defaultView, input.defaultView);
+    QUnit.test('Asettaa arvot', assert => {
+        [
+            ['defaultView', Constants.VIEW_DAY],
+            ['defaultDate', new Date(2015, 3, 16)],
+            ['contentLayers', ['foo']],
+            ['titleFormatters', {[Constants.VIEW_DAY]: () => {}}],
+            ['layoutChangeBreakPoint', 600],
+            ['locale', 'en-US']
+        ].forEach(([setting, value]) => {
+            const input = {[setting]: value};
+            const settings = settingsFactory(input);
+            assert.deepEqual(settings[setting], input[setting], `Pitäisi asettaa ${setting}:n arvo`);
+        });
     });
-    QUnit.test('Validoi defaultView:in arvon', assert => {
-        assert.throws(
-            () => {
-                settingsFactory({defaultView: 'bogus'});
-            },
-            'Pitäisi heittää error'
-        );
-    });
-    QUnit.test('Asettaa defaultDate:n', assert => {
-        const input = {defaultDate: new Date(2015, 3, 16)};
-        const settings = settingsFactory(input);
-        assert.equal(settings.defaultDate, input.defaultDate);
-    });
-    QUnit.test('Validoi defaultDate:n arvon', assert => {
-        assert.throws(
-            () => {
-                settingsFactory({defaultDate: 'bogus'});
-            },
-            'Pitäisi heittää error'
-        );
-    });
-    QUnit.test('Asettaa contentLayers:in', assert => {
-        const input = {contentLayers: ['foo']};
-        const settings = settingsFactory(input);
-        assert.equal(settings.contentLayers, input.contentLayers);
-    });
-    QUnit.test('Validoi contentLayers:in arvon', assert => {
-        assert.throws(
-            () => {
-                settingsFactory({contentLayers: 'shh'});
-            },
-            'Pitäisi heittää error'
-        );
-    });
-    QUnit.test('Asettaa titleFormatters:in', assert => {
-        const input = {titleFormatters: {[Constants.VIEW_DAY]: () => {}}};
-        const settings = settingsFactory(input);
-        assert.equal(settings.titleFormatters, input.titleFormatters);
-    });
-    QUnit.test('Validoi titleFormatters:in arvon', assert => {
-        assert.throws(
-            () => {
-                settingsFactory({titleFormatters: {[Constants.VIEW_DAY]: 'bogus'}});
-            },
-            'Pitäisi heittää error'
-        );
-        assert.throws(
-            () => {
-                settingsFactory({titleFormatters: {bogus: () => {}}});
-            },
-            'Pitäisi heittää error'
-        );
-    });
-    QUnit.test('Asettaa layoutChangeBreakPoint:in', assert => {
-        const input = {layoutChangeBreakPoint: 600};
-        const settings = settingsFactory(input);
-        assert.equal(settings.layoutChangeBreakPoint, input.layoutChangeBreakPoint);
-    });
-    QUnit.test('Validoi layoutChangeBreakPoint:in arvon', assert => {
-        assert.throws(
-            () => {
-                settingsFactory({layoutChangeBreakPoint: 'bogus'});
-            },
-            'Pitäisi heittää error'
-        );
+    QUnit.test('Validoi arvot', assert => {
+        [
+            {defaultView: 'bogus'},
+            {defaultDate: 'bogus'},
+            {contentLayers: 'shh'},
+            {titleFormatters: {[Constants.VIEW_DAY]: 'bogus'}},
+            {titleFormatters: {bogus: () => {}}},
+            {layoutChangeBreakPoint: 'bogus'},
+            {locale: /fus/}
+        ].forEach(value => {
+            assert.throws(
+                () => { settingsFactory(value); },
+                `Pitäisi heittää error asetukselle: ${JSON.stringify(value)}`
+            );
+        });
     });
     QUnit.test('Asettaa oletusarvot määrittelemättömille asetuksille, ja ignorettaa tuntemattomat', assert => {
         const now = new Date();
@@ -81,6 +40,7 @@ QUnit.module('settingsFactory', function() {
         assert.deepEqual(settings.contentLayers, []);
         assert.deepEqual(settings.titleFormatters, {});
         assert.deepEqual(settings.layoutChangeBreakPoint, 800);
+        assert.deepEqual(settings.locale, undefined);
         assert.equal(settings.hasOwnProperty('foo'), false,
             'Pitäisi ignorettaa tuntemattomat asetukset'
         );

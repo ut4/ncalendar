@@ -7,6 +7,7 @@ Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMA
 - Inferno, preact, ja React yhteensopiva
 - Minimaalinen devausympäristö, ei build toolia, ei JSX:ää, ei nodejs:ää!
 - Laajennettavissa, ks. [extending](#extending)
+- Lokalisaatiotuki
 
 ## Usage
 
@@ -104,7 +105,14 @@ const mySettings = {
      * @prop {number}
      * @default 800
      */
-    layoutChangeBreakPoint: 600
+    layoutChangeBreakPoint: 600,
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
+     *
+     * @prop {string|string[]}
+     * @default undefined aka. selainmoottori päättää
+     */
+    locale: 'fi'
 };
 ```
 
@@ -195,6 +203,17 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
     {name:'foo2', args: (contentCtrl, calendarCtrl) => ['yayy', contentCtrl, calendarCtrl]}
 ]});
 ```
+
+## Global-API
+
+### Methods
+
+- nullcalendar.newCalendar(el[, settings])
+- nullcalendar.registerContentLayer(name, layer)
+
+### Properties
+
+- nullcalendar.Calendar
 
 ## CalendarController-API
 
