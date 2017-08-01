@@ -1,11 +1,11 @@
-import ioc from '../src/ioc.js';
 import CalendarLayout from '../src/CalendarLayout.js';
 import Content, {LoadType, Cell} from '../src/Content.js';
+import ContentLayerFactory from '../src/ContentLayerFactory.js';
 import Constants from '../src/Constants.js';
 import {domUtils} from './resources/Utils.js';
 import TestContentLayer from './resources/TestContentLayer.js';
 
-ioc.contentLayerFactory().register('atest', TestContentLayer);
+new ContentLayerFactory().register('atest', TestContentLayer);
 
 QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
     hooks.beforeEach(() => {

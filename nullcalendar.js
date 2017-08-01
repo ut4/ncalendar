@@ -1,6 +1,7 @@
 import CalendarLayout from './src/CalendarLayout.js';
-import ioc from './src/ioc.js';
-const contentLayerFactory = ioc.contentLayerFactory();
+import ContentLayerFactory from './src/ContentLayerFactory.js';
+
+const contentLayerFactory = new ContentLayerFactory();
 
 /**
  * Kirjaston public API.
