@@ -1,12 +1,12 @@
-import {dateCursorFactory} from '../src/DateCursors.js';
+import {DateCursorFactory} from '../src/DateCursors.js';
 import Constants from '../src/Constants.js';
-import ioc from '../src/ioc.js';
-
-const dateUtils = ioc.dateUtils();
+import {dateUtils} from './resources/Utils.js';
 
 QUnit.module('DateCursors.WeekViewCursorRange', function (hooks) {
     hooks.beforeEach(() => {
-        this.cursor = dateCursorFactory.newCursor(Constants.VIEW_WEEK, null, () => {});
+        this.cursor = new DateCursorFactory(dateUtils).newCursor(
+            Constants.VIEW_WEEK, null, () => {}
+        );
     });
     QUnit.test('.construct luo viikon pituisen rangen', assert => {
         const now = new Date();

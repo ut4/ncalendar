@@ -1,23 +1,28 @@
+/**
+ * Jokaiselle ContentLayerFactory-instanssille yhteinen, staattinen säilytystila
+ * rekisteröidyille sisältökerroksille.
+ *
+ * @var {Object}
+ */
+const register = {};
+
 class ContentLayerFactory {
-    constructor() {
-        this.registrar = {};
-    }
     /**
      * Rekisteröi sisältökerroksen {ConstructorOrFactory} nimellä {name},
      * tai heittää poikkeuksen jos {name} on jo rekisteröity.
      *
      * @access public
      * @param {string} name
-     * @param {Function} ConstructorOrFactory
+     * @param {Function} constructorOrFactory
      */
-    register(name, ConstructorOrFactory) {
+    register(name, constructorOrFactory) {
         if (this.isRegistered(name)) {
             throw new Error(`Layer "${name}" on jo rekisteröity.`);
         }
-        if (typeof ConstructorOrFactory !== 'function') {
+        if (typeof constructorOrFactory !== 'function') {
             throw new Error('Rekisteröitävä itemi tulisi olla luokka, tai funktio.');
         }
-        this.registrar[name] = ConstructorOrFactory;
+        register[name] = constructorOrFactory;
     }
     /**
      * Palauttaa tiedon löytyykö rekisteristä sisältökerros nimeltä {name}.
@@ -27,7 +32,7 @@ class ContentLayerFactory {
      * @returns {boolean}
      */
     isRegistered(name) {
-        return this.registrar.hasOwnProperty(name);
+        return register.hasOwnProperty(name);
     }
     /**
      * Luo uuden sisältökerroksen käyttäen rekisteröityä konstruktoria tai
@@ -44,7 +49,7 @@ class ContentLayerFactory {
             layer.args && (args = layer.args(...args));
             layer = layer.name || '';
         }
-        const item = this.registrar[layer];
+        const item = register[layer];
         if (!item) {
             throw new Error(`Layeria "${layer}" ei ole rekisteröity.`);
         }
@@ -60,7 +65,9 @@ class ContentLayerFactory {
         }
     }
 }
+
 function isValidContentLayer(obj) {
     return obj && typeof obj.load === 'function' && typeof obj.decorateCell === 'function';
 }
+
 export default ContentLayerFactory;

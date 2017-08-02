@@ -1,11 +1,11 @@
 import Content from '../src/Content.js';
 import ViewLayouts from '../src/ViewLayouts.js';
-import {dateCursorFactory} from '../src/DateCursors.js';
+import {DateCursorFactory} from '../src/DateCursors.js';
 import Constants from '../src/Constants.js';
-import ioc from '../src/ioc.js';
+import {dateUtils} from './resources/Utils.js';
 
-const dateUtils = ioc.dateUtils();
-const newDateCursor = dateCursorFactory.newCursor;
+const dateCursorFactory = new DateCursorFactory(dateUtils);
+const newDateCursor = v => dateCursorFactory.newCursor(v);
 
 QUnit.module('ContentComponent', function (hooks) {
     hooks.afterEach(assert => {
@@ -116,7 +116,7 @@ QUnit.module('ContentComponent', function (hooks) {
 });
 function makeProps(selectedView, compactFormShouldBeUsed) {
     return {
-        grid: (new ViewLayouts[selectedView](newDateCursor(selectedView)))
+        grid: (new ViewLayouts[selectedView](newDateCursor(selectedView), dateUtils))
             .getParts(compactFormShouldBeUsed)[1].props.gridGeneratorFn(),
         calendarController: {settings: {contentLayers: []}}// fake calendarController
     };

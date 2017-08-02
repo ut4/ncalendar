@@ -1,5 +1,5 @@
 import Constants from './Constants.js';
-import ioc from './ioc.js';
+import ContentLayerFactory from './ContentLayerFactory.js';
 
 const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
 const LoadType = Object.freeze({
@@ -32,7 +32,7 @@ class Content extends React.Component {
         this.hasAsyncContent = selectedContentLayers.length > 0;
         this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
-            const contentLayerFactory = ioc.contentLayerFactory();
+            const contentLayerFactory = new ContentLayerFactory();
             this.contentLayers = selectedContentLayers.map(layerConfig =>
                 contentLayerFactory.make(layerConfig, [
                     this.newController(),

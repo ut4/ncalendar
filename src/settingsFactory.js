@@ -32,6 +32,11 @@ function validateBreakPoint(candidate) {
         return 'layoutChangeBreakPoint-asetus tulisi olla kokonaisluku';
     }
 }
+function validateLocale(candidate) {
+    if (!Array.isArray(candidate) && typeof candidate !== 'string') {
+        return 'locale-asetus tulisi olla merkkijono tai taulukko';
+    }
+}
 /**
  * @param {any} value Asetuksen arvo
  * @param {Function} validator Arvon validoija
@@ -66,6 +71,7 @@ export default userSettings => ({
     defaultDate: getValidValue(userSettings.defaultDate, validateDefaultDate, new Date()),
     contentLayers: getValidValue(userSettings.contentLayers, validateLayers, []),
     titleFormatters: getValidValue(userSettings.titleFormatters, validateFormatters, {}),
-    layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800)
+    layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800),
+    locale: getValidValue(userSettings.locale, validateLocale, undefined)
 });
 export {getValidViewName};

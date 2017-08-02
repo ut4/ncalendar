@@ -1,3 +1,5 @@
+import Dateutils from '../../src/DateUtils.js';
+
 const domUtils = {
     /**
      * Palauttaa ensimmäisen löytämänsä {tag}-elementin sisällön
@@ -24,4 +26,6 @@ const domUtils = {
     }
 };
 
-export {domUtils};
+const dateUtils = new Dateutils();
+
+export {domUtils, dateUtils};

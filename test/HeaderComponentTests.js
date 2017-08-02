@@ -1,21 +1,21 @@
 import Header from '../src/Header.js';
-import {dateCursorFactory} from '../src/DateCursors.js';
+import {DateCursorFactory} from '../src/DateCursors.js';
 import Constants from '../src/Constants.js';
-import ioc from '../src/ioc.js';
+import {dateUtils} from './resources/Utils.js';
 
-const dateUtils = ioc.dateUtils();
+const dateCursorFactory = new DateCursorFactory(dateUtils);
 
 QUnit.module('HeaderComponent', function () {
     QUnit.test('.day renderöi tuntisarakkeen ja current-päivän täydellisen nimen', assert => {
         const dateCursor = dateCursorFactory.newCursor(Constants.VIEW_DAY);
-        const renderedCells = getRenderedCells(ReactTestUtils.renderIntoDocument($el(Header.day, {dateCursor})));
+        const renderedCells = getRenderedCells(renderHeader(Constants.VIEW_DAY, dateCursor));
         assert.equal(renderedCells.length, 2);
         assert.equal(renderedCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
         assert.equal(renderedCells[1].textContent, dateUtils.format(dateCursor.range.start, {weekday: 'long'}));
     });
     QUnit.test('.week renderöi tuntisarakkeen ja jokaisen viikonpäivän nimen lyhyessä muodossa', assert => {
         const dateCursor = dateCursorFactory.newCursor(Constants.VIEW_WEEK);
-        const renderedCells = getRenderedCells(ReactTestUtils.renderIntoDocument($el(Header.week, {dateCursor})));
+        const renderedCells = getRenderedCells(renderHeader(Constants.VIEW_WEEK, dateCursor));
         assert.equal(renderedCells.length, 1 + 7);
         assert.equal(renderedCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
         const monday = dateUtils.getStartOfWeek(dateCursor.range.start);
@@ -29,7 +29,7 @@ QUnit.module('HeaderComponent', function () {
     });
     QUnit.test('.month renderöi viikkonumerosarakkeen, ja jokaisen viikonpäivän täydellisen nimen', assert => {
         const dateCursor = dateCursorFactory.newCursor(Constants.VIEW_MONTH);
-        const renderedCells = getRenderedCells(ReactTestUtils.renderIntoDocument($el(Header.month, {dateCursor})));
+        const renderedCells = getRenderedCells(renderHeader(Constants.VIEW_MONTH, dateCursor));
         assert.equal(renderedCells.length, 8);
         const monday = dateUtils.getStartOfWeek(dateCursor.range.start);
         assert.equal(renderedCells[0].textContent, '');
@@ -42,6 +42,9 @@ QUnit.module('HeaderComponent', function () {
         assert.equal(renderedCells[7].textContent, getLongDayNameAndAddADay(monday));
     });
 });
+function renderHeader(form, dateCursor) {
+    return ReactTestUtils.renderIntoDocument($el(Header[form], {dateCursor, dateUtils}));
+}
 function getRenderedCells(rendered) {
     return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'cell');
 }

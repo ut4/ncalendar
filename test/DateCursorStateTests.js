@@ -1,18 +1,16 @@
 import CalendarLayout from '../src/CalendarLayout.js';
-import {dateCursorFactory} from '../src/DateCursors.js';
-import {domUtils} from './resources/Utils.js';
-import ioc from '../src/ioc.js';
+import {DayViewCursorRange, WeekViewCursorRange, MonthViewCursorRange} from '../src/DateCursors.js';
+import {domUtils, dateUtils} from './resources/Utils.js';
 import Constants from '../src/Constants.js';
 
 const rtu = ReactTestUtils;
-const dateUtils = ioc.dateUtils();
 
 QUnit.module('DateCursorState', function (hooks) {
     hooks.beforeEach(() => {
         // Resetoi ranget
-        dateCursorFactory.newCursor(Constants.VIEW_DAY).range.constructor.lastRange = null;
-        dateCursorFactory.newCursor(Constants.VIEW_WEEK).range.constructor.lastRange = null;
-        dateCursorFactory.newCursor(Constants.VIEW_MONTH).range.constructor.lastRange = null;
+        DayViewCursorRange.lastRange = null;
+        WeekViewCursorRange.lastRange = null;
+        MonthViewCursorRange.lastRange = null;
     });
     const render = (viewName, useDefaultDate) => {
         const settings = {defaultView: viewName};
@@ -53,7 +51,7 @@ QUnit.module('DateCursorState', function (hooks) {
         // Vaihda day-näkymään & assertoi, että adoptoi new Date()n eikä week-näkymän range.start:ia
         rtu.Simulate.click(domUtils.findButtonByContent(this.rendered, 'Päivä'));
         const dayViewsStartDate = this.calendarController.dateCursor.range.start.getDate();
-        assert.notEqual(
+        (new Date().getDay() !== 1) && assert.notEqual(
             dayViewsStartDate,
             weekViewsStartDate,
             'Ei pitäisi adoptoida edellisen week-näkymän range.startia'
@@ -87,7 +85,7 @@ QUnit.module('DateCursorState', function (hooks) {
         // Vaihda day-näkymään & assertoi, että new Date()'d eikä adoptoinut month-näkymän range.start:ia
         rtu.Simulate.click(domUtils.findButtonByContent(this.rendered, 'Päivä'));
         const dayViewsStartDate = this.calendarController.dateCursor.range.start.getDate();
-        assert.notEqual(
+        (new Date().getDate() !== 1) && assert.notEqual(
             dayViewsStartDate,
             monthViewsStartDate,
             'Ei pitäisi adoptoida edellisen month-näkymän range.startia'

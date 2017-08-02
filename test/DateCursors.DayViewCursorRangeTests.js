@@ -1,9 +1,12 @@
-import {dateCursorFactory} from '../src/DateCursors.js';
+import {DateCursorFactory} from '../src/DateCursors.js';
 import Constants from '../src/Constants.js';
+import {dateUtils} from './resources/Utils.js';
 
 QUnit.module('DateCursors.DayViewCursorRange', function (hooks) {
     hooks.beforeEach(() => {
-        this.cursor = dateCursorFactory.newCursor(Constants.VIEW_DAY, null, () => {});
+        this.cursor = new DateCursorFactory(dateUtils).newCursor(
+            Constants.VIEW_DAY, null, () => {}
+        );
     });
     QUnit.test('.construct luo päivän pituisen rangen', assert => {
         const now = new Date();
