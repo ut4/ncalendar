@@ -1,10 +1,12 @@
-import './app-header.js';
+import './main.js';
 import './test-header.js';
 import './test/event/CalendarLayoutComponentTests(with-eventlayer).js';
 import './test/event/EventLayerTests.js';
 import './test/event/EventModalComponentTests.js';
+import './test/event/EventTests.js';
+import './test/event/MonthViewEventRenderingTests.js';
 import './test/event/RepositoryFactoriesTests.js';
-import './test/event/WeekViewEventStackingTests.js';
+import './test/event/WeekAndDayViewEventRenderingTests.js';
 import './test/CalendarLayoutComponentTests.js';
 import './test/CalendarLayoutComponentTests(day).js';
 import './test/CalendarLayoutComponentTests(month).js';

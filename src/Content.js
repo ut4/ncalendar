@@ -120,7 +120,7 @@ class Content extends React.Component {
     newCell(cell, key) {
         let content;
         if (!cell) {
-            content = '';
+            content = null;
         } else if (!cell.children || !cell.children.length) {
             content = cell.content;
         } else {
@@ -147,7 +147,7 @@ class Content extends React.Component {
             $el(child.Component, Object.assign({}, child.props, {key: i}), child.content)
         );
         return cell.content
-            ? $el('div', null, cell.content, children)
+            ? [$el('span', null, cell.content)].concat(children)
             // Luultavasti viikko-gridin cell, joissa ei sisältöä
             : children;
     }
@@ -165,15 +165,18 @@ class Content extends React.Component {
             },
             reRender: () => {
                 this.forceUpdate();
-            }
+            },
+            getRenderedGrid: () => this.mainEl
         };
     }
     render() {
-        return $el('div', {className: 'main'}, this.props.grid.map((row, rowIndex) =>
-            $el('div', {className: 'row', key: rowIndex},
-                row.map((cell, colIndex) => this.newCell(cell, rowIndex + '.' + colIndex)
-            ))
-        ));
+        return $el('div', {className: 'main', ref: el => { this.mainEl = el; }},
+            this.props.grid.map((row, rowIndex) =>
+                $el('div', {className: 'row', key: rowIndex},
+                    row.map((cell, colIndex) => this.newCell(cell, rowIndex + '.' + colIndex)
+                ))
+            )
+        );
     }
 }
 class Cell {

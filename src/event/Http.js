@@ -7,7 +7,7 @@ class Http {
     }
     /**
      * @param {string} url
-     * @return {Promise}
+     * @returns {Promise}
      */
     get(url) {
         return this.newRequest(url, {method: 'GET'});
@@ -15,7 +15,7 @@ class Http {
     /**
      * @param {string} url
      * @param {Object|string} data
-     * @return {Promise}
+     * @returns {Promise}
      */
     post(url, data) {
         return this.newRequest(url, {method: 'POST', body: data});
@@ -23,14 +23,14 @@ class Http {
     /**
      * @param {string} url
      * @param {Object|string} data
-     * @return {Promise}
+     * @returns {Promise}
      */
     put(url, data) {
         return this.newRequest(url, {method: 'PUT', body: data});
     }
     /**
      * @param {string=} url
-     * @return {Promise}
+     * @returns {Promise}
      */
     delete(url) {
         return this.newRequest(url, {method: 'DELETE'});
@@ -38,7 +38,7 @@ class Http {
     /**
      * @param {string=} url
      * @param {Object=} options
-     * @return {Promise}
+     * @returns {Promise}
      */
     newRequest(url, options) {
         if (typeof options.body === 'object') {
@@ -51,7 +51,7 @@ class Http {
  * Heittää poikkeuksen, jos response != ok.
  *
  * @param {Response} response
- * @return {Response}
+ * @returns {Response}
  * @throws {Error}
  */
 function checkResponse(response) {
@@ -64,7 +64,7 @@ function checkResponse(response) {
 }
 /**
  * @param {Response} response
- * @return {Promise}
+ * @returns {Promise}
  */
 function parseResponse(response) {
     return response.json();
@@ -74,7 +74,7 @@ function parseResponse(response) {
  * aikavyöhyketiedot.
  *
  * @param {Object} obj
- * @return {string}
+ * @returns {string}
  */
 function toJson(obj) {
     const cloned = {};

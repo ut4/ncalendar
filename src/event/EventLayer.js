@@ -1,4 +1,5 @@
 import Event from './Event.js';
+import EventComponent, { MonthEventComponent } from './EventComponent.js';
 import EventModal from './EventModal.js';
 import EventCollection from './EventCollection.js';
 import RepositoryFactory from './RepositoryFactory.js';
@@ -22,7 +23,10 @@ class EventLayer {
             : repositoryOrSettings;
         this.contentController = contentController;
         this.calendarController = calendarController;
-        this.autoIncrement = 1;
+        /**
+         * @prop {Object} key = eventin id, value = stackIndex-arvo
+         */
+        this.stackIndexes = {};
     }
     /**
      * Hakee tapahtumadatan repositorystä ja asettaa ne {this.events}iin.
@@ -33,11 +37,9 @@ class EventLayer {
         const range = this.calendarController.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {
-                this.events = new EventCollection(...events.map(event => this.normalizeEvent(event)));
-                return this.events.length > 0;
+                this.events = new EventCollection(...events.map(event => new Event(event)));
             }, () => {
                 this.events = new EventCollection();
-                return false;
             });
     }
     /**
@@ -56,47 +58,20 @@ class EventLayer {
         //
         const events = this.collectEvents(cell.date);
         events.length && cell.children.push(...events.map((event, i) => {
-            event.stackIndex = this.getStackIndex(event, i);
+            this.stackIndexes[event.id] = this.getStackIndex(event, i);
             return this.newEventConstruct(event);
         }));
         //
-        const ongoingEvents = this.collectOngoingEvents(cell.date);
-        ongoingEvents.length && cell.children.push(...ongoingEvents.map(event =>
-            new ComponentConstruct('div', {
-                className: 'event-ongoing stack-index-' + event.stackIndex + (
-                    event.dateTo.getHours() - cell.date.getHours() === 1 &&
-                    event.date.getDate() === cell.date.getDate() ? ' ongoing-end' : ''
-                ),
-                partOf: event.id
-            })
-        ));
         cell.clickHandlers.push(() => this.calendarController.openModal(new ComponentConstruct(
             EventModal,
-            {event: {title: '', date: new Date(cell.date)}, confirm: data => this.createEvent(data)}
+            {event: new Event({start: new Date(cell.date)}), confirm: event => this.createEvent(event)}
         )));
-    }
-    /**
-     * Numeerinen arvo (visuaalisesti) limittäisille eventeille. 0 = pinon alin,
-     * 1 = pinon 2. kerros jne..
-     */
-    getStackIndex(event, nth) {
-        const hour = event.date.getHours();
-        if (hour < 1) {
-            return nth;
-        }
-        for (const ev of this.events.getOngoingEvents(event.date.getDay(), hour)) {
-            if (ev.id !== event.id) {
-                return (ev.stackIndex || 0) + 1;
-            }
-        }
-        return 0;
     }
     /**
      * @access protected
      */
-    createEvent(data) {
-        data = this.normalizeEvent(data);
-        this.repository.insert(data).then(
+    createEvent(event) {
+        this.repository.insert(event).then(
             created => {
                 this.events.push(created);
                 this.contentController.refresh();
@@ -107,11 +82,10 @@ class EventLayer {
     /**
      * @access protected
      */
-    updateEvent(event, data) {
-        data = this.normalizeEvent(data);
-        this.repository.update(event, data).then(
+    updateEvent(event, original) {
+        this.repository.update(event).then(
             updated => {
-                this.events[this.events.indexOf(event)] = updated;
+                this.events[this.events.indexOf(original)] = updated;
                 this.contentController.refresh();
             },
             () => {}
@@ -133,38 +107,38 @@ class EventLayer {
      * @access private
      */
     newEventConstruct(event) {
-        return new ComponentConstruct(Event, {
-            event,
-            edit: event => this.calendarController.openModal(new ComponentConstruct(
-                EventModal,
-                {event, confirm: data => this.updateEvent(event, data)}
-            )),
-            delete: data => this.deleteEvent(data)
-        });
+        return new ComponentConstruct(
+            this.calendarController.currentView !== Constants.VIEW_MONTH ? EventComponent : MonthEventComponent,
+            {
+                event,
+                stackIndex: this.stackIndexes[event.id],
+                cellPadding: this.getCellPadding(),
+                edit: event => this.calendarController.openModal(new ComponentConstruct(
+                    EventModal,
+                    {event: new Event(event), confirm: updated => this.updateEvent(updated, event)}
+                )),
+                delete: data => this.deleteEvent(data)
+            }
+        );
     }
     /**
+     * Numeerinen arvo (visuaalisesti) limittäisille eventeille. 0 = pinon alin,
+     * 1 = pinon 2. kerros jne..
+     *
      * @access private
+     * @returns {number}
      */
-    normalizeEvent(event) {
-        if (!(event.date instanceof Date)) {
-            event.date = new Date(event.date);
+    getStackIndex(event, nth) {
+        for (const ev of this.collectOngoingEvents(event.start)) {
+            if (ev.id !== event.id) {
+                return (this.stackIndexes[ev.id] || 0) + 1;
+            }
         }
-        if (!(event.dateTo instanceof Date)) {
-            event.dateTo = new Date(event.dateTo);
-        }
-        if (!(event.hasOwnProperty('dateTo'))) {
-            event.dateTo = new Date(event.date);
-            event.dateTo.setHours(event.date.getHours() + 1);
-        }
-        if (!event.hasOwnProperty('id')) {
-            event.id = this.autoIncrement++;
-        }
-        event.stackIndex = 0;
-        return event;
+        return nth;
     }
     /**
      * @access private
-     * @return array
+     * @returns array
      */
     collectEvents(date) {
         if (!this.events.length) {
@@ -178,15 +152,32 @@ class EventLayer {
     }
     /**
      * @access private
-     * @return array
+     * @returns array
      */
-    collectOngoingEvents(date) {
+    collectOngoingEvents(compareDate) {
         if (!this.events.length) {
             return [];
         }
-        return this.calendarController.currentView === Constants.VIEW_MONTH
-            ? [] // TODO implement
-            : this.events.getOngoingEvents(date.getDay(), date.getHours());
+        return this.calendarController.currentView !== Constants.VIEW_MONTH
+            ? this.events.getOngoingWeekEvents(compareDate.getDay(), compareDate.getHours())
+            : this.events.getOngoingMonthEvents(compareDate.getDate(), compareDate.getMonth());
+    }
+    /**
+     * Palauttaa renderöidyn sisältösolun style.paddingTop-arvon. Olettaa, että
+     * arvo on yksikköä px.
+     */
+    getCellPadding() {
+        if (!this.computedPadding) {
+            const renderedGrid = this.contentController.getRenderedGrid();
+            if (renderedGrid) {
+                //                                  .main        .row        .col        .cell
+                const padding = getComputedStyle(renderedGrid.children[0].children[0].children[0]).paddingTop;
+                this.computedPadding = parseFloat(padding.replace(/[^0-9\.]/g, ''));// vain numerot, ja .
+            } else {
+                this.computedPadding = 0;
+            }
+        }
+        return this.computedPadding;
     }
 }
 

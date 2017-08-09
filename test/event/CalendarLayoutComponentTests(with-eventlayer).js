@@ -1,33 +1,35 @@
 import {domUtils} from '../resources/Utils.js';
 import CalendarLayout from '../../src/CalendarLayout.js';
 import Content from '../../src/Content.js';
+import Event from '../../src/event/Event.js';
 import EventLayer from '../../src/event/EventLayer.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
 import ContentLayerFactory from '../../src/ContentLayerFactory.js';
 
-const rtu = ReactTestUtils;
 const now = new Date();
-const testEvents = [
-    {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 1'},
-    {date: new Date(now.getFullYear(), now.getMonth(), now.getDate()-7, 0, 0, 0, 1), title: 'Event 2'},
-    {date: new Date(now.getFullYear(), now.getMonth()-1, now.getDate(), 0, 0, 0, 1), title: 'Event 3'}
-].map(event => {
-    event.dateTo = new Date(event.date);
-    event.dateTo.setHours(event.dateTo.getHours() + 1);
-    return event;
-});
-const repository = new InMemoryEventRepository(testEvents);
-//
-new ContentLayerFactory().register('eventasd', (conCtrl, calCtrl) =>
-    new EventLayer(repository, conCtrl, calCtrl)
-);
-//
+const rtu = ReactTestUtils;
+new ContentLayerFactory().register('eventasd', EventLayer);
+
 QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
+    let testEvents;
+    let repository;
     hooks.beforeEach(() => {
+        testEvents = [
+            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 1'},
+            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate()-7, 0, 0, 0, 1), title: 'Event 2'},
+            {start: new Date(now.getFullYear(), now.getMonth()-1, now.getDate(), 0, 0, 0, 1), title: 'Event 3'}
+        ].map(event => {
+            event.end = new Date(event.start);
+            event.end.setHours(event.end.getHours() + 1);
+            return event;
+        });
+        repository = new InMemoryEventRepository(testEvents);
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.rendered = rtu.renderIntoDocument(
             $el(CalendarLayout, {
-                contentLayers: ['eventasd']
+                contentLayers: [{name: 'eventasd', args: (contentCtrl, calCtrl) =>
+                    [repository, contentCtrl, calCtrl]
+                }]
             })
         );
     });
@@ -57,17 +59,20 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             const mondayAt0Am = hourRows[0].children[1].children[0];
             rtu.Simulate.click(mondayAt0Am);
             const inputs = getRenderedInputs(this.rendered);
-            assert.equal(inputs.length, 2, 'Pitäisi avata modal');
-            const data = {title: 'Foo', date: getTestDateString()};
+            assert.equal(inputs.length, 3, 'Pitäisi avata modal');
+            const data = {title: 'Foo', start: getTestDateString(testEvents), end: getTestDateString(testEvents, 3)};
             // Triggeröi lomakkeen submit
             inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
-            inputs[1].value = data.date; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
+            inputs[1].value = data.start; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
+            inputs[2].value = data.end; rtu.Simulate[React.INPUT_EVENT](inputs[2]);
             rtu.Simulate.click(domUtils.findButtonByContent(this.rendered, 'Ok'));
             // Assertoi että luo tapahtuman ja renderöi sen kalenteriin
-            assert.equal(getRenderedInputs(this.rendered).length, 0, 'Pitäisi sulkea modalin');
+            assert.equal(getRenderedInputs(this.rendered).length, 0, 'Pitäisi sulkea modal');
             assert.ok(repositoryInsertSpy.calledOnce, 'Pitäisi kutsua repository.insert');
-            assert.deepEqual(repositoryInsertSpy.firstCall.args, [{title: data.title, date: new Date(data.date)}],
-                'Pitäisi passata repository.insert:lle event-datan'
+            assert.deepEqual(
+                Object.assign(repositoryInsertSpy.firstCall.args[0], {id: 1}),
+                Object.assign(new Event(data), {id: 1}),
+                'Pitäisi passata event-data repository.insert:lle'
             );
             repositoryInsertSpy.firstCall.returnValue.then(() => {
                 const renderedEventsAfter = getRenderedEvents(this.rendered);
@@ -95,20 +100,20 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             const eventEditButton = renderedEvents[0].querySelector('button[title="Muokkaa"]');
             rtu.Simulate.click(eventEditButton);
             const inputs = getRenderedInputs(this.rendered);
-            assert.equal(inputs.length, 2, 'Pitäisi avata modalin');
+            assert.equal(inputs.length, 3, 'Pitäisi avata modal');
             // Simuloi lomakkeen submit
-            const data = {title: 'Holyy', date: getTestDateString()};
+            const data = {title: 'Holyy', start: getTestDateString(testEvents), end: getTestDateString(testEvents, 3)};
             inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
-            inputs[1].value = data.date; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
-            const expectedCurrentEvent = testEvents[0];
+            inputs[1].value = data.start; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
+            inputs[2].value = data.end; rtu.Simulate[React.INPUT_EVENT](inputs[2]);
             rtu.Simulate.click(domUtils.findButtonByContent(this.rendered, 'Ok'));
             // Assertoi että päivitti tapahtuman ja uudelleenrenderöi kalenterin oikein
-            assert.equal(getRenderedInputs(this.rendered).length, 0, 'Pitäisi sulkea modalin');
+            assert.equal(getRenderedInputs(this.rendered).length, 0, 'Pitäisi sulkea modal');
             assert.ok(repositoryUpdateSpy.calledOnce, 'Pitäisi kutsua repository.update');
-            assert.deepEqual(repositoryUpdateSpy.firstCall.args, [expectedCurrentEvent, {
-                title: data.title,
-                date: new Date(data.date)
-            }], 'Pitäisi passata repository.update:lle nykyisen eventin, ja lomakedatan');
+            assert.deepEqual(repositoryUpdateSpy.firstCall.args,
+                [new Event(Object.assign(data, {id: repository.events[0].id}))],
+                'Pitäisi passata repository.update:lle päivitetty event'
+            );
             repositoryUpdateSpy.firstCall.returnValue.then(() => {
                 const renderedEventsAfter = getRenderedEvents(this.rendered);
                 assert.equal(renderedEventsAfter.length, renderedEventCountBefore,
@@ -137,7 +142,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
             const renderedEvents = getRenderedEvents(this.rendered);
             const renderedEventCountBefore = renderedEvents.length;
-            const expectedDeleteData = testEvents[0];
+            const expectedDeleteData = new Event(repository.events[0]);
             const repositoryDeleteSpy = sinon.spy(repository, 'delete');
             // Triggeröi klikkaus
             const deleteEditButton = renderedEvents[0].querySelector('button[title="Poista"]');
@@ -147,7 +152,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             assert.deepEqual(
                 repositoryDeleteSpy.firstCall.args,
                 [expectedDeleteData],
-                'Pitäisi passata repository.delete:lle oikean tapahtuman'
+                'Pitäisi passata repository.delete:lle oikea tapahtuma'
             );
             repositoryDeleteSpy.firstCall.returnValue.then(() => {
                 const renderedEventsAfter = getRenderedEvents(this.rendered);
@@ -168,8 +173,8 @@ function getRenderedEvents(rendered) {
 function getRenderedRows(rendered) {
     return rtu.findRenderedDOMComponentWithClass(rendered, 'main').children;
 }
-function getTestDateString(hour = 2) {
-    const date = new Date(testEvents[0].date);
+function getTestDateString(testEvents, hour = 2) {
+    const date = new Date(testEvents[0].start);
     date.setHours(hour);
     return date.toISOString();
 }

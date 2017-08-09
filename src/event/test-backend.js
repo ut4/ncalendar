@@ -18,7 +18,7 @@ http.createServer((req, res) => {
             req.on('end', () => {
                 const newEvent = JSON.parse(requestBody);
                 newEvent.id = events.length + 1;
-                newEvent.date = new Date(newEvent.date);
+                newEvent.start = new Date(newEvent.start);
                 respond(JSON.stringify({insertId: events.push(newEvent)}));
             });
             break;
@@ -27,7 +27,7 @@ http.createServer((req, res) => {
                 const from = new Date(params.from);
                 const to = new Date(params.to);
                 respond(JSON.stringify(events.filter(event =>
-                    event.date >= from && event.date <= to
+                    event.start >= from && event.start <= to
                 )));
             } else {
                 respond(JSON.stringify(events));
@@ -37,7 +37,7 @@ http.createServer((req, res) => {
             req.on('data', receiveData);
             req.on('end', () => {
                 const updated = JSON.parse(requestBody);
-                updated.date = new Date(updated.date);
+                updated.start = new Date(updated.start);
                 console.log(pathParams[0], updated)
                 events[events.indexOf(events.find(e => e.id === +pathParams[0]))] = updated;
                 console.log(events)
@@ -73,8 +73,8 @@ console.log('Check out http://localhost:8080/events');
 function makeSomeEvents() {
     const now = new Date();
     return [
-        {id: 1, date: new Date(now.getFullYear(), now.getMonth(), now.getDate()-2, 4, 0, 0, 0), title: 'Event 1'},
-        {id: 2, date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 2'},
-        {id: 3, date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 30, 0, 0), title: 'Event 3'}
+        {id: 1, start: new Date(now.getFullYear(), now.getMonth(), now.getDate()-2, 4, 0, 0, 0), title: 'Event 1'},
+        {id: 2, start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 2'},
+        {id: 3, start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 30, 0, 0), title: 'Event 3'}
     ];
 }

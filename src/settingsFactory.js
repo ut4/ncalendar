@@ -62,7 +62,8 @@ const getValidViewName = value => getValidValue(value, validateViewKey, Constant
  *     defaultDate: {Date},
  *     contentLayers: {Array},
  *     titleFormatters: {Object},
- *     layoutChangeBreakPoint: {number}
+ *     layoutChangeBreakPoint: {number},
+ *     locale: {string|undefined}
  * }
  * @throws {Error}
  */

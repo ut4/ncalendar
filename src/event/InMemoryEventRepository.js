@@ -1,14 +1,15 @@
+import Event from './Event.js';
+
 class InMemoryEventRepository {
     constructor(events) {
-        this.events = events || [];
+        this.events = (events || []).map(data => new Event(data));
     }
     /**
      * @access public
-     * @param {Object} data
-     * @returns {Promise} -> ({Object} newEvent, ei rejektoi)
+     * @param {Event} newEvent
+     * @returns {Promise} -> ({Event} newEvent, ei rejektoi)
      */
-    insert(data) {
-        const newEvent = {title: data.title, date: data.date};
+    insert(newEvent) {
         this.events.push(newEvent);
         return Promise.resolve(newEvent);
     }
@@ -20,24 +21,22 @@ class InMemoryEventRepository {
      */
     getAll(from, to) {
         return Promise.resolve(this.events.filter(event =>
-            event.date >= from && event.date <= to
+            event.start >= from && event.start <= to
         ));
     }
     /**
      * @access public
-     * @param {Object} event
-     * @param {Object} data
-     * @returns {Promise} -> ({Object} updatedEvent, ei rejektoi)
+     * @param {Event} event
+     * @returns {Promise} -> ({Event} event, ei rejektoi)
      */
-    update(event, data) {
+    update(event) {
         const pos = this.getIndex(event);
-        const updatedEvent = Object.assign(event, data);
-        this.events[pos] = updatedEvent;
-        return Promise.resolve(updatedEvent);
+        this.events[pos] = event;
+        return Promise.resolve(event);
     }
     /**
      * @access public
-     * @param {Object} event
+     * @param {Event} event
      * @returns {Promise} -> ({void} undefined, ei rejektoi)
      */
     delete(event) {
@@ -47,16 +46,17 @@ class InMemoryEventRepository {
     }
     /**
      * @access private
-     * @param {Object} event
+     * @param {Event} event
      * @returns {number}
      * @throws Error
      */
     getIndex(event) {
-        const index = this.events.indexOf(event);
-        if (index < 0) {
-            throw new Error('Event not found.');
+        for (const ev of this.events) {
+            if (ev.id === event.id) {
+                return this.events.indexOf(ev);
+            }
         }
-        return index;
+        throw new Error('Event not found.');
     }
 }
 

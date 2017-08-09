@@ -9,11 +9,10 @@ class HttpEventRepository {
     }
     /**
      * @access public
-     * @param {Object} data
-     * @returns {Promise} -> ({Object} newEvent, ei rejektoi)
+     * @param {Event} data
+     * @returns {Promise} -> ({Event} newEvent, ei rejektoi)
      */
-    insert(data) {
-        const newEvent = {title: data.title, date: data.date};
+    insert(newEvent) {
         return this.http.post('', newEvent).then(insertResponse => {
             newEvent.id = insertResponse.insertId;
             return newEvent;
@@ -32,17 +31,15 @@ class HttpEventRepository {
     }
     /**
      * @access public
-     * @param {Object} event
-     * @param {Object} data
-     * @returns {Promise} -> ({Object} updatedEvent, ei rejektoi)
+     * @param {Event} updatedEvent
+     * @returns {Promise} -> ({Event} updatedEvent, ei rejektoi)
      */
-    update(event, data) {
-        const updated = Object.assign(event, data);
-        return this.http.put(event.id.toString(), updated).then(() => updated);
+    update(updatedEvent) {
+        return this.http.put(updatedEvent.id.toString(), updatedEvent).then(() => updatedEvent);
     }
     /**
      * @access public
-     * @param {Object} event
+     * @param {Event} event
      * @returns {Promise} -> ({void} undefined, ei rejektoi)
      */
     delete(event) {
