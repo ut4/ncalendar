@@ -16,10 +16,11 @@
             .cal .header .cell { height: 20px/*; border-bottom: 1px solid #DDD*/ }
 /* -- main ------------------------------------------------------------------ */
 .cal .main { min-height: 343px; max-height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
-    .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; height: 100%; position: relative }
+    .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; height: 40px; position: relative }
     .main > .row:first-of-type .cell { border-top: none }
+        .cal .main .cell > div { position: relative; height: 100% }
 /* -- month-view ------------------------------------------------------------ */
-    .cal.month .main .cell { min-height: 80px }
+    .cal.month .main .cell { height: 80px }
     .cal.month .header .col:first-of-type,
     .cal.month .main .col:first-of-type { flex: 0 0 21px }
 /* -- week-view ------------------------------------------------------------- */

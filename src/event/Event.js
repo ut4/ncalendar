@@ -27,7 +27,10 @@ class Event extends React.Component {
     /**
      */
     render() {
-        return $el('div', {className: 'event'},
+        return $el('div', {className: 'event stack-index-' + this.props.event.stackIndex + (
+                this.props.event.dateTo.getHours() - this.props.event.date.getHours() === 1 &&
+                this.props.event.date.getDate() === this.props.event.dateTo.getDate() ? ' incontinous' : ''
+            )},
             $el('button', {title: 'Poista', onClick: e => this.receiveClick(Action.DELETE, e)}, 'x'),
             $el('button', {title: 'Muokkaa', onClick: e => this.receiveClick(Action.EDIT, e)}, 'e'),
             $el('span', null, this.props.event.title)

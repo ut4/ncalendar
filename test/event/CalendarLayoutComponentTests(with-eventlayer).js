@@ -1,9 +1,9 @@
-import ioc from '../../src/ioc.js';
 import {domUtils} from '../resources/Utils.js';
 import CalendarLayout from '../../src/CalendarLayout.js';
 import Content from '../../src/Content.js';
 import EventLayer from '../../src/event/EventLayer.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
+import ContentLayerFactory from '../../src/ContentLayerFactory.js';
 
 const rtu = ReactTestUtils;
 const now = new Date();
@@ -11,10 +11,14 @@ const testEvents = [
     {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 1'},
     {date: new Date(now.getFullYear(), now.getMonth(), now.getDate()-7, 0, 0, 0, 1), title: 'Event 2'},
     {date: new Date(now.getFullYear(), now.getMonth()-1, now.getDate(), 0, 0, 0, 1), title: 'Event 3'}
-];
+].map(event => {
+    event.dateTo = new Date(event.date);
+    event.dateTo.setHours(event.dateTo.getHours() + 1);
+    return event;
+});
 const repository = new InMemoryEventRepository(testEvents);
 //
-ioc.contentLayerFactory().register('eventasd', (conCtrl, calCtrl) =>
+new ContentLayerFactory().register('eventasd', (conCtrl, calCtrl) =>
     new EventLayer(repository, conCtrl, calCtrl)
 );
 //
@@ -63,7 +67,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             assert.equal(getRenderedInputs(this.rendered).length, 0, 'Pitäisi sulkea modalin');
             assert.ok(repositoryInsertSpy.calledOnce, 'Pitäisi kutsua repository.insert');
             assert.deepEqual(repositoryInsertSpy.firstCall.args, [{title: data.title, date: new Date(data.date)}],
-                'Pitäisi passata repository.insert:lle lomakedatan'
+                'Pitäisi passata repository.insert:lle event-datan'
             );
             repositoryInsertSpy.firstCall.returnValue.then(() => {
                 const renderedEventsAfter = getRenderedEvents(this.rendered);

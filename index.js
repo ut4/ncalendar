@@ -5,7 +5,12 @@ const defaultEvents = [
     {date: new Date(now.getFullYear(), now.getMonth(), now.getDate()-2, 4, 0, 0, 0), title: 'Event 1'},
     {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 2'},
     {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 30, 0, 0), title: 'Event 3'}
-];
+].map((ev, i) => {
+    ev.dateTo = new Date(ev.date);
+    ev.dateTo.setHours(ev.dateTo.getHours() + i + 1);
+    return ev;
+});
+
 // Tapa 1
 /*const {EventLayer, RepositoryFactory} = nullcalendar.events;
 nullcalendar.registerContentLayer('myevent', (a, b) =>

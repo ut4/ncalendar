@@ -1,5 +1,6 @@
 import Event from './Event.js';
 import EventModal from './EventModal.js';
+import EventCollection from './EventCollection.js';
 import RepositoryFactory from './RepositoryFactory.js';
 import ComponentConstruct from '../ComponentConstruct.js';
 import {PlaceholderCell} from '../Content.js';
@@ -21,6 +22,7 @@ class EventLayer {
             : repositoryOrSettings;
         this.contentController = contentController;
         this.calendarController = calendarController;
+        this.autoIncrement = 1;
     }
     /**
      * Hakee tapahtumadatan repositorystä ja asettaa ne {this.events}iin.
@@ -31,9 +33,11 @@ class EventLayer {
         const range = this.calendarController.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {
-                this.events = events.map(ev => this.normalizeEvent(ev));
+                this.events = new EventCollection(...events.map(event => this.normalizeEvent(event)));
+                return this.events.length > 0;
             }, () => {
-                this.events = [];
+                this.events = new EventCollection();
+                return false;
             });
     }
     /**
@@ -49,16 +53,43 @@ class EventLayer {
             ));
             return;
         }
+        //
         const events = this.collectEvents(cell.date);
-        if (events.length) {
-            cell.children.push(...events.map(event =>
-                this.newEventConstruct(event)
-            ));
-        }
+        events.length && cell.children.push(...events.map((event, i) => {
+            event.stackIndex = this.getStackIndex(event, i);
+            return this.newEventConstruct(event);
+        }));
+        //
+        const ongoingEvents = this.collectOngoingEvents(cell.date);
+        ongoingEvents.length && cell.children.push(...ongoingEvents.map(event =>
+            new ComponentConstruct('div', {
+                className: 'event-ongoing stack-index-' + event.stackIndex + (
+                    event.dateTo.getHours() - cell.date.getHours() === 1 &&
+                    event.date.getDate() === cell.date.getDate() ? ' ongoing-end' : ''
+                ),
+                partOf: event.id
+            })
+        ));
         cell.clickHandlers.push(() => this.calendarController.openModal(new ComponentConstruct(
             EventModal,
             {event: {title: '', date: new Date(cell.date)}, confirm: data => this.createEvent(data)}
         )));
+    }
+    /**
+     * Numeerinen arvo (visuaalisesti) limittäisille eventeille. 0 = pinon alin,
+     * 1 = pinon 2. kerros jne..
+     */
+    getStackIndex(event, nth) {
+        const hour = event.date.getHours();
+        if (hour < 1) {
+            return nth;
+        }
+        for (const ev of this.events.getOngoingEvents(event.date.getDay(), hour)) {
+            if (ev.id !== event.id) {
+                return (ev.stackIndex || 0) + 1;
+            }
+        }
+        return 0;
     }
     /**
      * @access protected
@@ -118,6 +149,17 @@ class EventLayer {
         if (!(event.date instanceof Date)) {
             event.date = new Date(event.date);
         }
+        if (!(event.dateTo instanceof Date)) {
+            event.dateTo = new Date(event.dateTo);
+        }
+        if (!(event.hasOwnProperty('dateTo'))) {
+            event.dateTo = new Date(event.date);
+            event.dateTo.setHours(event.date.getHours() + 1);
+        }
+        if (!event.hasOwnProperty('id')) {
+            event.id = this.autoIncrement++;
+        }
+        event.stackIndex = 0;
         return event;
     }
     /**
@@ -125,42 +167,26 @@ class EventLayer {
      * @return array
      */
     collectEvents(date) {
-        if (!this.events) {
+        if (!this.events.length) {
             return [];
         }
         return this.calendarController.currentView === Constants.VIEW_MONTH
-            ? this.getEventsForMonthDate(date.getDate())
-            : this.getEventsForWeekDay(date.getDay(), date.getHours());
+            ? this.events.filterByDate(date.getDate(), this.calendarController.dateCursor.range.start.getMonth())
+            : this.events.filterByWeekDay(date.getDay(), this.calendarController.currentView === Constants.VIEW_DAY ||
+                !this.calendarController.isCompactViewEnabled ? date.getHours() : null
+            );
     }
     /**
-     * Palauttaa filtteröidyt tapahtumat {this.events} -taulukosta.
-     *
      * @access private
-     * @param {number} date
+     * @return array
      */
-    getEventsForMonthDate(date) {
-        const month = this.calendarController.dateCursor.range.start.getMonth();
-        return this.events.filter(event =>
-            event.date.getDate() === date &&
-            event.date.getMonth() === month
-        );
-    }
-    /**
-     * Palauttaa filtteröidyt tapahtumat {this.events} -taulukosta.
-     *
-     * @access private
-     * @param {number} day Viikonpäivä 0-6
-     * @param {number} hour Tunti 0-23
-     */
-    getEventsForWeekDay(day, hour) {
-        if (this.calendarController.isCompactViewEnabled &&
-            this.calendarController.currentView === Constants.VIEW_WEEK) {
-            hour = undefined;
+    collectOngoingEvents(date) {
+        if (!this.events.length) {
+            return [];
         }
-        return this.events.filter(event =>
-            event.date.getDay() === day &&
-            (hour === undefined || event.date.getHours() === hour)
-        );
+        return this.calendarController.currentView === Constants.VIEW_MONTH
+            ? [] // TODO implement
+            : this.events.getOngoingEvents(date.getDay(), date.getHours());
     }
 }
 
