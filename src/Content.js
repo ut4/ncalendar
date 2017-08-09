@@ -124,7 +124,7 @@ class Content extends React.Component {
         } else if (!cell.children || !cell.children.length) {
             content = cell.content;
         } else {
-            content = this.newTitledContent(cell);
+            content = this.nestedContent(cell);
         }
         const attrs = {className: 'cell'};
         if (cell && cell.clickHandlers && cell.clickHandlers.length) {
@@ -134,23 +134,22 @@ class Content extends React.Component {
             };
         }
         return $el('div', {className: 'col' + (cell && cell.isCurrentDay ? ' current' : ''), key},
-            $el('div', attrs, content)
+            $el('div', attrs, $el('div', null, content))
         );
     }
     /**
      * @access private
      * @param {Cell} cell
-     * @returns {VNode}
+     * @returns {VNode|VNode[]}
      */
-    newTitledContent(cell) {
-        return $el('div', null,
-            // Title
-            cell.content,
-            // Sisältö
-            cell.children.map((child, i) =>
-                $el(child.Component, Object.assign({}, child.props, {key: i}), child.content)
-            )
+    nestedContent(cell) {
+        const children = cell.children.map((child, i) =>
+            $el(child.Component, Object.assign({}, child.props, {key: i}), child.content)
         );
+        return cell.content
+            ? $el('div', null, cell.content, children)
+            // Luultavasti viikko-gridin cell, joissa ei sisältöä
+            : children;
     }
     /**
      * Public API-versio tästä luokasta sisältökerroksia varten.

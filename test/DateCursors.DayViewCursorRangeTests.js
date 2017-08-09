@@ -15,7 +15,7 @@ QUnit.module('DateCursors.DayViewCursorRange', function (hooks) {
             now.getMonth(),
             now.getDate(),
             // päivän ensimmäisen tunnin ensimmäinen millisekunti
-            0, 0, 0, 1
+            0, 0, 0, 0
         );
         assert.deepEqual(this.cursor.range.start, expectedRangeStart);
         const expectedRangeEnd = new Date(
