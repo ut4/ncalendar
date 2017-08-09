@@ -28,22 +28,22 @@ QUnit.module('event/WeekViewEventStacking', function (hooks) {
         const rendered = render(arrayUtils.shuffle([
             {
                 // Vain 1. rivi (tunnin pituinen)
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
                 id: 1
             },
             // Ei rivejä välissä
             {
                 // Rivit 1 & 2 (2 tuntiä pitkä)
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 3, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 3, 0, 0, 0),
                 id: 2
             },
             // Välissä yksi tyhjä rivi
             {
                 // Rivit 4 & 5 & 6 (3 tuntia pitkä)
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
                 id: 3
             }
         ]));
@@ -96,31 +96,31 @@ QUnit.module('event/WeekViewEventStacking', function (hooks) {
     QUnit.test('Asettaa >0 stackIndeksit päällekäin meneville eventeille', assert => {
         const rendered = render(arrayUtils.shuffle([
             {
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
                 id: 1
             },
             // Samassa solussa toinen eventi
             {
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 30, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 30, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
                 id: 2
             },
             {
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 2, 0, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 2, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
                 id: 3
             },
             // Uusi event ennen kuin ylempi loppuu..
             {
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 3, 0, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 6, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 3, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 6, 0, 0, 0),
                 id: 4
             },
             // Uusi event ennen kuin ylempi loppuu..
             {
-                date: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
-                dateTo: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
                 id: 5
             }
         ]));

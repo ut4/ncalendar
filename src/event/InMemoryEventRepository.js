@@ -8,7 +8,7 @@ class InMemoryEventRepository {
      * @returns {Promise} -> ({Object} newEvent, ei rejektoi)
      */
     insert(data) {
-        const newEvent = {title: data.title, date: data.date};
+        const newEvent = {title: data.title, start: data.start};
         this.events.push(newEvent);
         return Promise.resolve(newEvent);
     }
@@ -20,7 +20,7 @@ class InMemoryEventRepository {
      */
     getAll(from, to) {
         return Promise.resolve(this.events.filter(event =>
-            event.date >= from && event.date <= to
+            event.start >= from && event.start <= to
         ));
     }
     /**

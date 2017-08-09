@@ -64,15 +64,15 @@ class EventLayer {
         ongoingEvents.length && cell.children.push(...ongoingEvents.map(event =>
             new ComponentConstruct('div', {
                 className: 'event-ongoing stack-index-' + event.stackIndex + (
-                    event.dateTo.getHours() - cell.date.getHours() === 1 &&
-                    event.date.getDate() === cell.date.getDate() ? ' ongoing-end' : ''
+                    event.end.getHours() - cell.date.getHours() === 1 &&
+                    event.start.getDate() === cell.date.getDate() ? ' ongoing-end' : ''
                 ),
                 partOf: event.id
             })
         ));
         cell.clickHandlers.push(() => this.calendarController.openModal(new ComponentConstruct(
             EventModal,
-            {event: {title: '', date: new Date(cell.date)}, confirm: data => this.createEvent(data)}
+            {event: {title: '', start: new Date(cell.date)}, confirm: data => this.createEvent(data)}
         )));
     }
     /**
@@ -80,11 +80,11 @@ class EventLayer {
      * 1 = pinon 2. kerros jne..
      */
     getStackIndex(event, nth) {
-        const hour = event.date.getHours();
+        const hour = event.start.getHours();
         if (hour < 1) {
             return nth;
         }
-        for (const ev of this.events.getOngoingEvents(event.date.getDay(), hour)) {
+        for (const ev of this.events.getOngoingEvents(event.start.getDay(), hour)) {
             if (ev.id !== event.id) {
                 return (ev.stackIndex || 0) + 1;
             }
@@ -146,15 +146,15 @@ class EventLayer {
      * @access private
      */
     normalizeEvent(event) {
-        if (!(event.date instanceof Date)) {
-            event.date = new Date(event.date);
+        if (!(event.start instanceof Date)) {
+            event.start = new Date(event.start);
         }
-        if (!(event.dateTo instanceof Date)) {
-            event.dateTo = new Date(event.dateTo);
+        if (!(event.end instanceof Date)) {
+            event.end = new Date(event.end);
         }
-        if (!(event.hasOwnProperty('dateTo'))) {
-            event.dateTo = new Date(event.date);
-            event.dateTo.setHours(event.date.getHours() + 1);
+        if (!(event.hasOwnProperty('end'))) {
+            event.end = new Date(event.start);
+            event.end.setHours(event.start.getHours() + 1);
         }
         if (!event.hasOwnProperty('id')) {
             event.id = this.autoIncrement++;

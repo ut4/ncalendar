@@ -10,8 +10,8 @@ class EventCollection extends Array {
             return [];
         }
         return this.filter(event =>
-            event.date.getDay() === weekDay &&
-            (typeof hour !== 'number' || event.date.getHours() === hour)
+            event.start.getDay() === weekDay &&
+            (typeof hour !== 'number' || event.start.getHours() === hour)
         );
     }
     /**
@@ -25,8 +25,8 @@ class EventCollection extends Array {
             return [];
         }
         return this.filter(event =>
-            event.date.getDate() === date &&
-            event.date.getMonth() === month
+            event.start.getDate() === date &&
+            event.start.getMonth() === month
         );
     }
     /**
@@ -37,9 +37,9 @@ class EventCollection extends Array {
      */
     getOngoingEvents(weekDay, hour) {
         return this.filter(event =>
-            event.date.getDay() === weekDay &&
-            event.date.getHours() < hour &&
-            event.dateTo.getHours() > hour
+            event.start.getDay() === weekDay &&
+            event.start.getHours() < hour &&
+            event.end.getHours() > hour
         );
     }
 }

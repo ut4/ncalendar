@@ -10,7 +10,7 @@ class EventModal extends React.Component {
         super(props);
         this.state = {
             title: this.props.event.title,
-            date: this.props.event.date.toISOString()
+            start: this.props.event.start.toISOString()
         };
     }
     /**
@@ -25,7 +25,7 @@ class EventModal extends React.Component {
     confirm() {
         this.props.confirm({
             title: this.state.title,
-            date: this.state.date
+            start: this.state.start
         });
         this.props.closeModal();
     }
@@ -41,7 +41,7 @@ class EventModal extends React.Component {
         return $el('div', null,
             $el('h3', null, !this.props.event.title ? 'Luo uusi tapahtuma' : 'Muokkaa tapahtumaa'),
             $el('input', {value: this.state.title, [React.ON_INPUT]: e => this.receiveInputValue(e.target), name: 'title'}),
-            $el('input', {value: this.state.date, [React.ON_INPUT]: e => this.receiveInputValue(e.target), name: 'date', type: 'date'}),
+            $el('input', {value: this.state.start, [React.ON_INPUT]: e => this.receiveInputValue(e.target), name: 'start', type: 'date'}),
             $el('button', {onClick: () => this.confirm()}, 'Ok'),
             $el('button', {onClick: () => this.cancel()}, 'Peruuta')
         );

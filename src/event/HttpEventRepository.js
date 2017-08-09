@@ -13,7 +13,7 @@ class HttpEventRepository {
      * @returns {Promise} -> ({Object} newEvent, ei rejektoi)
      */
     insert(data) {
-        const newEvent = {title: data.title, date: data.date};
+        const newEvent = {title: data.title, start: data.start};
         return this.http.post('', newEvent).then(insertResponse => {
             newEvent.id = insertResponse.insertId;
             return newEvent;

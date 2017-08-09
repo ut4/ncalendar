@@ -5,16 +5,16 @@ const rtu = ReactTestUtils;
 QUnit.module('event/EventModalComponent', function() {
     QUnit.test('Asettaa props.eventin arvot inputeihin', assert => {
         const now = new Date();
-        const testEvent = {title: 'gr', date: now};
+        const testEvent = {title: 'gr', start: now};
         const rendered = rtu.renderIntoDocument($el(EventModal, {
             event: testEvent
         }));
-        const [titleInput, dateInput] = rtu.scryRenderedDOMComponentsWithTag(rendered, 'input');
+        const [titleInput, startInput] = rtu.scryRenderedDOMComponentsWithTag(rendered, 'input');
         assert.equal(titleInput.value, testEvent.title,
             'Pitäisi asettaa props.event.title:n arvo title-inputiin'
         );
-        assert.equal(dateInput.value, testEvent.date.toISOString(),
-            'Pitäisi asettaa props.event.date:n arvo date-inputiin'
+        assert.equal(startInput.value, testEvent.start.toISOString(),
+            'Pitäisi asettaa props.event.start:n arvo start-inputiin'
         );
     });
     QUnit.test('Submit passaa confirm-callbackille lomakkeen datan', assert => {
@@ -25,7 +25,7 @@ QUnit.module('event/EventModalComponent', function() {
         const rendered = rtu.renderIntoDocument($el(EventModal, {
             confirm: confirmCallbackSpy,
             closeModal: modalCloseSpy,
-            event: {title: '', date: now}
+            event: {title: '', start: now}
         }));
         // Täytä inputeihin jotain
         const [titleInput, dateInput] = rtu.scryRenderedDOMComponentsWithTag(rendered, 'input');
@@ -41,7 +41,7 @@ QUnit.module('event/EventModalComponent', function() {
         assert.ok(confirmCallbackSpy.calledOnce, 'Pitäisi kutsua confirm-callbackia');
         assert.deepEqual(confirmCallbackSpy.firstCall.args, [{
             title: titleInput.value,
-            date: dateInput.value
+            start: dateInput.value
         }], 'Pitäisi passata confirm-callbackille lomakkeen arvot');
         assert.ok(modalCloseSpy.calledOnce, 'Pitäisi lopuksi kutsua props.closeModal');
     });

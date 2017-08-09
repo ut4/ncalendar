@@ -2,7 +2,7 @@ import RepositoryFactory from '../../src/event/RepositoryFactory.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
 import HttpEventRepository from '../../src/event/HttpEventRepository.js';
 
-const someEvent = {date: new Date(), title: 'Fus'};
+const someEvent = {start: new Date(), title: 'Fus'};
 
 QUnit.module('event/RepositoryFactories', function(hooks) {
     hooks.beforeEach(() => {

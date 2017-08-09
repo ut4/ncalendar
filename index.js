@@ -2,12 +2,12 @@ import nullcalendar from './main.js';
 
 const now = new Date();
 const defaultEvents = [
-    {date: new Date(now.getFullYear(), now.getMonth(), now.getDate()-2, 4, 0, 0, 0), title: 'Event 1'},
-    {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 2'},
-    {date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 30, 0, 0), title: 'Event 3'}
+    {start: new Date(now.getFullYear(), now.getMonth(), now.getDate()-2, 4, 0, 0, 0), title: 'Event 1'},
+    {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 2'},
+    {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 30, 0, 0), title: 'Event 3'}
 ].map((ev, i) => {
-    ev.dateTo = new Date(ev.date);
-    ev.dateTo.setHours(ev.dateTo.getHours() + i + 1);
+    ev.end = new Date(ev.start);
+    ev.end.setHours(ev.end.getHours() + i + 1);
     return ev;
 });
 
