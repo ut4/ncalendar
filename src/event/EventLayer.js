@@ -1,4 +1,5 @@
 import Event from './Event.js';
+import EventComponent from './EventComponent.js';
 import EventModal from './EventModal.js';
 import EventCollection from './EventCollection.js';
 import RepositoryFactory from './RepositoryFactory.js';
@@ -22,7 +23,6 @@ class EventLayer {
             : repositoryOrSettings;
         this.contentController = contentController;
         this.calendarController = calendarController;
-        this.autoIncrement = 1;
     }
     /**
      * Hakee tapahtumadatan repositorystä ja asettaa ne {this.events}iin.
@@ -33,7 +33,7 @@ class EventLayer {
         const range = this.calendarController.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {
-                this.events = new EventCollection(...events.map(event => this.normalizeEvent(event)));
+                this.events = new EventCollection(...events.map(event => new Event(event)));
                 return this.events.length > 0;
             }, () => {
                 this.events = new EventCollection();
@@ -72,31 +72,14 @@ class EventLayer {
         ));
         cell.clickHandlers.push(() => this.calendarController.openModal(new ComponentConstruct(
             EventModal,
-            {event: {title: '', start: new Date(cell.date)}, confirm: data => this.createEvent(data)}
+            {event: new Event({start: new Date(cell.date)}), confirm: event => this.createEvent(event)}
         )));
-    }
-    /**
-     * Numeerinen arvo (visuaalisesti) limittäisille eventeille. 0 = pinon alin,
-     * 1 = pinon 2. kerros jne..
-     */
-    getStackIndex(event, nth) {
-        const hour = event.start.getHours();
-        if (hour < 1) {
-            return nth;
-        }
-        for (const ev of this.events.getOngoingEvents(event.start.getDay(), hour)) {
-            if (ev.id !== event.id) {
-                return (ev.stackIndex || 0) + 1;
-            }
-        }
-        return 0;
     }
     /**
      * @access protected
      */
-    createEvent(data) {
-        data = this.normalizeEvent(data);
-        this.repository.insert(data).then(
+    createEvent(event) {
+        this.repository.insert(event).then(
             created => {
                 this.events.push(created);
                 this.contentController.refresh();
@@ -107,11 +90,10 @@ class EventLayer {
     /**
      * @access protected
      */
-    updateEvent(event, data) {
-        data = this.normalizeEvent(data);
-        this.repository.update(event, data).then(
+    updateEvent(event, original) {
+        this.repository.update(event).then(
             updated => {
-                this.events[this.events.indexOf(event)] = updated;
+                this.events[this.events.indexOf(original)] = updated;
                 this.contentController.refresh();
             },
             () => {}
@@ -133,34 +115,32 @@ class EventLayer {
      * @access private
      */
     newEventConstruct(event) {
-        return new ComponentConstruct(Event, {
+        return new ComponentConstruct(EventComponent, {
             event,
             edit: event => this.calendarController.openModal(new ComponentConstruct(
                 EventModal,
-                {event, confirm: data => this.updateEvent(event, data)}
+                {event: new Event(event), confirm: updated => this.updateEvent(updated, event)}
             )),
             delete: data => this.deleteEvent(data)
         });
     }
     /**
+     * Numeerinen arvo (visuaalisesti) limittäisille eventeille. 0 = pinon alin,
+     * 1 = pinon 2. kerros jne..
+     *
      * @access private
      */
-    normalizeEvent(event) {
-        if (!(event.start instanceof Date)) {
-            event.start = new Date(event.start);
+    getStackIndex(event, nth) {
+        const hour = event.start.getHours();
+        if (hour < 1) {
+            return nth;
         }
-        if (!(event.end instanceof Date)) {
-            event.end = new Date(event.end);
+        for (const ev of this.events.getOngoingEvents(event.start.getDay(), hour)) {
+            if (ev.id !== event.id) {
+                return (ev.stackIndex || 0) + 1;
+            }
         }
-        if (!(event.hasOwnProperty('end'))) {
-            event.end = new Date(event.start);
-            event.end.setHours(event.start.getHours() + 1);
-        }
-        if (!event.hasOwnProperty('id')) {
-            event.id = this.autoIncrement++;
-        }
-        event.stackIndex = 0;
-        return event;
+        return 0;
     }
     /**
      * @access private

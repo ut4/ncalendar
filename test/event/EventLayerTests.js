@@ -11,7 +11,12 @@ QUnit.module('event/EventLayer', function() {
         assert.ok(constructedRepository instanceof InMemoryEventRepository,
             'Pitäisi luoda settings.repository:yn määritelty repository'
         );
-        assert.deepEqual(constructedRepository.events, settings.defaultEvents,
+        assert.deepEqual(
+            [{
+                start: constructedRepository.events[0].start,
+                title: constructedRepository.events[0].title,
+            }],
+            settings.defaultEvents,
             'Pitäisi passata memory-repositorylle defaultEvents:t'
         );
     });

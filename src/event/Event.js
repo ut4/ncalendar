@@ -1,40 +1,37 @@
-const Action = Object.freeze({
-    EDIT: 'edit',
-    DELETE: 'delete'
-});
+let autoIncrement = 1;
 
-class Event extends React.Component {
-    /**
-     * @param {Object} props {
-     *     event: {Object},
-     *     edit: {Function=},
-     *     delete: {Function=}
-     * }
-     */
-    constructor(props) {
-        super(props);
+class Event {
+    constructor(data) {
+        this.stackIndex = 0;
+        this.id = !data.id ? autoIncrement++ : data.id;
+        this.setTitle(data.title);
+        this.setStart(data.start);
+        this.setEnd(data.end);
     }
     /**
-     * @access private
+     * @param {string} title
      */
-    receiveClick(action, e) {
-        e.stopPropagation();
-        if (e.which && e.which !== 1) {
-            return;
+    setTitle(title = '') {
+        this.title = title;
+    }
+    /**
+     * @param {Date|number|string|undefined} start Date-objektin konstruktoriin sopiva arvo
+     */
+    setStart(start) {
+        this.start = !(start instanceof Date) ? new Date(start) : start;
+    }
+    /**
+     * @param {Date|number|string|undefined} end Date-objektin konstruktoriin sopiva arvo
+     */
+    setEnd(end) {
+        if (end instanceof Date) {
+            this.end = end;
+        } else if (!end) {
+            this.end = new Date(this.start);
+            this.end.setHours(this.start.getHours() + 1);
+        } else {
+            this.end = new Date(end);
         }
-        this.props[action](this.props.event, e);
-    }
-    /**
-     */
-    render() {
-        return $el('div', {className: 'event stack-index-' + this.props.event.stackIndex + (
-                this.props.event.end.getHours() - this.props.event.start.getHours() === 1 &&
-                this.props.event.start.getDate() === this.props.event.end.getDate() ? ' incontinous' : ''
-            )},
-            $el('button', {title: 'Poista', onClick: e => this.receiveClick(Action.DELETE, e)}, 'x'),
-            $el('button', {title: 'Muokkaa', onClick: e => this.receiveClick(Action.EDIT, e)}, 'e'),
-            $el('span', null, this.props.event.title)
-        );
     }
 }
 

@@ -1,8 +1,9 @@
 import RepositoryFactory from '../../src/event/RepositoryFactory.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
 import HttpEventRepository from '../../src/event/HttpEventRepository.js';
+import Event from '../../src/event/Event.js';
 
-const someEvent = {start: new Date(), title: 'Fus'};
+const someEvent = {id: 1, start: new Date(), title: 'Fus'};
 
 QUnit.module('event/RepositoryFactories', function(hooks) {
     hooks.beforeEach(() => {
@@ -21,7 +22,7 @@ QUnit.module('event/RepositoryFactories', function(hooks) {
         assert.ok(withDefaults instanceof InMemoryEventRepository, 'Pitäisi luoda InMemoryEventRepository');
         assert.deepEqual(withDefaults.events, [], 'Pitäisi passata oletukseventeiksi []');
         assert.ok(withProvided instanceof InMemoryEventRepository, 'Pitäisi luoda InMemoryEventRepository');
-        assert.deepEqual(withProvided.events, [someEvent], 'Pitäisi passata settings.defaultEvents oletuseventeiksi');
+        assert.deepEqual(withProvided.events, [new Event(someEvent)], 'Pitäisi passata settings.defaultEvents oletuseventeiksi');
     });
     QUnit.test('make({repository: \'memory\') failaa, jos settings.defaultEvents ei ole validi', assert => {
         assert.throws(
