@@ -16,6 +16,20 @@ QUnit.module('CalendarLayoutComponent(month)', function (hooks) {
             Constants.VIEW_MONTH, null, () => {}
         );
     });
+    QUnit.test('Renderöi headeriin tuntisarakkeen ja jokaisen viikonpäivän täydellisen nimen', assert => {
+        const header = ReactTestUtils.findRenderedDOMComponentWithClass(this.rendered, 'header');
+        const headerCells = header.querySelectorAll('.cell');
+        assert.equal(headerCells.length, 8);
+        const monday = dateUtils.getStartOfWeek(this.replicatedCursor.range.start);
+        assert.equal(headerCells[0].textContent, '');
+        assert.equal(headerCells[1].textContent, getExpectedHeaderCellContent(monday));
+        assert.equal(headerCells[2].textContent, getExpectedHeaderCellContent(monday));
+        assert.equal(headerCells[3].textContent, getExpectedHeaderCellContent(monday));
+        assert.equal(headerCells[4].textContent, getExpectedHeaderCellContent(monday));
+        assert.equal(headerCells[5].textContent, getExpectedHeaderCellContent(monday));
+        assert.equal(headerCells[6].textContent, getExpectedHeaderCellContent(monday));
+        assert.equal(headerCells[7].textContent, getExpectedHeaderCellContent(monday));
+    });
     QUnit.test('Toolbarin next-sivutuspainike päivittää titlen', assert => {
         assert.ok(containsCurrentDayColumns(this.rendered), 'Pitäisi sisältää ".current"-sarake');
         // Paina nappia
@@ -55,5 +69,10 @@ QUnit.module('CalendarLayoutComponent(month)', function (hooks) {
     });
     function containsCurrentDayColumns(rendered) {
        return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'current').length > 0;
+    }
+    function getExpectedHeaderCellContent(date) {
+        const dayName = dateUtils.format(date, {weekday: 'long'});
+        date.setDate(date.getDate() + 1);
+        return dayName;
     }
 });

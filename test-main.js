@@ -13,7 +13,6 @@ import './test/DateCursors.DayViewCursorRangeTests';
 import './test/DateCursors.MonthViewCursorRangeTests';
 import './test/DateCursors.WeekViewCursorRangeTests';
 import './test/DateCursorStateTests';
-import './test/HeaderComponentTests';
 import './test/ModalComponentTests';
 import './test/settingsFactoryTests';
 

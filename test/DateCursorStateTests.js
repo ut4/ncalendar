@@ -16,8 +16,9 @@ QUnit.module('DateCursorState', function (hooks) {
         const settings = {defaultView: viewName};
         if (!useDefaultDate) {
             const now = new Date();
+            now.setFullYear(now.getFullYear() + 1);
             if (viewName === Constants.VIEW_DAY) {
-                settings.defaultDate = now.getDay() !== 2 ? dateUtils.getStartOfWeek(now) : now;
+                settings.defaultDate = now;
             } else if (viewName === Constants.VIEW_WEEK) {
                 settings.defaultDate = now;
                 settings.defaultDate.setDate(9);

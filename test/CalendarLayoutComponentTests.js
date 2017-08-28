@@ -1,7 +1,6 @@
 import CalendarLayout from '../src/CalendarLayout.js';
 import Modal from '../src/Modal.js';
 import Toolbar from '../src/Toolbar.js';
-import Header from '../src/Header.js';
 import ViewLayouts from '../src/ViewLayouts.js';
 import Constants from '../src/Constants.js';
 
@@ -17,7 +16,6 @@ QUnit.module('CalendarLayoutComponent', function () {
         const expectedView = this.initialView;
         assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Modal), undefined);
         assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Toolbar), undefined);
-        assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Header[expectedView]), undefined);
         const calendarLayout = ReactTestUtils.findRenderedComponentWithType(this.rendered, CalendarLayout);
         assert.equal(calendarLayout.state.viewLayout instanceof ViewLayouts[expectedView], true);
     });
@@ -26,7 +24,6 @@ QUnit.module('CalendarLayoutComponent', function () {
         render(expectedInitialView);
         assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Modal), undefined);
         assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Toolbar), undefined);
-        assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Header[expectedInitialView]), undefined);
         const calendarLayout = ReactTestUtils.findRenderedComponentWithType(this.rendered, CalendarLayout);
         assert.equal(calendarLayout.state.viewLayout instanceof ViewLayouts[expectedInitialView], true);
     });
@@ -42,7 +39,6 @@ QUnit.module('CalendarLayoutComponent', function () {
         const monthViewButton = Array.from(buttons).find(el => el.textContent === 'Kuukausi');
         ReactTestUtils.Simulate.click(monthViewButton);
         // Assertoi että vaihtui
-        assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Header[expectedNewView]), undefined);
         const calendarLayout = ReactTestUtils.findRenderedComponentWithType(this.rendered, CalendarLayout);
         assert.equal(calendarLayout.state.viewLayout instanceof ViewLayouts[expectedNewView], true);
     });
@@ -54,7 +50,6 @@ QUnit.module('CalendarLayoutComponent', function () {
         const weekViewButton = Array.from(buttons).find(el => el.textContent === 'Viikko');
         ReactTestUtils.Simulate.click(weekViewButton);
         // Assertoi että ei vaihtunut
-        assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Header[this.initialView]), undefined);
         const calendarLayout = ReactTestUtils.findRenderedComponentWithType(this.rendered, CalendarLayout);
         assert.equal(calendarLayout.state.viewLayout instanceof ViewLayouts[this.initialView], true);
     });
@@ -62,7 +57,6 @@ QUnit.module('CalendarLayoutComponent', function () {
         render();
         const expectedNewView = Constants.VIEW_DAY;
         // Assertoi alkuperäinen näkymä
-        assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Header[this.initialView]), undefined);
         const calendarLayout = ReactTestUtils.findRenderedComponentWithType(this.rendered, CalendarLayout);
         assert.equal(calendarLayout.state.viewLayout instanceof ViewLayouts[this.initialView], true);
         // Paina nappia
@@ -70,7 +64,6 @@ QUnit.module('CalendarLayoutComponent', function () {
         const dayViewButton = Array.from(buttons).find(el => el.textContent === 'Päivä');
         ReactTestUtils.Simulate.click(dayViewButton);
         // Assertoi että vaihtui
-        assert.notEqual(ReactTestUtils.findRenderedComponentWithType(this.rendered, Header[expectedNewView]), undefined);
         assert.equal(calendarLayout.state.viewLayout instanceof ViewLayouts[expectedNewView], true);
     });
 });

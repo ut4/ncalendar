@@ -6,8 +6,18 @@ import Constants from './Constants.js';
  * Kalenterin pääsisältö month, ja month-compact -muodossa
  */
 class MonthViewLayout extends AbstractViewLayout {
-    getName() {
-        return Constants.VIEW_MONTH;
+    /**
+     * Palauttaa 8-sarakkellisen headerin, jossa yksi tyhjä solu viikkonumero-
+     * saraketta varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
+     *
+     * @access protected
+     * @returns {Array}
+     */
+    getHeaderCells() {
+        return [''].concat(this.dateUtils.getFormattedWeekDays(
+            this.dateCursor.range.start,
+            'long'
+        ));
     }
     /**
      * Generoi kuukauden päivät numeerisessa muodossa 7 * ~5 taulukkoon Cell-
@@ -17,7 +27,7 @@ class MonthViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateFullGrid() {
+    getFullGrid() {
         const d = new Date(this.dateCursor.range.start);
         const currentDayDateStr = new Date().toDateString();
         // Generoi rivit viikonpäiville
@@ -37,7 +47,7 @@ class MonthViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateCompactGrid() {
+    getCompactGrid() {
         const dayNames = this.dateUtils.getFormattedWeekDays(
             this.dateCursor.range.start,
             'short'

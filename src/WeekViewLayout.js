@@ -6,8 +6,18 @@ import Constants from './Constants.js';
  * Kalenterin pääsisältö week, ja week-compact -muodossa.
  */
 class WeekViewLayout extends AbstractViewLayout {
-    getName() {
-        return Constants.VIEW_WEEK;
+    /**
+     * Palauttaa 8-sarakkellisen headerin, jossa yksi tyhjä solu tuntisaraketta
+     * varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
+     *
+     * @access protected
+     * @returns {Array}
+     */
+    getHeaderCells() {
+        return [''].concat(this.dateUtils.getFormattedWeekDays(
+            this.dateCursor.range.start,
+            'short'
+        ));
     }
     /**
      * Generoi vuorokauden jokaiselle tunnille rivin, jossa yksi tuntisarake,
@@ -18,7 +28,7 @@ class WeekViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateFullGrid() {
+    getFullGrid() {
         // Vuorokauden jokaiselle tunnille rivi, ...
         return this.markCurrentDayColumn(HOURS_ARRAY.map(hour => {
             const rollingDate = new Date(this.dateCursor.range.start);
@@ -39,7 +49,7 @@ class WeekViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateCompactGrid() {
+    getCompactGrid() {
         const dayNames = this.dateUtils.getFormattedWeekDays(
             this.dateCursor.range.start,
             'long'
