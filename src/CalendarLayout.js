@@ -14,8 +14,9 @@ class CalendarLayout extends React.Component {
      * @param {object} props {
      *     defaultView: {string=},
      *     defaultDate: {Date=},
-     *     titleFormatters: {Object=},
      *     contentLayers: {Array=},
+     *     toolbarParts: {string=},
+     *     titleFormatters: {Object=},
      *     layoutChangeBreakPoint: {number=}
      *     locale: {string|string[]=}
      * }
@@ -117,6 +118,7 @@ class CalendarLayout extends React.Component {
                 this.modal = cmp;
             }}),
             $el(Toolbar, {
+                parts: this.settings.toolbarParts,
                 calendarController: this.controller,
                 dateUtils: this.dateUtils,
                 titleFormatter: this.settings.titleFormatters[this.state.currentView] || null

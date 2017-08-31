@@ -86,6 +86,15 @@ const mySettings = {
         {name: 'event'}
     ],
     /**
+     * Toolbariin renderöitävät sarakkeet, ja niiden sisältö. Mahdolliset arvot:
+     * fill, prev, next, today, title, month, week ja day. "|" -merkki luo uuden
+     * sarakkeen.
+     *
+     * @prop {string}
+     * @default 'prev,next,today|title|month,week,day'
+     */
+    toolbarParts: 'fill|title|week,month',
+    /**
      * Funktiot, joilla voi kustomoida kalenterin otsakkeiden formaattia.
      *
      * @prop {Object}

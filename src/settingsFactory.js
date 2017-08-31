@@ -1,4 +1,5 @@
 import Constants from './Constants.js';
+import { validPartNames } from './Toolbar.js';
 
 function validateViewKey(viewNameKey) {
     const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
@@ -14,6 +15,17 @@ function validateDefaultDate(candidate) {
 function validateLayers(candidate) {
     if (!Array.isArray(candidate)) {
         return 'contentLayers-asetus tulisi olla taulukko';
+    }
+}
+function validateToolbarParts(candidate) {
+    if (typeof candidate !== 'string') {
+        return 'toolbarParts-asetus tulisi olla merkkijono. esim \'prev,next|title|day,week\'';
+    }
+    for (const part of candidate.replace(/\|/g, ',').split(',')) {
+        if (validPartNames.indexOf(part) < 0) {
+            return 'titlePart "' + part + '" ei ole validi. Tuetut arvot: ' +
+                validPartNames.join(',');
+        }
     }
 }
 function validateFormatters(candidate) {
@@ -61,8 +73,10 @@ const getValidViewName = value => getValidValue(value, validateViewKey, Constant
  *     defaultView: {string},
  *     defaultDate: {Date},
  *     contentLayers: {Array},
+ *     toolbarParts: {string},
  *     titleFormatters: {Object},
- *     layoutChangeBreakPoint: {number}
+ *     layoutChangeBreakPoint: {number},
+ *     locale: {string|string[]}
  * }
  * @throws {Error}
  */
@@ -70,8 +84,9 @@ export default userSettings => ({
     defaultView: getValidViewName(userSettings.defaultView),
     defaultDate: getValidValue(userSettings.defaultDate, validateDefaultDate, new Date()),
     contentLayers: getValidValue(userSettings.contentLayers, validateLayers, []),
+    toolbarParts: getValidValue(userSettings.toolbarParts, validateToolbarParts, 'prev,next,today|title|month,week,day'),
     titleFormatters: getValidValue(userSettings.titleFormatters, validateFormatters, {}),
     layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800),
     locale: getValidValue(userSettings.locale, validateLocale, undefined)
 });
-export {getValidViewName};
+export { getValidViewName };
