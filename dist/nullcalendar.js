@@ -1,5 +1,5 @@
 /*!
- * nullcalendar v0.1.0
+ * nullcalendar v0.2.0
  * https://github.com/ut4/ncalendar
  * @license BSD-3-Clause
  */
@@ -80,25 +80,25 @@ var Constants = Object.freeze({
 });
 
 const titleFormatters = {
-    [Constants.VIEW_DAY]: dateCursorRange => {
-        return '%1, %2'
-            .replace('%1', Intl.DateTimeFormat('fi', {day: 'numeric', month: 'long'}).format(dateCursorRange.start))
-            .replace('%2', dateCursorRange.start.getFullYear());
-    },
-    [Constants.VIEW_WEEK]: dateCursorRange => {
-        return '%1 %2 - %3 %4'
-            .replace('%1', Intl.DateTimeFormat('fi', {month: 'short'}).format(dateCursorRange.start))
+    [Constants.VIEW_DAY]: (dateCursorRange, dateUtils) =>
+        '%1, %2'
+            .replace('%1', dateUtils.format(dateCursorRange.start, {day: 'numeric', month: 'long'}))
+            .replace('%2', dateCursorRange.start.getFullYear())
+    ,
+    [Constants.VIEW_WEEK]: (dateCursorRange, dateUtils) =>
+        '%1 %2 - %3 %4'
+            .replace('%1', dateUtils.format(dateCursorRange.start, {month: 'short'}))
             .replace('%2', dateCursorRange.start.getDate())
             .replace('%3', dateCursorRange.end.getDate())
-            .replace('%4', dateCursorRange.start.getFullYear());
-    },
-    [Constants.VIEW_MONTH]: dateCursorRange => {
-        return Intl.DateTimeFormat('fi', {month: 'long', year: 'numeric'}).format(dateCursorRange.start);
-    }
+            .replace('%4', dateCursorRange.start.getFullYear())
+    ,
+    [Constants.VIEW_MONTH]: (dateCursorRange, dateUtils) =>
+        dateUtils.format(dateCursorRange.start, {month: 'long', year: 'numeric'})
 };
+
 /*
- * Kalenterilayoutin ylin osa. Sisältää päänavigaatiopainikkeet, otsakkeen,
- * ja näkymänavigaatiopainikkeet.
+ * Kalenterilayoutin ylin osa. Sisältää oletuksena päänavigaatiopainikkeet,
+ * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa.
  *  ___________________________
  * |______--> Toolbar <--______|
  * |__________Header___________|
@@ -109,55 +109,67 @@ const titleFormatters = {
 class Toolbar extends React.Component {
     /**
      * @param {object} props {
+     *     parts: {string},
      *     calendarController: {Object},
+     *     dateUtils: {Object},
      *     titleFormatter: {Function=}
      * }
      */
     constructor(props) {
         super(props);
+        this.partGenerators = new PartGenerators(props);
     }
     render() {
-        const ctrl = this.props.calendarController;
         return $el('div', {className: 'toolbar'},
-            $el('div', {className: 'row'},
-                $el('div', {className: 'col'},
-                    $el('button', {onClick: () => ctrl.dateCursor.prev() }, '<'),
-                    $el('button', {onClick: () => ctrl.dateCursor.next() }, '>'),
-                    $el('button', {onClick: () => ctrl.dateCursor.reset() }, 'Tänään')
-                ),
-                $el('div', {className: 'col'},
-                    $el('h2', null, (this.props.titleFormatter || titleFormatters[ctrl.currentView])(ctrl.dateCursor.range))
-                ),
-                $el('div', {className: 'col'},
-                    $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_MONTH); }}, 'Kuukausi'),
-                    $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_WEEK); }}, 'Viikko'),
-                    $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_DAY); }}, 'Päivä')
+            $el('div', {className: 'row'}, this.props.parts.split('|').map((group, r) =>
+                $el('div', {className: 'col', key: r},
+                    group.split(',').map(partName => this.partGenerators[partName]())
                 )
-            )
+            ))
         );
     }
 }
 
+class PartGenerators {
+    constructor(props) { this.ctrl = props.calendarController; this.props = props; }
+    prev() { return $el('button', {onClick: () => this.ctrl.dateCursor.prev(), key: 'prev' }, '<'); }
+    next() { return $el('button', {onClick: () => this.ctrl.dateCursor.next(), key: 'next' }, '>'); }
+    today() { return $el('button', {onClick: () => this.ctrl.dateCursor.reset(), key: 'today' }, 'Tänään'); }
+    title() { return $el('h2', {key: 'title'}, (this.props.titleFormatter || titleFormatters[this.ctrl.currentView])(
+        this.ctrl.dateCursor.range, this.props.dateUtils
+    )); }
+    month() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_MONTH); }, key: 'month'}, 'Kuukausi'); }
+    week() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_WEEK); }, key: 'week'}, 'Viikko'); }
+    day() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_DAY); }, key: 'day'}, 'Päivä'); }
+    fill() { return null; }
+}
+const validPartNames = Object.getOwnPropertyNames(PartGenerators.prototype).filter(prop => prop !== 'constructor');
+
+/**
+ * Jokaiselle ContentLayerFactory-instanssille yhteinen, staattinen säilytystila
+ * rekisteröidyille sisältökerroksille.
+ *
+ * @var {Object}
+ */
+const register = {};
+
 class ContentLayerFactory {
-    constructor() {
-        this.registrar = {};
-    }
     /**
      * Rekisteröi sisältökerroksen {ConstructorOrFactory} nimellä {name},
      * tai heittää poikkeuksen jos {name} on jo rekisteröity.
      *
      * @access public
      * @param {string} name
-     * @param {Function} ConstructorOrFactory
+     * @param {Function} constructorOrFactory
      */
-    register(name, ConstructorOrFactory) {
+    register(name, constructorOrFactory) {
         if (this.isRegistered(name)) {
             throw new Error(`Layer "${name}" on jo rekisteröity.`);
         }
-        if (typeof ConstructorOrFactory !== 'function') {
+        if (typeof constructorOrFactory !== 'function') {
             throw new Error('Rekisteröitävä itemi tulisi olla luokka, tai funktio.');
         }
-        this.registrar[name] = ConstructorOrFactory;
+        register[name] = constructorOrFactory;
     }
     /**
      * Palauttaa tiedon löytyykö rekisteristä sisältökerros nimeltä {name}.
@@ -167,22 +179,26 @@ class ContentLayerFactory {
      * @returns {boolean}
      */
     isRegistered(name) {
-        return this.registrar.hasOwnProperty(name);
+        return register.hasOwnProperty(name);
     }
     /**
      * Luo uuden sisältökerroksen käyttäen rekisteröityä konstruktoria tai
-     * factoryä {name}, tai heittää poikkeuksen mikäli rekisteröityä itemiä
-     * ei löytynyt, tai se oli virheellinen.
+     * factoryä {layer|layer.name}, tai heittää poikkeuksen mikäli rekisteröityä
+     * itemiä ei löytynyt, tai se oli virheellinen.
      *
      * @access public
-     * @param {string} name
+     * @param {string|Object} layer
      * @param {Array} args
-     * @returns {Object} Uusi instanssi sisältölayerista {name}
+     * @returns {Object} Uusi instanssi sisältölayerista {layer|layer.name}
      */
-    make(name, args) {
-        const item = this.registrar[name];
+    make(layer, args) {
+        if (typeof layer !== 'string') {
+            layer.args && (args = layer.args(...args));
+            layer = layer.name || '';
+        }
+        const item = register[layer];
         if (!item) {
-            throw new Error(`Layeria "${name}" ei ole rekisteröity.`);
+            throw new Error(`Layeria "${layer}" ei ole rekisteröity.`);
         }
         if (!isValidContentLayer(item.prototype)) {
             const providedLayer = item(...args);
@@ -196,186 +212,10 @@ class ContentLayerFactory {
         }
     }
 }
+
 function isValidContentLayer(obj) {
     return obj && typeof obj.load === 'function' && typeof obj.decorateCell === 'function';
 }
-
-const EMPTY_WEEK = Array.from(Array(7));
-
-class DateUtils {
-    // https://stackoverflow.com/questions/6117814/get-week-of-year-in-javascript-like-in-php#answer-6117889
-    getWeekNumber(date) {
-        // Copy date so don't modify original
-        const d = new Date(date);
-        d.setHours(0,0,0,0);
-        // Set to nearest Thursday: current date + 4 - current day number
-        // Make Sunday's day number 7
-        d.setDate(d.getDate() + 4 - (d.getDay()||7));
-        // Calculate full weeks to nearest Thursday
-        return Math.ceil(( ( (d - new Date(d.getFullYear(),0,1)) / 86400000) + 1)/7);
-    }
-    getEstimatedFirstDayOfWeek() {
-        // Kesäkuun ensimmäinen maanantai, 2017, klo 12:00:00
-        return (new Date(2017, 5, 5, 12, 0, 0, 0)).getDay();
-    }
-    getStartOfWeek(date) {
-        const firstDay = this.getEstimatedFirstDayOfWeek();
-        const d = new Date(date);
-        d.setDate(date.getDate() - (7 + date.getDay() - firstDay) % 7);
-        return d;
-    }
-    getFormattedWeekDays(date, format) {
-        const d = this.getStartOfWeek(date);
-        return EMPTY_WEEK.map(() => {
-            const formatted = format.format(d);
-            d.setDate(d.getDate() + 1);
-            return formatted;
-        });
-    }
-    getStartOfDay(date) {
-        const start = new Date(date);
-        start.setHours(0);
-        start.setMinutes(0);
-        start.setSeconds(0);
-        start.setMilliseconds(1);
-        return start;
-    }
-    getEndOfDay(date) {
-        const end = new Date(date);
-        end.setHours(23);
-        end.setMinutes(59);
-        end.setSeconds(59);
-        end.setMilliseconds(999);
-        return end;
-    }
-    formatHour(hour) {
-        return (hour < 10 ? '0' : '') + hour + ':00';
-    }
-    format(options, date) {
-        return Intl.DateTimeFormat('fi', options).format(date);
-    }
-}
-
-const cache = {};
-const cachify = (key, fn) => {
-    if (!cache.hasOwnProperty(key)) {
-        cache[key] = fn();
-    }
-    return cache[key];
-};
-
-var ioc = {
-    dateUtils: () => {
-        return cachify('dateUtils', () => new DateUtils());
-    },
-    contentLayerFactory: () => {
-        return cachify('contentLayerFactory', () => new ContentLayerFactory());
-    }
-};
-
-const dateUtils = ioc.dateUtils();
-
-/*
- * Kalenterin toolbarin alapuolelle renderöitävä headerline day-muodossa.
- *  ___________________________
- * |__________Toolbar__________|
- * |______--> Header <--_______|
- * |                           |
- * |         Content           |
- * |___________________________|
- */
-class DayHeader extends React.Component {
-    /**
-     * @param {object} props {dateCursor: {DateCursor}}
-     */
-    constructor(props) {
-        super(props);
-    }
-    /**
-     * Renderöi 2-sarakkellisen headerlinen, jossa yksi tyhjä solu tuntisara-
-     * ketta varten, ja yksi viikonpäiväsolu.
-     */
-    render() {
-        return $el('div', {className: 'header'},
-            $el('div', {className: 'row'},
-                $el('div', {className: 'col'}, $el('div', {className: 'cell'}, '')),
-                $el('div', {className: 'col'}, $el('div', {className: 'cell'}, this.formatDay(this.props.dateCursor.range.start)))
-            )
-        );
-    }
-    /**
-     * Palauttaa {cursorStart} Date-objektista täydellisen viikonpäivän nimen.
-     *
-     * @access private
-     * @param {Date} cursorStart
-     * @returns {string}
-     */
-    formatDay(cursorStart) {
-        return Intl.DateTimeFormat('fi', {weekday: 'long'}).format(cursorStart);
-    }
-}
-/*
- * Headerline week-muodossa.
- */
-class WeekHeader extends React.Component {
-    /**
-     * @param {object} props
-     */
-    constructor(props) {
-        super(props);
-        this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
-            this.props.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'short'})
-        );
-    }
-    /**
-     * Renderöi 8-sarakkellisen headerlinen, jossa yksi tyhjä solu tuntisara-
-     * ketta varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
-     */
-    render() {
-        return $el('div', {className: 'header'},
-            $el('div', {className: 'row'},
-                ([''].concat(this.SHORT_DAY_NAMES)).map(content =>
-                    $el('div', {key: content, className: 'col'}, $el('div', {className: 'cell'}, content))
-                )
-            )
-        );
-    }
-}
-/*
- * Headerline month-muodossa.
- */
-class MonthHeader extends React.Component {
-    /**
-     * @param {object} props
-     */
-    constructor(props) {
-        super(props);
-        this.SHORT_DAY_NAMES = dateUtils.getFormattedWeekDays(
-            this.props.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'long'})
-        );
-    }
-    /**
-     * Renderöi 8-sarakkellisen headerlinen, jossa yksi tyhjä solu viikkonu-
-     * merosaraketta varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
-     */
-    render() {
-        return $el('div', {className: 'header'},
-            $el('div', {className: 'row'},
-                ([''].concat(this.SHORT_DAY_NAMES)).map(weekDay =>
-                    $el('div', {key: weekDay ,className: 'col'}, $el('div', {className: 'cell'}, weekDay))
-                )
-            )
-        );
-    }
-}
-
-var Header = {
-    [Constants.VIEW_DAY]: DayHeader,
-    [Constants.VIEW_WEEK]: WeekHeader,
-    [Constants.VIEW_MONTH]: MonthHeader
-};
 
 const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
 const LoadType = Object.freeze({
@@ -406,11 +246,11 @@ class Content extends React.Component {
         super(props);
         const selectedContentLayers = this.props.calendarController.settings.contentLayers;
         this.hasAsyncContent = selectedContentLayers.length > 0;
-        this.state = !this.hasAsyncContent ? {} : {loading: true};
+        this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
-            const contentLayerFactory = ioc.contentLayerFactory();
-            this.contentLayers = selectedContentLayers.map(name =>
-                contentLayerFactory.make(name, [
+            const contentLayerFactory = new ContentLayerFactory();
+            this.contentLayers = selectedContentLayers.map(layerConfig =>
+                contentLayerFactory.make(layerConfig, [
                     this.newController(),
                     this.props.calendarController
                 ])
@@ -435,7 +275,7 @@ class Content extends React.Component {
      */
     componentWillReceiveProps(props) {
         if (this.hasAsyncContent) {
-            this.setState({loading: true});
+            this.setState({currentlyHasAsyncContent: undefined});
             this.loadAsyncContent(props.currentView === this.props.currentView
                 ? LoadType.NAVIGATION
                 : LoadType.VIEW_CHANGE
@@ -443,11 +283,11 @@ class Content extends React.Component {
         }
     }
     /**
-     * Disabloi renderöinnin silloin, kun sisältökerroksia lataus on
-     * käynnissä.
+     * Disabloi sisältökerroksien lataustapahtuman jälkeisen renderöinnin, jos
+     * yksikään ladatuista kerroksista ei palauttanut sisältöä.
      */
     shouldComponentUpdate(_, state) {
-        return !state.hasOwnProperty('loading') || state.loading !== true;
+        return state.currentlyHasAsyncContent !== false;
     }
     /**
      * Lataa & ajaa sisältökerrokset, esim. eventLayerin tapahtumat.
@@ -455,9 +295,19 @@ class Content extends React.Component {
      * @access private
      */
     loadAsyncContent(loadType) {
-        return Promise.all(this.contentLayers.map(l => l.load(loadType))).then(() => {
-            this.applyAsyncContent();
-            this.setState({loading: false});
+        return Promise.all(
+            this.contentLayers.map(layer => layer.load(loadType))
+        ).then(returnValues => {
+            const layersWhichMaybeHadContent = this.contentLayers.filter((layer, i) =>
+                // Layerit, joiden load palautti false, skipataan. Jos layer
+                // ei palauttanut mitään, tai jotain muuta kuin false, ladataan
+                // normaalisti.
+                returnValues[i] !== false
+            );
+            if (layersWhichMaybeHadContent.length > 0) {
+                this.applyAsyncContent(layersWhichMaybeHadContent);
+                this.setState({currentlyHasAsyncContent: true});
+            }
         });
     }
     /**
@@ -467,9 +317,9 @@ class Content extends React.Component {
      *
      * @access private
      */
-    applyAsyncContent() {
+    applyAsyncContent(layersToLoad) {
         this.resetGrid();
-        this.contentLayers.forEach(layer => {
+        (layersToLoad || this.contentLayers).forEach(layer => {
             this.props.grid.forEach(row => {
                 row.forEach(cell => {
                     (cell instanceof Cell) && layer.decorateCell(cell);
@@ -486,11 +336,11 @@ class Content extends React.Component {
     newCell(cell, key) {
         let content;
         if (!cell) {
-            content = '';
+            content = null;
         } else if (!cell.children || !cell.children.length) {
             content = cell.content;
         } else {
-            content = this.newTitledContent(cell);
+            content = this.nestedContent(cell);
         }
         const attrs = {className: 'cell'};
         if (cell && cell.clickHandlers && cell.clickHandlers.length) {
@@ -500,23 +350,22 @@ class Content extends React.Component {
             };
         }
         return $el('div', {className: 'col' + (cell && cell.isCurrentDay ? ' current' : ''), key},
-            $el('div', attrs, content)
+            $el('div', attrs, $el('div', null, content))
         );
     }
     /**
      * @access private
      * @param {Cell} cell
-     * @returns {VNode}
+     * @returns {VNode|VNode[]}
      */
-    newTitledContent(cell) {
-        return $el('div', null,
-            // Title
-            cell.content,
-            // Sisältö
-            cell.children.map((child, i) =>
-                $el(child.Component, Object.assign({}, child.props, {key: i}))
-            )
+    nestedContent(cell) {
+        const children = cell.children.map((child, i) =>
+            $el(child.Component, Object.assign({}, child.props, {key: i}), child.content)
         );
+        return cell.content
+            ? [$el('span', null, cell.content)].concat(children)
+            // Luultavasti viikko-gridin cell, joissa ei sisältöä
+            : children;
     }
     /**
      * Public API-versio tästä luokasta sisältökerroksia varten.
@@ -529,15 +378,21 @@ class Content extends React.Component {
             refresh: () => {
                 this.applyAsyncContent();
                 this.forceUpdate();
-            }
+            },
+            reRender: () => {
+                this.forceUpdate();
+            },
+            getRenderedGrid: () => this.mainEl
         };
     }
     render() {
-        return $el('div', {className: 'main'}, this.props.grid.map((row, rowIndex) =>
-            $el('div', {className: 'row', key: rowIndex},
-                row.map((cell, colIndex) => this.newCell(cell, rowIndex + '.' + colIndex)
-            ))
-        ));
+        return $el('div', {className: 'main', ref: el => { this.mainEl = el; }},
+            this.props.grid.map((row, rowIndex) =>
+                $el('div', {className: 'row', key: rowIndex},
+                    row.map((cell, colIndex) => this.newCell(cell, rowIndex + '.' + colIndex)
+                ))
+            )
+        );
     }
 }
 class Cell {
@@ -557,22 +412,24 @@ class ImmutableCell {
 }
 
 class ComponentConstruct {
-    constructor(Component, props) {
+    constructor(Component, props, content) {
         this.Component = Component;
         this.props = props;
+        this.content = content;
     }
 }
 
 /*
- * ViewLayoutien juuriluokka
+ * ViewLayoutien juuriluokka.
  */
 class AbstractViewLayout {
     /**
      * @param {DateCursor} dateCursor
+     * @param {DateUtils} dateUtils
      */
-    constructor(dateCursor) {
+    constructor(dateCursor, dateUtils) {
         this.dateCursor = dateCursor;
-        this.dateUtils = ioc.dateUtils();
+        this.dateUtils = dateUtils;
     }
     /**
      * @access public
@@ -588,8 +445,8 @@ class AbstractViewLayout {
      */
     getFullLayout() {
         return [
-            new ComponentConstruct(Header[this.getName()], {dateCursor: this.dateCursor}),
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.generateFullGrid()})
+            new ComponentConstruct(Header, {items: this.getHeaderCells()}),
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getFullGrid()})
         ];
     }
     /**
@@ -599,8 +456,27 @@ class AbstractViewLayout {
     getCompactLayout() {
         return [
             null,
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.generateCompactGrid()})
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getCompactGrid()})
         ];
+    }
+}
+
+/*
+ * Kalenterin toolbarin alapuolelle renderöitävä header-rivi.
+ *  ___________________________
+ * |__________Toolbar__________|
+ * |______--> Header <--_______|
+ * |                           |
+ * |         Content           |
+ * |___________________________|
+ */
+class Header extends React.Component {
+    render() {
+        return $el('div', {className: 'header'},
+            $el('div', {className: 'row'}, this.props.items.map((item, i) =>
+                $el('div', {key: i + item, className: 'col'}, $el('div', {className: 'cell'}, item))
+            ))
+        );
     }
 }
 
@@ -608,8 +484,15 @@ class AbstractViewLayout {
  * Kalenterin pääsisältö day-muodossa.
  */
 class DayViewLayout extends AbstractViewLayout {
-    getName() {
-        return Constants.VIEW_DAY;
+    /**
+     * Palauttaa 2-sarakkellisen headerin, jossa yksi tyhjä solu tuntisaraketta
+     * varten, ja yksi viikonpäiväsolu.
+     *
+     * @access protected
+     * @returns {Array}
+     */
+    getHeaderCells() {
+        return ['', this.dateUtils.format(this.dateCursor.range.start, {weekday: 'long'})];
     }
     /**
      * Day-näkymällä ei ole erillistä compact-muotoa.
@@ -629,7 +512,7 @@ class DayViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateFullGrid() {
+    getFullGrid() {
         const rollingDate = new Date(this.dateCursor.range.start);
         const isToday = rollingDate.toDateString() === new Date().toDateString();
         // Päivän jokaiselle tunnille rivi, ...
@@ -648,8 +531,18 @@ class DayViewLayout extends AbstractViewLayout {
  * Kalenterin pääsisältö week, ja week-compact -muodossa.
  */
 class WeekViewLayout extends AbstractViewLayout {
-    getName() {
-        return Constants.VIEW_WEEK;
+    /**
+     * Palauttaa 8-sarakkellisen headerin, jossa yksi tyhjä solu tuntisaraketta
+     * varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
+     *
+     * @access protected
+     * @returns {Array}
+     */
+    getHeaderCells() {
+        return [''].concat(this.dateUtils.getFormattedWeekDays(
+            this.dateCursor.range.start,
+            'short'
+        ));
     }
     /**
      * Generoi vuorokauden jokaiselle tunnille rivin, jossa yksi tuntisarake,
@@ -660,7 +553,7 @@ class WeekViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateFullGrid() {
+    getFullGrid() {
         // Vuorokauden jokaiselle tunnille rivi, ...
         return this.markCurrentDayColumn(HOURS_ARRAY.map(hour => {
             const rollingDate = new Date(this.dateCursor.range.start);
@@ -681,10 +574,10 @@ class WeekViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateCompactGrid() {
+    getCompactGrid() {
         const dayNames = this.dateUtils.getFormattedWeekDays(
             this.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'long'})
+            'long'
         );
         const rollingDate = new Date(this.dateCursor.range.start);
         const getDateAndMoveToNexDay = () => {
@@ -730,13 +623,22 @@ class WeekViewLayout extends AbstractViewLayout {
     }
 }
 
-const dateUtils$1 = ioc.dateUtils();
 /*
  * Kalenterin pääsisältö month, ja month-compact -muodossa
  */
 class MonthViewLayout extends AbstractViewLayout {
-    getName() {
-        return Constants.VIEW_MONTH;
+    /**
+     * Palauttaa 8-sarakkellisen headerin, jossa yksi tyhjä solu viikkonumero-
+     * saraketta varten, ja yksi viikonpäiväsolu jokaiselle viikonpäivälle.
+     *
+     * @access protected
+     * @returns {Array}
+     */
+    getHeaderCells() {
+        return [''].concat(this.dateUtils.getFormattedWeekDays(
+            this.dateCursor.range.start,
+            'long'
+        ));
     }
     /**
      * Generoi kuukauden päivät numeerisessa muodossa 7 * ~5 taulukkoon Cell-
@@ -746,7 +648,7 @@ class MonthViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateFullGrid() {
+    getFullGrid() {
         const d = new Date(this.dateCursor.range.start);
         const currentDayDateStr = new Date().toDateString();
         // Generoi rivit viikonpäiville
@@ -754,7 +656,7 @@ class MonthViewLayout extends AbstractViewLayout {
             new Cell(d.getDate(), new Date(d), d.toDateString() === currentDayDateStr)
         // Lisää jokaisen rivi alkuun viikkonumero
         ).map(row => {
-            row.unshift(new ImmutableCell(dateUtils$1.getWeekNumber(d)));
+            row.unshift(new ImmutableCell(this.dateUtils.getWeekNumber(d)));
             d.setDate(d.getDate() + 7);
             return row;
         });
@@ -766,10 +668,10 @@ class MonthViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateCompactGrid() {
+    getCompactGrid() {
         const dayNames = this.dateUtils.getFormattedWeekDays(
             this.dateCursor.range.start,
-            Intl.DateTimeFormat('fi', {weekday: 'short'})
+            'short'
         );
         const currentDayDateStr = new Date().toDateString();
         return this.generateGrid(2, d => {
@@ -777,7 +679,7 @@ class MonthViewLayout extends AbstractViewLayout {
             // Lisää viikkonumero ensimmäisen solun-, ja viikon ensimmäisten päivien perään
             return new Cell(d.getDay() !== 1 && d.getDate() > 1
                 ? dateAndDayName
-                : [dateAndDayName, $el('span', null, ' / Vk' + dateUtils$1.getWeekNumber(d))]
+                : [dateAndDayName, $el('span', null, ' / Vk' + this.dateUtils.getWeekNumber(d))]
             , new Date(d), d.toDateString() === currentDayDateStr);
         });
     }
@@ -825,28 +727,19 @@ var ViewLayouts = {
     [Constants.VIEW_MONTH]: MonthViewLayout
 };
 
-const dateUtils$2 = ioc.dateUtils();
-const lastRangeCanBeAdapted = (lastSavedRange, startDateOrRangeOfPreviousView) => (
-    // Range täytyy olla ylipäätään tallennettu
-    lastSavedRange &&
-    // startDateOrRangeOfPreviousView tulee olla Day|Week|MonthViewCursorRange, eikä Date
-            !(startDateOrRangeOfPreviousView instanceof Date) &&
-    // Tallennettu range ei saa olla liian kaukana edellisen viewin rangesta
-            (lastSavedRange.start >= startDateOrRangeOfPreviousView.start &&
-            lastSavedRange.start <= startDateOrRangeOfPreviousView.end)
-);
 class DayViewCursorRange {
     /**
+     * @param {DateUtils} dateUtils
      * @param {Date|WeekViewCursorRange|MonthViewCursorRange} startDateOrRangeOfPreviousView
      */
-    constructor(startDateOrRangeOfPreviousView) {
-        if (!lastRangeCanBeAdapted(DayViewCursorRange.lastRange, startDateOrRangeOfPreviousView)) {
-            const baseDate = startDateOrRangeOfPreviousView.start || startDateOrRangeOfPreviousView;
-            this.start = dateUtils$2.getStartOfDay(baseDate);
-            this.end = dateUtils$2.getEndOfDay(baseDate);
+    constructor(dateUtils, startDateOrRangeOfPreviousView) {
+        const d = getBasedate(startDateOrRangeOfPreviousView, DayViewCursorRange.lastRange);
+        if (d instanceof Date) {
+            this.start = dateUtils.getStartOfDay(d);
+            this.end = dateUtils.getEndOfDay(d);
         } else {
-            this.start = DayViewCursorRange.lastRange.start;
-            this.end = DayViewCursorRange.lastRange.end;
+            this.start = d.start;
+            this.end = d.end;
         }
     }
     goForward() {
@@ -860,17 +753,18 @@ class DayViewCursorRange {
 }
 class WeekViewCursorRange {
     /**
+     * @param {DateUtils} dateUtils
      * @param {Date|DayViewCursorRange|MonthViewCursorRange} startDateOrRangeOfPreviousView
      */
-    constructor(startDateOrRangeOfPreviousView) {
-        if (!lastRangeCanBeAdapted(WeekViewCursorRange.lastRange, startDateOrRangeOfPreviousView)) {
-            const baseDate = startDateOrRangeOfPreviousView.start || startDateOrRangeOfPreviousView;
-            this.start = dateUtils$2.getStartOfWeek(dateUtils$2.getStartOfDay(baseDate));
-            this.end = dateUtils$2.getEndOfDay(this.start);
+    constructor(dateUtils, startDateOrRangeOfPreviousView) {
+        const d = getBasedate(startDateOrRangeOfPreviousView, WeekViewCursorRange.lastRange);
+        if (d instanceof Date) {
+            this.start = dateUtils.getStartOfWeek(dateUtils.getStartOfDay(d));
+            this.end = dateUtils.getEndOfDay(this.start);
             this.end.setDate(this.start.getDate() + 6);
         } else {
-            this.start = WeekViewCursorRange.lastRange.start;
-            this.end = WeekViewCursorRange.lastRange.end;
+            this.start = d.start;
+            this.end = d.end;
         }
     }
     goForward() {
@@ -884,13 +778,14 @@ class WeekViewCursorRange {
 }
 class MonthViewCursorRange {
     /**
+     * @param {DateUtils} dateUtils
      * @param {Date|DayViewCursorRange|WeekViewCursorRange} startDateOrRangeOfPreviousView
      */
-    constructor(startDateOrRangeOfPreviousView) {
+    constructor(dateUtils, startDateOrRangeOfPreviousView) {
         const baseDate = startDateOrRangeOfPreviousView.start || startDateOrRangeOfPreviousView;
-        this.start = dateUtils$2.getStartOfDay(baseDate);
+        this.start = dateUtils.getStartOfDay(baseDate);
         this.start.setDate(1);
-        this.end = dateUtils$2.getEndOfDay(baseDate);
+        this.end = dateUtils.getEndOfDay(this.start);
         // https://stackoverflow.com/questions/222309/calculate-last-day-of-month-in-javascript
         this.end.setMonth(this.start.getMonth() + 1);
         this.end.setDate(0);// 1. pvä - 1 (0) = edellisen kuun viimeinen
@@ -907,13 +802,33 @@ class MonthViewCursorRange {
         this.end.setDate(0);
     }
 }
+function getBasedate(startDateOrRangeOfPreviousView, lastSavedRange) {
+    if (startDateOrRangeOfPreviousView instanceof Date) {
+        return startDateOrRangeOfPreviousView;
+    }
+    // Käytä aiemmin tallennettua rangea, jos ei poikkea edellisen näkymän rangesta liikaa
+    if (lastSavedRange && isWithinRange(lastSavedRange.start, startDateOrRangeOfPreviousView)) {
+        return lastSavedRange;
+    }
+    const d = new Date();
+    // Käytä nykyhetkeä, jos se sattuu edellisen näkymän kanssa samalle viikolle/
+    // kuukaudelle, muutoin käytä edellisen näkymän range.start:ia
+    return !isWithinRange(d, startDateOrRangeOfPreviousView)
+        ? startDateOrRangeOfPreviousView.start
+        : d;
+}
+function isWithinRange(date, range) {
+    return (date >= range.start && date <= range.end);
+}
+
 /*
  * Luokka, joka vastaa kalenterin aikakursorin manipuloinnista
  * selaustoimintojen yhteydessä. Kuuluu osaksi public calendar-API:a.
  */
 class DateCursor {
-    constructor(range, subscribeFn) {
+    constructor(range, dateUtils, subscribeFn) {
         this.range = range;
+        this.dateUtils = dateUtils;
         saveRange(this.range);
         if (subscribeFn) {
             this.notify = subscribeFn;
@@ -941,7 +856,7 @@ class DateCursor {
      * Siirtää kursorin takaisin nykyhetkeen.
      */
     reset() {
-        this.range = new this.range.constructor(new Date());
+        this.range = new this.range.constructor(this.dateUtils, new Date());
         saveRange(this.range);
         this.notify('reset');
     }
@@ -963,9 +878,27 @@ const cursorRanges = {
     [Constants.VIEW_WEEK]: WeekViewCursorRange,
     [Constants.VIEW_MONTH]: MonthViewCursorRange
 };
-const dateCursorFactory = {newCursor: (viewName, startDateOrRangeFromPreviousView, subscriberFn) => {
-    return new DateCursor(new cursorRanges[viewName](startDateOrRangeFromPreviousView || new Date()), subscriberFn);
-}};
+
+class DateCursorFactory {
+    /**
+     * @param {DateUtils} dateUtils
+     */
+    constructor(dateUtils) {
+        this.dateUtils = dateUtils;
+    }
+    /**
+     * @param {string} viewName 'day'|'week'|'month'
+     * @param {Date|DayViewCursorRange|WeekViewCursorRange|MonthViewCursorRange} startDateOrRangeFromPreviousView
+     * @param {Function} subscriberFn
+     */
+    newCursor(viewName, startDateOrRangeFromPreviousView, subscriberFn) {
+        return new DateCursor(
+            new cursorRanges[viewName](this.dateUtils, startDateOrRangeFromPreviousView || new Date()),
+            this.dateUtils,
+            subscriberFn
+        );
+    }
+}
 
 function validateViewKey(viewNameKey) {
     const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
@@ -983,6 +916,17 @@ function validateLayers(candidate) {
         return 'contentLayers-asetus tulisi olla taulukko';
     }
 }
+function validateToolbarParts(candidate) {
+    if (typeof candidate !== 'string') {
+        return 'toolbarParts-asetus tulisi olla merkkijono. esim \'prev,next|title|day,week\'';
+    }
+    for (const part of candidate.replace(/\|/g, ',').split(',')) {
+        if (validPartNames.indexOf(part) < 0) {
+            return 'titlePart "' + part + '" ei ole validi. Tuetut arvot: ' +
+                validPartNames.join(',');
+        }
+    }
+}
 function validateFormatters(candidate) {
     for (const viewNameKey in candidate) {
         if (typeof candidate[viewNameKey] !== 'function') {
@@ -997,6 +941,11 @@ function validateFormatters(candidate) {
 function validateBreakPoint(candidate) {
     if (!Number.isInteger(candidate)) {
         return 'layoutChangeBreakPoint-asetus tulisi olla kokonaisluku';
+    }
+}
+function validateLocale(candidate) {
+    if (!Array.isArray(candidate) && typeof candidate !== 'string') {
+        return 'locale-asetus tulisi olla merkkijono tai taulukko';
     }
 }
 /**
@@ -1023,8 +972,10 @@ const getValidViewName = value => getValidValue(value, validateViewKey, Constant
  *     defaultView: {string},
  *     defaultDate: {Date},
  *     contentLayers: {Array},
+ *     toolbarParts: {string},
  *     titleFormatters: {Object},
- *     layoutChangeBreakPoint: {number}
+ *     layoutChangeBreakPoint: {number},
+ *     locale: {string|string[]}
  * }
  * @throws {Error}
  */
@@ -1032,9 +983,73 @@ var settingsFactory = userSettings => ({
     defaultView: getValidViewName(userSettings.defaultView),
     defaultDate: getValidValue(userSettings.defaultDate, validateDefaultDate, new Date()),
     contentLayers: getValidValue(userSettings.contentLayers, validateLayers, []),
+    toolbarParts: getValidValue(userSettings.toolbarParts, validateToolbarParts, 'prev,next,today|title|month,week,day'),
     titleFormatters: getValidValue(userSettings.titleFormatters, validateFormatters, {}),
-    layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800)
+    layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800),
+    locale: getValidValue(userSettings.locale, validateLocale, undefined)
 });
+
+const EMPTY_WEEK = Array.from(Array(7));
+
+class DateUtils {
+    /**
+     * @param {string|string[]} locale 'fi', 'en-US' etc.
+     */
+    constructor(locale) {
+        this.locale = locale;
+    }
+    // https://stackoverflow.com/questions/6117814/get-week-of-year-in-javascript-like-in-php#answer-6117889
+    getWeekNumber(date) {
+        // Copy date so don't modify original
+        const d = new Date(date);
+        d.setHours(0,0,0,0);
+        // Set to nearest Thursday: current date + 4 - current day number
+        // Make Sunday's day number 7
+        d.setDate(d.getDate() + 4 - (d.getDay()||7));
+        // Calculate full weeks to nearest Thursday
+        return Math.ceil(( ( (d - new Date(d.getFullYear(),0,1)) / 86400000) + 1)/7);
+    }
+    getEstimatedFirstDayOfWeek() {
+        // Kesäkuun ensimmäinen maanantai, 2017, klo 12:00:00
+        return (new Date(2017, 5, 5, 12, 0, 0, 0)).getDay();
+    }
+    getStartOfWeek(date) {
+        const firstDay = this.getEstimatedFirstDayOfWeek();
+        const d = new Date(date);
+        d.setDate(date.getDate() - (7 + date.getDay() - firstDay) % 7);
+        return d;
+    }
+    getFormattedWeekDays(date, form) {
+        const d = this.getStartOfWeek(date);
+        return EMPTY_WEEK.map(() => {
+            const formatted = this.format(d, {weekday: form});
+            d.setDate(d.getDate() + 1);
+            return formatted;
+        });
+    }
+    getStartOfDay(date) {
+        const start = new Date(date);
+        start.setHours(0);
+        start.setMinutes(0);
+        start.setSeconds(0);
+        start.setMilliseconds(0);
+        return start;
+    }
+    getEndOfDay(date) {
+        const end = new Date(date);
+        end.setHours(23);
+        end.setMinutes(59);
+        end.setSeconds(59);
+        end.setMilliseconds(999);
+        return end;
+    }
+    formatHour(hour) {
+        return (hour < 10 ? '0' : '') + hour + ':00';
+    }
+    format(date, options) {
+        return date.toLocaleString(this.locale, options);
+    }
+}
 
 /*
  * Kalenterin juurikomponentti.
@@ -1042,20 +1057,22 @@ var settingsFactory = userSettings => ({
 class CalendarLayout extends React.Component {
     /**
      * @param {object} props {
-     *     settings: {
-     *         defaultView: {string},
-     *         defaultDate: {Date},
-     *         titleFormatters: {Object},
-     *         contentLayers: {Array},
-     *         layoutChangeBreakPoint: {number}
-     *     }=
+     *     defaultView: {string=},
+     *     defaultDate: {Date=},
+     *     contentLayers: {Array=},
+     *     toolbarParts: {string=},
+     *     titleFormatters: {Object=},
+     *     layoutChangeBreakPoint: {number=}
+     *     locale: {string|string[]=}
      * }
      */
     constructor(props) {
         super(props);
         // Luo asetukset & rekisteröi mediaquery
-        this.settings = settingsFactory(this.props.settings || {});
+        this.settings = settingsFactory(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
+        this.dateUtils = new DateUtils(this.settings.locale);
+        this.dateCursorFactory = new DateCursorFactory(this.dateUtils);
         // Luo initial state
         const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};
         state.currentView = this.settings.defaultView;
@@ -1084,7 +1101,7 @@ class CalendarLayout extends React.Component {
      * uudelleenlatauksen.
      *
      * @access public
-     * @param {string} to Constants.VIEW_DAY | Constants.VIEW_WEEK | Constants.VIEW_MONTH
+     * @param {string} to 'day'|'week'|'month'
      */
     changeView(to) {
         const newView = getValidViewName(to);
@@ -1115,7 +1132,7 @@ class CalendarLayout extends React.Component {
      * @returns {DateCursor}
      */
     newDateCursor(viewName, lastViewsRange) {
-        return dateCursorFactory.newCursor(viewName, lastViewsRange || this.settings.defaultDate, () => {
+        return this.dateCursorFactory.newCursor(viewName, lastViewsRange || this.settings.defaultDate, () => {
             this.setState({dateCursor: this.state.dateCursor});
         });
     }
@@ -1124,7 +1141,7 @@ class CalendarLayout extends React.Component {
      * @returns {Day|Week|MonthViewLayout}
      */
     newViewLayout(viewName, dateCursor) {
-        return new ViewLayouts[viewName](dateCursor);
+        return new ViewLayouts[viewName](dateCursor, this.dateUtils);
     }
     /**
      * Renderöi kalenterin kokonaisuudessaan mutaatiossa day, week,
@@ -1146,7 +1163,9 @@ class CalendarLayout extends React.Component {
                 this.modal = cmp;
             }}),
             $el(Toolbar, {
+                parts: this.settings.toolbarParts,
                 calendarController: this.controller,
+                dateUtils: this.dateUtils,
                 titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
             }),
             header !== null && $el(header.Component,
@@ -1190,32 +1209,31 @@ function newController(component) {
     };
 }
 
-const contentLayerFactory = ioc.contentLayerFactory();
+const contentLayerFactory = new ContentLayerFactory();
 
 /**
  * Kirjaston public API.
  */
-var nullcalendar = {
+var nullcalendar$1 = {
     /**
      * @param {HTMLElement} el DOM-elementti, johon kalenteri renderöidään
      * @param {Object=} settings Kalenterin configuraatio
      * @returns {Object} Kalenteri-instanssin kontrolleri/API
      */
     newCalendar: (el, settings) => {
-        return ReactDOM.render($el(CalendarLayout, settings ? {settings} : undefined), el).getController();
+        return ReactDOM.render($el(CalendarLayout, settings), el).getController();
     },
     /**
      * @param {string} name Nimi, jolla rekisteröidään
-     * @param {Object} Class Sisältökerroksen implementaatio @see https://github.com/ut4/ncalendar#extending
+     * @param {Object|Function} layer Sisältökerroksen implementaatio @see https://github.com/ut4/ncalendar#extending
      */
-    registerContentLayer: (name, Class) =>
-        contentLayerFactory.register(name, Class),
+    registerContentLayer: (name, layer) => contentLayerFactory.register(name, layer),
     /**
      * @prop {React.Component} Kalenterin juurikomponentti @see https://github.com/ut4/ncalendar#usage-jsx
      */
     Calendar: CalendarLayout
 };
 
-return nullcalendar;
+return nullcalendar$1;
 
 })));
