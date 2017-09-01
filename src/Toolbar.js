@@ -18,8 +18,8 @@ const titleFormatters = {
 };
 
 /*
- * Kalenterilayoutin ylin osa. Sisältää päänavigaatiopainikkeet, otsakkeen,
- * ja näkymänavigaatiopainikkeet.
+ * Kalenterilayoutin ylin osa. Sisältää oletuksena päänavigaatiopainikkeet,
+ * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa.
  *  ___________________________
  * |______--> Toolbar <--______|
  * |__________Header___________|
@@ -30,6 +30,7 @@ const titleFormatters = {
 class Toolbar extends React.Component {
     /**
      * @param {object} props {
+     *     parts: {string},
      *     calendarController: {Object},
      *     dateUtils: {Object},
      *     titleFormatter: {Function=}
@@ -37,29 +38,33 @@ class Toolbar extends React.Component {
      */
     constructor(props) {
         super(props);
+        this.partGenerators = new PartGenerators(props);
     }
     render() {
-        const ctrl = this.props.calendarController;
         return $el('div', {className: 'toolbar'},
-            $el('div', {className: 'row'},
-                $el('div', {className: 'col'},
-                    $el('button', {onClick: () => ctrl.dateCursor.prev() }, '<'),
-                    $el('button', {onClick: () => ctrl.dateCursor.next() }, '>'),
-                    $el('button', {onClick: () => ctrl.dateCursor.reset() }, 'Tänään')
-                ),
-                $el('div', {className: 'col'},
-                    $el('h2', null, (this.props.titleFormatter || titleFormatters[ctrl.currentView])(
-                        ctrl.dateCursor.range, this.props.dateUtils
-                    ))
-                ),
-                $el('div', {className: 'col'},
-                    $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_MONTH); }}, 'Kuukausi'),
-                    $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_WEEK); }}, 'Viikko'),
-                    $el('button', {onClick: () => { ctrl.changeView(Constants.VIEW_DAY); }}, 'Päivä')
+            $el('div', {className: 'row'}, this.props.parts.split('|').map((group, r) =>
+                $el('div', {className: 'col', key: r},
+                    group.split(',').map(partName => this.partGenerators[partName]())
                 )
-            )
+            ))
         );
     }
 }
 
+class PartGenerators {
+    constructor(props) { this.ctrl = props.calendarController; this.props = props; }
+    prev() { return $el('button', {onClick: () => this.ctrl.dateCursor.prev(), key: 'prev' }, '<'); }
+    next() { return $el('button', {onClick: () => this.ctrl.dateCursor.next(), key: 'next' }, '>'); }
+    today() { return $el('button', {onClick: () => this.ctrl.dateCursor.reset(), key: 'today' }, 'Tänään'); }
+    title() { return $el('h2', {key: 'title'}, (this.props.titleFormatter || titleFormatters[this.ctrl.currentView])(
+        this.ctrl.dateCursor.range, this.props.dateUtils
+    )); }
+    month() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_MONTH); }, key: 'month'}, 'Kuukausi'); }
+    week() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_WEEK); }, key: 'week'}, 'Viikko'); }
+    day() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_DAY); }, key: 'day'}, 'Päivä'); }
+    fill() { return null; }
+}
+const validPartNames = Object.getOwnPropertyNames(PartGenerators.prototype).filter(prop => prop !== 'constructor');
+
 export default Toolbar;
+export { validPartNames };

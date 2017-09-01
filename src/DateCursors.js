@@ -58,7 +58,7 @@ class MonthViewCursorRange {
         const baseDate = startDateOrRangeOfPreviousView.start || startDateOrRangeOfPreviousView;
         this.start = dateUtils.getStartOfDay(baseDate);
         this.start.setDate(1);
-        this.end = dateUtils.getEndOfDay(baseDate);
+        this.end = dateUtils.getEndOfDay(this.start);
         // https://stackoverflow.com/questions/222309/calculate-last-day-of-month-in-javascript
         this.end.setMonth(this.start.getMonth() + 1);
         this.end.setDate(0);// 1. pvä - 1 (0) = edellisen kuun viimeinen

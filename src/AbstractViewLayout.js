@@ -1,9 +1,8 @@
-import Header from './Header.js';
 import Content from './Content.js';
 import ComponentConstruct from './ComponentConstruct.js';
 
 /*
- * ViewLayoutien juuriluokka
+ * ViewLayoutien juuriluokka.
  */
 class AbstractViewLayout {
     /**
@@ -28,11 +27,8 @@ class AbstractViewLayout {
      */
     getFullLayout() {
         return [
-            new ComponentConstruct(Header[this.getName()], {
-                dateCursor: this.dateCursor,
-                dateUtils: this.dateUtils
-            }),
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.generateFullGrid()})
+            new ComponentConstruct(Header, {items: this.getHeaderCells()}),
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getFullGrid()})
         ];
     }
     /**
@@ -42,8 +38,27 @@ class AbstractViewLayout {
     getCompactLayout() {
         return [
             null,
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.generateCompactGrid()})
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getCompactGrid()})
         ];
+    }
+}
+
+/*
+ * Kalenterin toolbarin alapuolelle renderöitävä header-rivi.
+ *  ___________________________
+ * |__________Toolbar__________|
+ * |______--> Header <--_______|
+ * |                           |
+ * |         Content           |
+ * |___________________________|
+ */
+class Header extends React.Component {
+    render() {
+        return $el('div', {className: 'header'},
+            $el('div', {className: 'row'}, this.props.items.map((item, i) =>
+                $el('div', {key: i + item, className: 'col'}, $el('div', {className: 'cell'}, item))
+            ))
+        );
     }
 }
 

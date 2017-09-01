@@ -16,6 +16,13 @@ QUnit.module('CalendarLayoutComponent(day)', function (hooks) {
             Constants.VIEW_DAY, null, () => {}
         );
     });
+    QUnit.test('Renderöi headeriin tuntisarakkeen ja current-päivän täydellisen nimen', assert => {
+        const header = ReactTestUtils.findRenderedDOMComponentWithClass(this.rendered, 'header');
+        const headerCells = header.querySelectorAll('.cell');
+        assert.equal(headerCells.length, 2);
+        assert.equal(headerCells[0].textContent, '');// Tuntisarake pitää olla tyhjä
+        assert.equal(headerCells[1].textContent, dateUtils.format(this.replicatedCursor.range.start, {weekday: 'long'}));
+    });
     QUnit.test('Toolbarin next-sivutuspainike päivittää titlen, ja päivä-headerin', assert => {
         assert.ok(containsCurrentDayColumns(this.rendered), 'Pitäisi sisältää ".current"-sarake');
         // Paina nappia
@@ -26,10 +33,10 @@ QUnit.module('CalendarLayoutComponent(day)', function (hooks) {
         // Assertoi että title päivittyi seuraavaan päivään
         const expectedTitleContent = titleFormatter(this.replicatedCursor.range);
         assert.equal(domUtils.getElementContent(this.rendered, 'h2'), expectedTitleContent);
-        // Assertoi, että headerline päivittyi
-        const headerlineContentAfter = domUtils.getElementContent(this.rendered, '.header');
+        // Assertoi, että header päivittyi
+        const headerContentAfter = domUtils.getElementContent(this.rendered, '.header');
         const expectedHeaderContent = getWeekDay(this.replicatedCursor.range.start);
-        assert.equal(headerlineContentAfter, expectedHeaderContent);
+        assert.equal(headerContentAfter, expectedHeaderContent);
         assert.notOk(containsCurrentDayColumns(this.rendered),
             'Ei pitäisi sisältää ".current"-saraketta, jos kyseessä ei kuluva päivä'
         );
@@ -43,10 +50,10 @@ QUnit.module('CalendarLayoutComponent(day)', function (hooks) {
         // Assertoi että title päivittyi edelliseen päivään
         const expectedTitleContent = titleFormatter(this.replicatedCursor.range);
         assert.equal(domUtils.getElementContent(this.rendered, 'h2'), expectedTitleContent);
-        // Assertoi, että headerline päivittyi
-        const headerlineContentAfter = domUtils.getElementContent(this.rendered, '.header');
+        // Assertoi, että header päivittyi
+        const headerContentAfter = domUtils.getElementContent(this.rendered, '.header');
         const expectedHeaderContent = getWeekDay(this.replicatedCursor.range.start);
-        assert.equal(headerlineContentAfter, expectedHeaderContent);
+        assert.equal(headerContentAfter, expectedHeaderContent);
     });
     QUnit.test('Toolbarin tänään-sivutuspainike vie takaisin tähän päivään', assert => {
         const initialTitleContent = domUtils.getElementContent(this.rendered, 'h2');
@@ -63,8 +70,8 @@ QUnit.module('CalendarLayoutComponent(day)', function (hooks) {
         // Assertoi että palautui tälle viikolle
         const titleContentAfter = domUtils.getElementContent(this.rendered, 'h2');
         assert.equal(titleContentAfter, initialTitleContent);
-        const headerlineContentAfter = domUtils.getElementContent(this.rendered, '.header');
-        assert.equal(headerlineContentAfter, initialHeaderlineContent);
+        const headerContentAfter = domUtils.getElementContent(this.rendered, '.header');
+        assert.equal(headerContentAfter, initialHeaderlineContent);
     });
     function containsCurrentDayColumns(rendered) {
        return ReactTestUtils.scryRenderedDOMComponentsWithClass(rendered, 'current').length > 0;

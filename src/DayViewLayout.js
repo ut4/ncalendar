@@ -1,13 +1,19 @@
 import AbstractViewLayout from './AbstractViewLayout.js';
 import {HOURS_ARRAY, ImmutableCell, Cell} from './Content.js';
-import Constants from './Constants.js';
 
 /*
  * Kalenterin pääsisältö day-muodossa.
  */
 class DayViewLayout extends AbstractViewLayout {
-    getName() {
-        return Constants.VIEW_DAY;
+    /**
+     * Palauttaa 2-sarakkellisen headerin, jossa yksi tyhjä solu tuntisaraketta
+     * varten, ja yksi viikonpäiväsolu.
+     *
+     * @access protected
+     * @returns {Array}
+     */
+    getHeaderCells() {
+        return ['', this.dateUtils.format(this.dateCursor.range.start, {weekday: 'long'})];
     }
     /**
      * Day-näkymällä ei ole erillistä compact-muotoa.
@@ -27,7 +33,7 @@ class DayViewLayout extends AbstractViewLayout {
      * @access protected
      * @returns {Array}
      */
-    generateFullGrid() {
+    getFullGrid() {
         const rollingDate = new Date(this.dateCursor.range.start);
         const isToday = rollingDate.toDateString() === new Date().toDateString();
         // Päivän jokaiselle tunnille rivi, ...

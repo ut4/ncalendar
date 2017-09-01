@@ -20,8 +20,8 @@ import './test/DateCursors.DayViewCursorRangeTests.js';
 import './test/DateCursors.MonthViewCursorRangeTests.js';
 import './test/DateCursors.WeekViewCursorRangeTests.js';
 import './test/DateCursorStateTests.js';
-import './test/HeaderComponentTests.js';
 import './test/ModalComponentTests.js';
 import './test/settingsFactoryTests.js';
+import './test/ToolbarComponentTests.js';
 
 QUnit.start();
