@@ -148,16 +148,11 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
         const done = assert.async();
         contentLoadCallSpy.firstCall.returnValue.then(() => {
             const renderedEvents = renderingTestUtils.getRenderedEvents(rendered);
-            assert.ok(renderedEvents[0].className.match(/stack-index-[0-9]/)[0], 'stack-index-0');
-            assert.ok(renderedEvents[1].className.match(/stack-index-[0-9]/)[0], 'stack-index-1');
-            assert.ok(renderedEvents[2].className.match(/stack-index-[0-9]/)[0], 'stack-index-0');
-            assert.ok(renderedEvents[2].className.match(/stack-index-[0-9]/)[0], 'stack-index-0');
-            assert.ok(renderedEvents[3].className.match(/stack-index-[0-9]/)[0], 'stack-index-1');
-            assert.ok(renderedEvents[3].className.match(/stack-index-[0-9]/)[0], 'stack-index-1');
-            assert.ok(renderedEvents[3].className.match(/stack-index-[0-9]/)[0], 'stack-index-1');
-            assert.ok(renderedEvents[4].className.match(/stack-index-[0-9]/)[0], 'stack-index-2');
-            assert.ok(renderedEvents[4].className.match(/stack-index-[0-9]/)[0], 'stack-index-2');
-            assert.ok(renderedEvents[4].className.match(/stack-index-[0-9]/)[0], 'stack-index-2');
+            assert.equal(renderedEvents[0].className.match(/stack-index-[0-9]/)[0], 'stack-index-0');
+            assert.equal(renderedEvents[1].className.match(/stack-index-[0-9]/)[0], 'stack-index-1');
+            assert.equal(renderedEvents[2].className.match(/stack-index-[0-9]/)[0], 'stack-index-0');
+            assert.equal(renderedEvents[3].className.match(/stack-index-[0-9]/)[0], 'stack-index-1');
+            assert.equal(renderedEvents[4].className.match(/stack-index-[0-9]/)[0], 'stack-index-2');
             done();
         });
     }

@@ -74,18 +74,23 @@ class MonthEventComponent extends EventComponent {
      * @returns {string}
      */
     getClassNames() {
-        return 'event stack-index-' + this.props.stackIndex;
+        return (
+            'event stack-index-' + this.props.stackIndex +
+            (this.props.event.hasSpawning ? ' has-split-end' : '') +
+            (this.props.event.isSpawning ? ' has-split-start' : '')
+        );
     }
     /**
      * @access protected
      * @returns {string}
      */
     getStyles() {
-        const durationInDays = Math.ceil((this.props.event.end - this.props.event.start) / 1000 / 60 / 60 / 24);
-        if (durationInDays === 1 && this.props.event.start.getMonth() === this.props.event.end.getMonth()) {
+        const e = this.props.event;
+        const durationInDays = toNearestQuarter(((e.splitEnd || e.end) - e.start) / 1000 / 60 / 60 / 24);
+        if (durationInDays === 1 && e.start.getMonth() === (e.splitEnd || e.end).getMonth()) {
             return null;
         }
-        return `width: calc(${durationInDays}00% + ${this.getPaddingAndBorderDiff(durationInDays)}px)`;
+        return `width: calc(${durationInDays * 100}% + ${this.getPaddingAndBorderDiff(durationInDays)}px)`;
     }
 }
 
@@ -99,8 +104,8 @@ function toNearest15Min(minutes) {
 /**
  * 1.10 -> 1, 1.17 -> 1.25, 1.2 -> 1.25, 1.4 -> 1.5 jne..
  */
-function toNearestQuarter(hours) {
-    return Math.round(hours / 0.25) * 0.25;
+function toNearestQuarter(number) {
+    return Math.round(number / 0.25) * 0.25;
 }
 
 export default EventComponent;

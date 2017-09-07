@@ -152,6 +152,9 @@ function newController(component) {
         get isCompactViewEnabled() {
             return component.state.isWindowNarrowerThanBreakPoint;
         },
+        get dateUtils() {
+            return component.dateUtils;
+        },
         changeView: to => {
             return component.changeView(to);
         },

@@ -37,7 +37,7 @@ class EventLayer {
         const range = this.calendarController.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {
-                this.events = new EventCollection(...events.map(event => new Event(event)));
+                this.events = this.makeEventCollection(events);
             }, () => {
                 this.events = new EventCollection();
             });
@@ -74,6 +74,8 @@ class EventLayer {
         this.repository.insert(event).then(
             created => {
                 this.events.push(created);
+                this.events = this.events.sortByLength();
+                this.splitLongEvent(created, spawning => this.events.push(spawning));
                 this.contentController.refresh();
             },
             () => {}
@@ -86,6 +88,10 @@ class EventLayer {
         this.repository.update(event).then(
             updated => {
                 this.events[this.events.indexOf(original)] = updated;
+                // Poista nykyiset ylimenevät osat...
+                this.clearSpawnings(event);
+                // ...ja laske ne uudelleen
+                this.splitLongEvent(updated, spawning => this.events.unshift(spawning));
                 this.contentController.refresh();
             },
             () => {}
@@ -98,10 +104,26 @@ class EventLayer {
         this.repository.delete(event).then(
             () => {
                 this.events.splice(this.events.indexOf(event), 1);
+                this.clearSpawnings(event);
                 this.contentController.refresh();
             },
             () => {}
         );
+    }
+    /**
+     * @access private
+     * @returns {EventCollection}
+     */
+    makeEventCollection(events) {
+        const collection = new EventCollection(...events.map(event => new Event(event)));
+        const spawnings = []; // seuraavalle viikolle menevät osuudet
+        collection.forEach(event => {
+            this.splitLongEvent(event, spawning => spawnings.push(spawning));
+        });
+        if (spawnings.length) {
+            collection.unshift(...spawnings);
+        }
+        return collection.sortByLength();
     }
     /**
      * @access private
@@ -113,32 +135,23 @@ class EventLayer {
                 event,
                 stackIndex: this.stackIndexes[event.id],
                 cellPadding: this.getCellPadding(),
-                edit: event => this.calendarController.openModal(new ComponentConstruct(
-                    EventModal,
-                    {event: new Event(event), confirm: updated => this.updateEvent(updated, event)}
-                )),
-                delete: data => this.deleteEvent(data)
+                edit: event => {
+                    if (event.isSpawning) event = this.getMasterEvent(event);
+                    this.calendarController.openModal(new ComponentConstruct(
+                        EventModal,
+                        {event: new Event(event), confirm: updated => this.updateEvent(updated, event)}
+                    ));
+                },
+                delete: event => {
+                    if (event.isSpawning) event = this.getMasterEvent(event);
+                    this.deleteEvent(event);
+                }
             }
         );
     }
     /**
-     * Numeerinen arvo (visuaalisesti) limittäisille eventeille. 0 = pinon alin,
-     * 1 = pinon 2. kerros jne..
-     *
      * @access private
-     * @returns {number}
-     */
-    getStackIndex(event, nth) {
-        for (const ev of this.collectOngoingEvents(event.start)) {
-            if (ev.id !== event.id) {
-                return (this.stackIndexes[ev.id] || 0) + 1;
-            }
-        }
-        return nth;
-    }
-    /**
-     * @access private
-     * @returns array
+     * @returns {Array}
      */
     collectEvents(date) {
         if (!this.events.length) {
@@ -152,7 +165,7 @@ class EventLayer {
     }
     /**
      * @access private
-     * @returns array
+     * @returns {Array}
      */
     collectOngoingEvents(compareDate) {
         if (!this.events.length) {
@@ -163,8 +176,68 @@ class EventLayer {
             : this.events.getOngoingMonthEvents(compareDate.getDate(), compareDate.getMonth());
     }
     /**
+     * Numeerinen arvo (visuaalisesti) limittäisille eventeille. 0 = pinon alin,
+     * 1 = pinon 2. kerros jne..
+     *
+     * @access private
+     * @returns {number}
+     */
+    getStackIndex(event, nth) {
+        const ongoing = this.collectOngoingEvents(event.start);
+        if (!ongoing.length) {
+            return nth;
+        }
+        const last = ongoing.filter(e => e.id !== event.id).pop();
+        return this.stackIndexes[last.id] + 1 + nth;
+    }
+    /**
+     * Katkaiseen eventin useaan osaan, jos sen start ja end on eri viikoilla, ja
+     * tarjoilee ne {cb} callbackille. Jos {event} ei tarvitse splittausta,
+     * ei tee mitään.
+     *
+     * @access private
+     */
+    splitLongEvent(event, cb, nthPart = 0) {
+        // Seuraavalle viikolle menevät päiväneljännekset
+        if (nthPart || isMultiRowEvent(event)) {
+            const nextMonday = this.calendarController.dateUtils.getStartOfWeek(event.start);
+            nextMonday.setDate(nextMonday.getDate() + Constants.DAYS_IN_WEEK);
+            // Katkaise sunnuntaihin..
+            event.hasSpawning = true;
+            event.splitEnd = new Date(nextMonday);
+            event.splitEnd.setMilliseconds(event.splitEnd.getMilliseconds() - 2);
+            // ...jatka maanantaina
+            const spawning = new Event(event);
+            spawning.isSpawning = true;
+            spawning.start = new Date(nextMonday);
+            spawning.end = new Date(event.end);
+            spawning.id = spawning.id + '-spawning#' + nthPart;
+            cb(spawning);
+            isMultiRowEvent(spawning) && this.splitLongEvent(spawning, cb, nthPart + 1);
+        }
+    }
+    /**
+     * Poista eventin splitLongEvent-metodissa spawnatut osat.
+     *
+     * @access private
+     */
+    clearSpawnings(event) {
+        this.events = this.events.filter(e =>
+            e.id.toString().indexOf(event.id + '-spawning') < 0
+        );
+    }
+    /**
+     * @access private
+     */
+    getMasterEvent(spawning) {
+        return this.events.findById(parseInt(spawning.id.split('-spawning')[0], 10));
+    }
+    /**
      * Palauttaa renderöidyn sisältösolun style.paddingTop-arvon. Olettaa, että
      * arvo on yksikköä px.
+     *
+     * @access private
+     * @returns {number}
      */
     getCellPadding() {
         if (!this.computedPadding) {
@@ -183,6 +256,12 @@ class EventLayer {
 
 function isValidRepository(obj) {
     return obj && typeof obj.getAll === 'function';
+}
+
+function isMultiRowEvent(event) {
+    const durationInDays = (event.end - event.start) / 1000 / 60 / 60 / 24;
+    // Seuraavalle viikolle menevät päiväneljännekset
+    return ((event.start.getDay() || 7) + durationInDays - Constants.DAYS_IN_WEEK - 1 > 0.25);
 }
 
 export default EventLayer;

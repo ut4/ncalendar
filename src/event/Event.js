@@ -17,15 +17,13 @@ class Event {
      * @param {Date|number|string|undefined} start Date-objektin konstruktoriin sopiva arvo
      */
     setStart(start) {
-        this.start = !(start instanceof Date) ? new Date(start) : start;
+        this.start = new Date(start);
     }
     /**
      * @param {Date|number|string|undefined} end Date-objektin konstruktoriin sopiva arvo
      */
     setEnd(end) {
-        if (end instanceof Date) {
-            this.end = end;
-        } else if (!end) {
+        if (!end) {
             this.end = new Date(this.start);
             this.end.setHours(this.start.getHours() + 1);
         } else {

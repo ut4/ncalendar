@@ -32,8 +32,13 @@
 .cal.month .stack-index-0 { top: 17px; z-index: 1; }
 .cal.month .stack-index-1 { top: 36px; z-index: 2; }
 .cal.month .stack-index-2 { top: 55px; z-index: 3; }
+.cal.month .stack-index-3 { top: 74px; z-index: 4; }
 
 /* -- theme ----------------------------------------------------------------- */
 .event { background-color: rgba(136,152,167,0.8); border-radius: 3px }
+.event.has-split-start { border-top-left-radius: 0; border-bottom-left-radius: 0;
+    border-left: 2px solid transparent; margin-left: -2px }
+.event.has-split-end { border-top-right-radius: 0; border-bottom-right-radius: 0;
+    border-right: 2px solid transparent; }
     .event button { padding: 6px 5px 7px; border: none; background: rgba(0,0,0,0.2);
         border-radius: 2px; color: #fff }
