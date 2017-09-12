@@ -19,8 +19,8 @@ const renderingTestUtils = {
     /**
      * 1.5 -> calc(150% + 7.5px)
      */
-    getExpectedEventStyle(expectedSizePercent) {
-        const paddingAndBorder = (expectedSizePercent - 100) * 0.05;
+    getExpectedEventStyle(expectedSizePercent, isSplit) {
+        const paddingAndBorder = (expectedSizePercent - 100) * 0.05 + (isSplit ? 2 : 0);
         return `calc(${expectedSizePercent}% + ${paddingAndBorder}px)`;
     },
     getAllStackIndexes(renderedEvents) {

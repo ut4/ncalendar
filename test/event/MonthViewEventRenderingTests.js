@@ -115,25 +115,25 @@ QUnit.module('event/MonthViewEventRendering', function (hooks) {
         contentLoadCallSpy.firstCall.returnValue.then(() => {
             const renderedEvents = renderingTestUtils.getRenderedEvents(rendered);
             assert.equal(renderedEvents.length, 7, 'Pitäisi katkaista eventit osiin (2 + 2 + 3 = 7)');
-            assert.equal(renderedEvents[0].style.width, renderingTestUtils.getExpectedEventStyle(200),// La-Su
+            assert.equal(renderedEvents[0].style.width, renderingTestUtils.getExpectedEventStyle(200, true),// La-Su
                 '1. eventin 1. osa pitäisi olla 2 solua pitkä'
             );
             assert.equal(renderedEvents[1].style.width, '', // Ma
                 '1. eventin 2. osa pitäisi olla 1 solua pitkä'
             );
-            assert.equal(renderedEvents[2].style.width, renderingTestUtils.getExpectedEventStyle(400),// To-Su
+            assert.equal(renderedEvents[2].style.width, renderingTestUtils.getExpectedEventStyle(400, true),// To-Su
                 '2. eventin 1. osa pitäisi olla 4 solua pitkä'
             );
-            assert.equal(renderedEvents[3].style.width, renderingTestUtils.getExpectedEventStyle(225),// Ma-Ke
+            assert.equal(renderedEvents[3].style.width, renderingTestUtils.getExpectedEventStyle(225, true),// Ma-Ke
                 '2. eventin 2. osa pitäisi olla 2.25 solua pitkä'
             );
-            assert.equal(renderedEvents[4].style.width, renderingTestUtils.getExpectedEventStyle(500),// Ke-Su
+            assert.equal(renderedEvents[4].style.width, renderingTestUtils.getExpectedEventStyle(500, true),// Ke-Su
                 '3. eventin 1. osa pitäisi olla 5 solua pitkä'
             );
-            assert.equal(renderedEvents[5].style.width, renderingTestUtils.getExpectedEventStyle(700),// Ke-Su
+            assert.equal(renderedEvents[5].style.width, renderingTestUtils.getExpectedEventStyle(700, true),// Ke-Su
                 '3. eventin 2. osa pitäisi olla koko rivin pituinen'
             );
-            assert.equal(renderedEvents[6].style.width, renderingTestUtils.getExpectedEventStyle(150),// Ma-Ti
+            assert.equal(renderedEvents[6].style.width, renderingTestUtils.getExpectedEventStyle(150, true),// Ma-Ti
                 '3. eventin 3. osa pitäisi olla 1.5 solua pitkä'
             );
             assert.equal(renderedEvents[4].className.match(/stack-index-[0-9]/)[0], 'stack-index-1',

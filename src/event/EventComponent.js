@@ -41,30 +41,40 @@ class EventComponent extends React.Component {
      */
     getClassNames() {
         const startMinutes = this.props.event.start.getMinutes();
-        return 'event stack-index-' + this.props.stackIndex + (
-            startMinutes > 0 ? ' start-minutes-' + toNearest15Min(startMinutes) : ''
-        );
+        return 'event stack-index-' + this.props.stackIndex +
+            (startMinutes > 0 ? ' start-minutes-' + toNearest15Min(startMinutes) : '') +
+            this.getSplitClasses();
+    }
+    /**
+     * @access protected
+     * @returns {string}
+     */
+    getSplitClasses() {
+        return (this.props.event.hasSpawning ? ' has-split-end' : '') +
+            (this.props.event.isSpawning ? ' has-split-start' : '');
     }
     /**
      * @access protected
      * @returns {string}
      */
     getStyles() {
-        const durationInSeconds = (this.props.event.end - this.props.event.start) / 1000;
+        const e = this.props.event;
+        const durationInSeconds = ((e.splitEnd || e.end) - e.start) / 1000;
         if (durationInSeconds === 3600) {
             return null;
         }
         const durationInHours = toNearestQuarter(durationInSeconds / 60 / 60);
-        return `height: calc(${durationInHours * 100}% + ${this.getPaddingAndBorderDiff(durationInHours)}px)`;
+        return `height: calc(${durationInHours * 100}% + ${this.getLengthCorrection(durationInHours)}px)`;
     }
     /**
      * @access protected
      * @param {number} multiplier 1, 1.5, 2, 2.75 ...
-     * @returns {number}
+     * @returns {number} px
      */
-    getPaddingAndBorderDiff(multiplier) {
+    getLengthCorrection(multiplier) {
         // 1 === border
-        return (this.props.cellPadding * 2 + 1) * (multiplier - 1);
+        return (this.props.cellPadding * 2 + 1) * (multiplier - 1) +
+                (this.props.event.isSpawning || this.props.event.hasSpawning ? this.props.cellPadding : 0);
     }
 }
 
@@ -74,23 +84,19 @@ class MonthEventComponent extends EventComponent {
      * @returns {string}
      */
     getClassNames() {
-        return (
-            'event stack-index-' + this.props.stackIndex +
-            (this.props.event.hasSpawning ? ' has-split-end' : '') +
-            (this.props.event.isSpawning ? ' has-split-start' : '')
-        );
+        return 'event stack-index-' + this.props.stackIndex + this.getSplitClasses();
     }
     /**
      * @access protected
      * @returns {string}
      */
     getStyles() {
-        const e = this.props.event;
-        const durationInDays = toNearestQuarter(((e.splitEnd || e.end) - e.start) / 1000 / 60 / 60 / 24);
-        if (durationInDays === 1 && e.start.getMonth() === (e.splitEnd || e.end).getMonth()) {
+        const end = this.props.event.splitEnd || this.props.event.end;
+        const durationInDays = toNearestQuarter((end - this.props.event.start) / 1000 / 60 / 60 / 24);
+        if (durationInDays === 1 && this.props.event.start.getMonth() === end.getMonth()) {
             return null;
         }
-        return `width: calc(${durationInDays * 100}% + ${this.getPaddingAndBorderDiff(durationInDays)}px)`;
+        return `width: calc(${durationInDays * 100}% + ${this.getLengthCorrection(durationInDays)}px)`;
     }
 }
 

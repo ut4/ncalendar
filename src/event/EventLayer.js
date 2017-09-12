@@ -2,9 +2,10 @@ import Event from './Event.js';
 import EventComponent, { MonthEventComponent } from './EventComponent.js';
 import EventModal from './EventModal.js';
 import EventCollection from './EventCollection.js';
+import { newSplitter } from './EventSplitters.js';
 import RepositoryFactory from './RepositoryFactory.js';
 import ComponentConstruct from '../ComponentConstruct.js';
-import {PlaceholderCell} from '../Content.js';
+import { PlaceholderCell } from '../Content.js';
 import Constants from '../Constants.js';
 
 /*
@@ -34,6 +35,7 @@ class EventLayer {
      * @access public
      */
     load() {
+        this.eventSplitter = newSplitter(this.calendarController.currentView, this.calendarController.dateUtils);
         const range = this.calendarController.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {
@@ -75,7 +77,7 @@ class EventLayer {
             created => {
                 this.events.push(created);
                 this.events = this.events.sortByLength();
-                this.splitLongEvent(created, spawning => this.events.push(spawning));
+                this.eventSplitter.splitLongEvent(created, spawning => this.events.push(spawning));
                 this.contentController.refresh();
             },
             () => {}
@@ -91,7 +93,7 @@ class EventLayer {
                 // Poista nykyiset ylimenevät osat...
                 this.clearSpawnings(event);
                 // ...ja laske ne uudelleen
-                this.splitLongEvent(updated, spawning => this.events.unshift(spawning));
+                this.eventSplitter.splitLongEvent(updated, spawning => this.events.unshift(spawning));
                 this.contentController.refresh();
             },
             () => {}
@@ -118,12 +120,12 @@ class EventLayer {
         const collection = new EventCollection(...events.map(event => new Event(event)));
         const spawnings = []; // seuraavalle viikolle menevät osuudet
         collection.forEach(event => {
-            this.splitLongEvent(event, spawning => spawnings.push(spawning));
+            this.eventSplitter.splitLongEvent(event, spawning => spawnings.push(spawning));
         });
         if (spawnings.length) {
             collection.unshift(...spawnings);
         }
-        return collection.sortByLength();
+        return this.eventSplitter.sort(collection);
     }
     /**
      * @access private
@@ -191,33 +193,7 @@ class EventLayer {
         return this.stackIndexes[last.id] + 1 + nth;
     }
     /**
-     * Katkaiseen eventin useaan osaan, jos sen start ja end on eri viikoilla, ja
-     * tarjoilee ne {cb} callbackille. Jos {event} ei tarvitse splittausta,
-     * ei tee mitään.
-     *
-     * @access private
-     */
-    splitLongEvent(event, cb, nthPart = 0) {
-        // Seuraavalle viikolle menevät päiväneljännekset
-        if (nthPart || isMultiRowEvent(event)) {
-            const nextMonday = this.calendarController.dateUtils.getStartOfWeek(event.start);
-            nextMonday.setDate(nextMonday.getDate() + Constants.DAYS_IN_WEEK);
-            // Katkaise sunnuntaihin..
-            event.hasSpawning = true;
-            event.splitEnd = new Date(nextMonday);
-            event.splitEnd.setMilliseconds(event.splitEnd.getMilliseconds() - 2);
-            // ...jatka maanantaina
-            const spawning = new Event(event);
-            spawning.isSpawning = true;
-            spawning.start = new Date(nextMonday);
-            spawning.end = new Date(event.end);
-            spawning.id = spawning.id + '-spawning#' + nthPart;
-            cb(spawning);
-            isMultiRowEvent(spawning) && this.splitLongEvent(spawning, cb, nthPart + 1);
-        }
-    }
-    /**
-     * Poista eventin splitLongEvent-metodissa spawnatut osat.
+     * Poista eventin splitter.splitLongEvent-metodissa spawnatut osat.
      *
      * @access private
      */
@@ -256,12 +232,6 @@ class EventLayer {
 
 function isValidRepository(obj) {
     return obj && typeof obj.getAll === 'function';
-}
-
-function isMultiRowEvent(event) {
-    const durationInDays = (event.end - event.start) / 1000 / 60 / 60 / 24;
-    // Seuraavalle viikolle menevät päiväneljännekset
-    return ((event.start.getDay() || 7) + durationInDays - Constants.DAYS_IN_WEEK - 1 > 0.25);
 }
 
 export default EventLayer;
