@@ -21,7 +21,7 @@ class InMemoryEventRepository {
      */
     getAll(from, to) {
         return Promise.resolve(this.events.filter(event =>
-            event.start >= from && event.start <= to
+            event.end > from && event.start < to
         ));
     }
     /**

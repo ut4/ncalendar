@@ -64,7 +64,7 @@ class EventComponent extends React.Component {
             return null;
         }
         const durationInHours = toNearestQuarter(durationInSeconds / 60 / 60);
-        return `height: calc(${durationInHours * 100}% + ${this.getLengthCorrection(durationInHours)}px)`;
+        return {height: `calc(${durationInHours * 100}% + ${this.getLengthCorrection(durationInHours)}px)`};
     }
     /**
      * @access protected
@@ -96,7 +96,7 @@ class MonthEventComponent extends EventComponent {
         if (durationInDays === 1 && this.props.event.start.getMonth() === end.getMonth()) {
             return null;
         }
-        return `width: calc(${durationInDays * 100}% + ${this.getLengthCorrection(durationInDays)}px)`;
+        return {width: `calc(${durationInDays * 100}% + ${this.getLengthCorrection(durationInDays)}px)`};
     }
 }
 

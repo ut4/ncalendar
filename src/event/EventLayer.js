@@ -35,7 +35,11 @@ class EventLayer {
      * @access public
      */
     load() {
-        this.eventSplitter = newSplitter(this.calendarController.currentView, this.calendarController.dateUtils);
+        this.eventSplitter = newSplitter(
+            this.calendarController.currentView,
+            this.calendarController.dateUtils,
+            this.calendarController.dateCursor
+        );
         const range = this.calendarController.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {

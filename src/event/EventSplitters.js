@@ -2,8 +2,11 @@ import Event from './Event.js';
 import Constants from '../Constants.js';
 
 /*abstract class Splitter {
+    // Tulisiko tämä event jakaa useaan osaan?
     abstract isMultiEvent(event);
-    abstract splitLongEvent(event, cb, nthPart = 0);
+    // Mistä kohtaa tämä event tulisi katkaista?
+    abstract getSplitPosition(event);
+    // Missä järjestyksessä nämä eventit tulisi renderöidä?
     abstract sort(events);
 }*/
 
@@ -23,39 +26,21 @@ class MonthEventSplitter {
     }
     /**
      * @access public
+     * @param {Event} event
+     * @returns {Date} Eventistä seuraavan viikon maanantai klo 00:00:01
+     */
+    getSplitPosition(event) {
+        const nextMonday = this.dateUtils.getStartOfWeek(event.start);
+        nextMonday.setDate(nextMonday.getDate() + Constants.DAYS_IN_WEEK);
+        return nextMonday;
+    }
+    /**
+     * @access public
      * @param {EventCollection} events
      * @returns {EventCollection}
      */
     sort(events) {
         return events.sortByLength();
-    }
-    /**
-     * Katkaiseen eventin useaan osaan, jos sen start ja end on eri viikoilla, ja
-     * tarjoilee ne {cb} callbackille. Jos {event} ei tarvitse splittausta,
-     * ei tee mitään.
-     *
-     * @access public
-     * @param {Event} event
-     * @param {Function} cb Funktio jolle tarjoillaan splitatut osat
-     */
-    splitLongEvent(event, cb, nthPart = 0) {
-        // Seuraavalle viikolle menevät päiväneljännekset
-        if (nthPart || this.isMultiEvent(event)) {
-            const nextMonday = this.dateUtils.getStartOfWeek(event.start);
-            nextMonday.setDate(nextMonday.getDate() + Constants.DAYS_IN_WEEK);
-            // Katkaise sunnuntaihin..
-            event.hasSpawning = true;
-            event.splitEnd = new Date(nextMonday);
-            event.splitEnd.setMilliseconds(event.splitEnd.getMilliseconds() - 2);
-            // ...jatka maanantaina
-            const spawning = new Event(event);
-            spawning.isSpawning = true;
-            spawning.start = new Date(nextMonday);
-            spawning.end = new Date(event.end);
-            spawning.id = spawning.id + '-spawning#' + nthPart;
-            cb(spawning);
-            this.isMultiEvent(spawning) && this.splitLongEvent(spawning, cb, nthPart + 1);
-        }
     }
 }
 
@@ -75,39 +60,21 @@ class WeekEventSplitter {
     }
     /**
      * @access public
+     * @param {Event} event
+     * @returns {Date} Eventistä seuraava päivä klo 00:00:01
+     */
+    getSplitPosition(event) {
+        const nextDay = this.dateUtils.getStartOfDay(event.start);
+        nextDay.setDate(nextDay.getDate() + 1);
+        return nextDay;
+    }
+    /**
+     * @access public
      * @param {EventCollection} events
      * @returns {EventCollection}
      */
     sort(events) {
         return events.sort((a, b) => a.start > b.start ? 1 : -1);
-    }
-    /**
-     * Katkaiseen eventin useaan osaan, jos sen start ja end on eri päivillä, ja
-     * tarjoilee ne {cb} callbackille. Jos {event} ei tarvitse splittausta,
-     * ei tee mitään.
-     *
-     * @access public
-     * @param {Event} event
-     * @param {Function} cb Funktio jolle tarjoillaan splitatut osat
-     */
-    splitLongEvent(event, cb, nthPart = 0) {
-        // Seuraavalle viikolle menevät päiväneljännekset
-        if (nthPart || this.isMultiEvent(event)) {
-            const nextDay = this.dateUtils.getStartOfDay(event.start);
-            nextDay.setDate(nextDay.getDate() + 1);
-            // Katkaise 1ms ennen keskiyötä..
-            event.hasSpawning = true;
-            event.splitEnd = new Date(nextDay);
-            event.splitEnd.setMilliseconds(event.splitEnd.getMilliseconds() - 2);
-            // ...jatka 1ms keskiyön jälkeen
-            const spawning = new Event(event);
-            spawning.isSpawning = true;
-            spawning.start = new Date(nextDay);
-            spawning.end = new Date(event.end);
-            spawning.id = spawning.id + '-spawning#' + nthPart;
-            cb(spawning);
-            this.isMultiEvent(spawning) && this.splitLongEvent(spawning, cb, nthPart + 1);
-        }
     }
 }
 
@@ -117,18 +84,64 @@ class DayEventSplitter extends WeekEventSplitter {
     }
 }
 
+class SplitterDecorator {
+    constructor(splitter, dateCursor) {
+        this.splitter = splitter;
+        this.dateCursor = dateCursor;
+    }
+    /**
+     * @access public
+     * @param {EventCollection} events
+     * @returns {EventCollection}
+     */
+    sort(events) {
+        return this.splitter.sort(events);
+    }
+    /**
+     * Katkaiseen eventin useaan osaan, jos sen start ja end on eri päivillä/viikoilla,
+     * ja tarjoilee ne {cb} callbackille. Jos {event} ei tarvitse splittausta,
+     * ei tee mitään.
+     *
+     * @access public
+     * @param {Event} event
+     * @param {Function} cb Funktio jolle tarjoillaan splitatut osat
+     */
+    splitLongEvent(event, cb, nthPart = 0) {
+        // Seuraavalle viikolle menevät päiväneljännekset
+        if (nthPart || this.splitter.isMultiEvent(event)) {
+            const spawningStart = this.splitter.getSplitPosition(event);
+            // Katkaise event, keskiyöhön/sunnuntaihin..
+            event.hasSpawning = true;
+            event.splitEnd = new Date(spawningStart);
+            event.splitEnd.setMilliseconds(event.splitEnd.getMilliseconds() - 2);
+            // Jos seuraava osa menee rangen ulkopuolelle, vihellä peli poikki
+            if (event.splitEnd.toDateString() === this.dateCursor.range.end.toDateString()) {
+                return;
+            }
+            // ...jatka seuraavana päivänä/maanantaina
+            const spawning = new Event(event);
+            spawning.isSpawning = true;
+            spawning.start = new Date(spawningStart);
+            spawning.end = new Date(event.end);
+            spawning.id = spawning.id + '-spawning#' + nthPart;
+            cb(spawning);
+            this.splitter.isMultiEvent(spawning) && this.splitLongEvent(spawning, cb, nthPart + 1);
+        }
+    }
+}
+
 /**
  * @param {string} viewName
  * @param {DateUtils} dateUtils
  * @returns {MonthEventSplitter|WeekEventSplitter}
  */
-function newSplitter(viewName, dateUtils) {
+function newSplitter(viewName, dateUtils, dateCursor) {
     const splitterMap = {
         [Constants.VIEW_MONTH]: MonthEventSplitter,
         [Constants.VIEW_WEEK]: WeekEventSplitter,
         [Constants.VIEW_DAY]: DayEventSplitter
     };
-    return new splitterMap[viewName](dateUtils);
+    return new SplitterDecorator(new splitterMap[viewName](dateUtils), dateCursor);
 }
 
 export { newSplitter };

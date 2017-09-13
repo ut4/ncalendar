@@ -26,9 +26,11 @@
 .cal .start-minutes-15 { top: calc(25% + 2px); }
 .cal .start-minutes-30 { top: calc(50% + 2px); }
 .cal .start-minutes-45 { top: calc(75% + 2px); }
-.cal.week .event.has-split-start { border-top-left-radius: 0; border-top-right-radius: 0;
+.cal.week .event.has-split-start,
+.cal.day .event.has-split-start { border-top-left-radius: 0; border-top-right-radius: 0;
     margin-top: -2px; border-top: none; padding-top: 1px; }
-.cal.week .event.has-split-end { border-bottom-right-radius: 0; border-bottom-left-radius: 0;
+.cal.week .event.has-split-end,
+.cal.day .event.has-split-end { border-bottom-right-radius: 0; border-bottom-left-radius: 0;
     margin-bottom: -2px; border-bottom: none; }
 
 /* -- layout month ---------------------------------------------------------- */

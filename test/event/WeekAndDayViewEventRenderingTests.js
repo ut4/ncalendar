@@ -1,7 +1,9 @@
 import Content from '../../src/Content.js';
 import renderingTestUtils from './renderingTestUtils.js';
+import {domUtils} from '../resources/Utils.js';
 
 const d = new Date(2017, 7, 7);
+const rtu = ReactTestUtils;
 
 QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
     let contentLoadCallSpy;
@@ -74,6 +76,43 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
     });
     QUnit.test('Päivänäkymä asettaa >0 stackIndeksit limittäin meneville eventeille', assert => {
         testStacking('day', assert);
+    });
+    QUnit.test('Päivänäkymä katkaisee, ja siirtää seuraavalle päivälle menevät osuudet', assert => {
+        const rendered = renderingTestUtils.renderCalendarLayout('day', [
+            {
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 22, 0, 0, 0), // klo 22
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 1, 0, 0, 0), // Seuraava päivä klo 01
+                id: 1
+            }, {
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 0, 0, 0), // klo 23
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 3, 30, 0, 0), // Seuraava päivä klo 03:30
+                id: 2
+            }
+        ], d);
+        const done = assert.async();
+        contentLoadCallSpy.firstCall.returnValue.then(() => {
+            const renderedEvents = renderingTestUtils.getRenderedEvents(rendered);
+            assert.equal(renderedEvents[0].style.height, renderingTestUtils.getExpectedEventStyle(200, true),// 22-24
+                '1. eventin 1. osa pitäisi olla 2 solua pitkä'
+            );
+            assert.equal(renderedEvents[1].style.height, renderingTestUtils.getExpectedEventStyle(100, true), // 23-24
+                '2. eventin 1. osa pitäisi olla 1 solua pitkä'
+            );
+            // Klikkaa "seuraava päivä"-painiketta
+           rtu.Simulate.click(domUtils.findButtonByContent(rendered, '>'));
+           return contentLoadCallSpy.secondCall.returnValue;
+        }).then(() => {
+           // Löytyykö splitatut osat seuraavalta päivältä?
+            const renderedEvents2 = renderingTestUtils.getRenderedEvents(rendered);
+            assert.equal(renderedEvents2.length, 2, 'Katkaistut osat pitäisi löytyä seuraavalta päivältä');
+            assert.equal(renderedEvents2[0].style.height, "",// 00-01
+                '1. eventin 2. osa pitäisi olla 1 solua pitkä'
+            );
+            assert.equal(renderedEvents2[1].style.height, renderingTestUtils.getExpectedEventStyle(350, true), // 00-03:30
+                '2. eventin 2. osa pitäisi olla 3.5 solua pitkä'
+            );
+            done();
+        });
     });
     function testRendering(viewName, assert) {
         const rendered = renderingTestUtils.renderCalendarLayout(viewName, [
