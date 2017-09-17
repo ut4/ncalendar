@@ -87,7 +87,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             });
         });
     });
-    QUnit.test('renderöidyn tapahtuman edit-nappia klikkaamalla voi muokata tapahtumaa', assert => {
+    QUnit.test('renderöityä tapahtumaa klikkaamalla voi muokata tapahtumaa', assert => {
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
             const hourRows = getRenderedRows(this.rendered);
@@ -97,8 +97,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             const renderedEventParenBefore = renderedEvents[0].parentNode;
             const repositoryUpdateSpy = sinon.spy(repository, 'update');
             // Triggeröi klikkaus
-            const eventEditButton = renderedEvents[0].querySelector('button[title="Muokkaa"]');
-            rtu.Simulate.click(eventEditButton);
+            rtu.Simulate.click(renderedEvents[0]);
             const inputs = getRenderedInputs(this.rendered);
             assert.equal(inputs.length, 3, 'Pitäisi avata modal');
             // Simuloi lomakkeen submit
@@ -137,16 +136,18 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
             });
         });
     });
-    QUnit.test('renderöidyn tapahtuman delete-nappia klikkaamalla voi poistaa tapahtuman', assert => {
+    QUnit.test('Tapahtuma-modalin delete-linkkiä klikkaamalla voi poistaa tapahtuman', assert => {
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
             const renderedEvents = getRenderedEvents(this.rendered);
             const renderedEventCountBefore = renderedEvents.length;
             const expectedDeleteData = new Event(repository.events[0]);
             const repositoryDeleteSpy = sinon.spy(repository, 'delete');
+            // Avaa modal
+            rtu.Simulate.click(renderedEvents[0]);
             // Triggeröi klikkaus
-            const deleteEditButton = renderedEvents[0].querySelector('button[title="Poista"]');
-            rtu.Simulate.click(deleteEditButton);
+            const deleteLink = rtu.findRenderedDOMComponentWithTag(this.rendered, 'a');
+            rtu.Simulate.click(deleteLink);
             // Assertoi että poistaa tapahtuman ja uudelleenrenderöi kalenterin
             assert.ok(repositoryDeleteSpy.calledOnce, 'Pitäisi kutsua repository.delete');
             assert.deepEqual(

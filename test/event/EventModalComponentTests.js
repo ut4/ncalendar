@@ -20,14 +20,14 @@ QUnit.module('event/EventModalComponent', function() {
             'Pitäisi asettaa props.event.end:n arvo end-inputiin'
         );
     });
-    QUnit.test('Submit passaa confirm-callbackille lomakkeen datan', assert => {
+    QUnit.test('Submit passaa onConfirm-callbackille lomakkeen datan', assert => {
         const now = new Date();
         const event = new Event({start: now});
         const confirmCallbackSpy = sinon.spy();
         const modalCloseSpy = sinon.spy();
         // Renderöi modal
         const rendered = rtu.renderIntoDocument($el(EventModal, {
-            confirm: confirmCallbackSpy,
+            onConfirm: confirmCallbackSpy,
             closeModal: modalCloseSpy,
             event
         }));

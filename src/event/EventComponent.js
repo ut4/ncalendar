@@ -1,39 +1,36 @@
-const Action = Object.freeze({
-    EDIT: 'edit',
-    DELETE: 'delete'
-});
-
 class EventComponent extends React.Component {
     /**
      * @param {Object} props {
      *     event: {Event},
      *     stackIndex: {number},
      *     cellPadding: {number},
-     *     edit: {Function=},
-     *     delete: {Function=}
+     *     onEdit: {Function=}
      * }
      */
     constructor(props) {
         super(props);
     }
     /**
-     * @access private
      */
-    receiveClick(action, e) {
+    render() {
+        return $el('div',
+            {
+                onClick: e => this.edit(e),
+                className: this.getClassNames(),
+                style: this.getStyles()
+            },
+            $el('span', null, this.props.event.title)
+        );
+    }
+    /**
+     * @access protected
+     */
+    edit(e) {
         e.stopPropagation();
         if (e.which && e.which !== 1) {
             return;
         }
-        this.props[action](this.props.event, e);
-    }
-    /**
-     */
-    render() {
-        return $el('div', {className: this.getClassNames(), style: this.getStyles()},
-            $el('button', {title: 'Poista', onClick: e => this.receiveClick(Action.DELETE, e)}, 'x'),
-            $el('button', {title: 'Muokkaa', onClick: e => this.receiveClick(Action.EDIT, e)}, 'e'),
-            $el('span', null, this.props.event.title)
-        );
+        this.props.onEdit();
     }
     /**
      * @access protected

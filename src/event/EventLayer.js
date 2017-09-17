@@ -70,7 +70,7 @@ class EventLayer {
         //
         cell.clickHandlers.push(() => this.calendarController.openModal(new ComponentConstruct(
             EventModal,
-            {event: new Event({start: new Date(cell.date)}), confirm: event => this.createEvent(event)}
+            {event: new Event({start: new Date(cell.date)}), onConfirm: event => this.createEvent(event)}
         )));
     }
     /**
@@ -141,16 +141,16 @@ class EventLayer {
                 event,
                 stackIndex: this.stackIndexes[event.id],
                 cellPadding: this.getCellPadding(),
-                edit: event => {
+                onEdit: () => {
                     if (event.isSpawning) event = this.getMasterEvent(event);
                     this.calendarController.openModal(new ComponentConstruct(
                         EventModal,
-                        {event: new Event(event), confirm: updated => this.updateEvent(updated, event)}
+                        {
+                            event: new Event(event),
+                            onDelete: () => this.deleteEvent(event),
+                            onConfirm: updated => this.updateEvent(updated, event)
+                        }
                     ));
-                },
-                delete: event => {
-                    if (event.isSpawning) event = this.getMasterEvent(event);
-                    this.deleteEvent(event);
                 }
             }
         );

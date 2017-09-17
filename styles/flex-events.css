@@ -34,14 +34,32 @@
     margin-bottom: -2px; border-bottom: none; }
 
 /* -- layout month ---------------------------------------------------------- */
-.cal.month .event { min-height: 17px; position: absolute; width: 100%; }
-.cal.month .stack-index-0 { top: 17px; z-index: 1; }
-.cal.month .stack-index-1 { top: 36px; z-index: 2; }
-.cal.month .stack-index-2 { top: 55px; z-index: 3; }
-.cal.month .stack-index-3 { top: 74px; z-index: 4; }
-.cal.month .event.has-split-start { border-top-left-radius: 0; border-bottom-left-radius: 0;
-    margin-left: -2px }
-.cal.month .event.has-split-end { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.cal.month .event,
+.cal.month-compact .event,
+.cal.week-compact .event { min-height: 17px; position: absolute; width: 100%; white-space: nowrap; }
+.cal.month .event span,
+.cal.month-compact .event span,
+.cal.week-compact .event span { position: relative; top: -1px; left: 2px; }
+.cal.month .stack-index-0,
+.cal.month-compact .stack-index-0,
+.cal.week-compact .stack-index-0 { top: 17px; z-index: 1; }
+.cal.month .stack-index-1,
+.cal.month-compact .stack-index-1,
+.cal.week-compact .stack-index-1 { top: 36px; z-index: 2; }
+.cal.month .stack-index-2,
+.cal.month-compact .stack-index-2,
+.cal.week-compact .stack-index-2 { top: 55px; z-index: 3; }
+.cal.month .stack-index-3,
+.cal.month-compact .stack-index-3,
+.cal.week-compact .stack-index-3 { top: 74px; z-index: 4; }
+.cal.month .event.has-split-start,
+.cal.month-compact .event.has-split-start,
+.cal.week-compact .event.has-split-start { border-top-left-radius: 0;
+    border-bottom-left-radius: 0; margin-left: -2px }
+.cal.month .event.has-split-end,
+.cal.month-compact .event.has-split-end,
+.cal.week-compact .event.has-split-end { border-top-right-radius: 0;
+    border-bottom-right-radius: 0; }
 
 /* -- theme ----------------------------------------------------------------- */
 .event { background-color: rgba(136,152,167,0.8); border-radius: 3px }
