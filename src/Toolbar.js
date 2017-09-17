@@ -66,5 +66,21 @@ class PartGenerators {
 }
 const validPartNames = Object.getOwnPropertyNames(PartGenerators.prototype).filter(prop => prop !== 'constructor');
 
+/**
+ * Manageri, jolla esim. sisältökerros voi lisätä omia toolbarPart:eja, joihin
+ * taas voidaan viitata rekisteröinnin jälkeen kalenterin toolbarParts-asetuksessa.
+ */
+const partGeneratorManager = {
+    /**
+     * @access public
+     * @param {string} name
+     * @param {Function} generatorFn
+     */
+    add(name, generatorFn) {
+        PartGenerators.prototype[name] = generatorFn;
+        validPartNames.push(name);
+    }
+};
+
 export default Toolbar;
-export { validPartNames };
+export { partGeneratorManager, validPartNames };

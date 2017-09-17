@@ -16,5 +16,6 @@ import './test/DateCursorStateTests.js';
 import './test/ModalComponentTests.js';
 import './test/settingsFactoryTests.js';
 import './test/ToolbarComponentTests.js';
+import './test/ToolbarTests.js';
 
 QUnit.start();
