@@ -238,6 +238,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 - calendarController.dateCursor
 - calendarController.settings
 - calendarController.isCompactViewEnabled
+- calendarController.dateUtils
 
 ## ContentController-API
 
