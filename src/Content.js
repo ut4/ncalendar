@@ -32,27 +32,18 @@ class Content extends React.Component {
         this.hasAsyncContent = selectedContentLayers.length > 0;
         this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
+            this.controller = this.newController();
             const contentLayerFactory = new ContentLayerFactory();
-            this.contentLayers = selectedContentLayers.map(layerConfig =>
-                contentLayerFactory.make(layerConfig, [
-                    this.newController(),
+            this.contentLayers = selectedContentLayers.map(layerConfig => {
+                const instance = contentLayerFactory.make(layerConfig, [
+                    this.controller,
                     this.props.calendarController
-                ])
-            );
+                ]);
+                instance.configuredName = layerConfig.name || layerConfig;
+                return instance;
+            });
             this.loadAsyncContent(LoadType.INITIAL);
         }
-    }
-    /**
-     * Poistaa props.gridistä sisältökerroksien modifikaatiot (children &
-     * clickHandlers).
-     */
-    resetGrid() {
-        return this.props.grid.map(rows => rows.map(cell => {
-            if (cell && !(cell instanceof ImmutableCell)) {
-                cell.children = [];
-                cell.clickHandlers = [];
-            }
-        }));
     }
     /**
      * Triggeröi sisältökerroksien päivityksen, jos niitä on.
@@ -72,6 +63,39 @@ class Content extends React.Component {
      */
     shouldComponentUpdate(_, state) {
         return state.currentlyHasAsyncContent !== false;
+    }
+    /**
+     * Palauttaa sisältö-API:n, jonka kautta pääsee käsiksi mm. sisältökerroksien
+     * omiin apeihin. Jos valittuja sisältökerroksia ei ole, palauttaa undefined.
+     */
+    getController() {
+        return this.controller;
+    }
+    /**
+     * Palauttaa instantoidun sisältökerroksen {name}, tai undefined, jos sellaista
+     * ei löytynyt.
+     *
+     * @param {string} name
+     * @returns {Object} instanssi sisältökerroksesta
+     */
+    getLayer(name) {
+        return this.contentLayers.find(layerInstance =>
+            layerInstance.configuredName === name
+        );
+    }
+    /**
+     * Poistaa props.gridistä sisältökerroksien modifikaatiot (children &
+     * clickHandlers).
+     *
+     * @access private
+     */
+    resetGrid() {
+        return this.props.grid.map(rows => rows.map(cell => {
+            if (cell && !(cell instanceof ImmutableCell)) {
+                cell.children = [];
+                cell.clickHandlers = [];
+            }
+        }));
     }
     /**
      * Lataa & ajaa sisältökerrokset, esim. eventLayerin tapahtumat.
@@ -153,6 +177,8 @@ class Content extends React.Component {
     }
     /**
      * Public API-versio tästä luokasta sisältökerroksia varten.
+     *
+     * @access private
      */
     newController() {
         return {
@@ -166,6 +192,7 @@ class Content extends React.Component {
             reRender: () => {
                 this.forceUpdate();
             },
+            getLayer: name => this.getLayer(name),
             getRenderedGrid: () => this.mainEl
         };
     }

@@ -41,6 +41,16 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             isProbablyCalendarController(expectedTestLayer.args[1]),
             '2. sisältökerroksen konstruktoriin passattu argumentti pitäisi olla calendarController-instanssi'
         );
+        assert.deepEqual(
+            expectedTestLayer.getContentController().getLayer('atest'),
+            expectedTestLayer,
+            'contentController.getLayer pitäisi palauttaa instantoitu layer'
+        );
+        assert.deepEqual(
+            expectedTestLayer.getContentController(),
+            getInstantiatedContent(rendered).getController(),
+            'Layerille passattu contentController pitäisi olla sama kuin content.getController'
+        );
         //
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
@@ -212,8 +222,11 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             rendered, 'row'
         )).slice(2);// toolbarin, ja headerin rivit pois
     }
+    function getInstantiatedContent(rendered) {
+        return ReactTestUtils.findRenderedComponentWithType(rendered, Content);
+    }
     function getInstantiatedLayers(rendered) {
-        return ReactTestUtils.findRenderedComponentWithType(rendered, Content).contentLayers || [];
+        return getInstantiatedContent(rendered).contentLayers || [];
     }
     function isProbablyContentController(object) {
         return object instanceof Object && object.hasOwnProperty('refresh');

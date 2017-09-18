@@ -55,7 +55,6 @@ class CalendarLayout extends React.Component {
      * uudelleeninstantioi dateCursorin, ja triggeröi sisältökerroksien
      * uudelleenlatauksen.
      *
-     * @access public
      * @param {string} to 'day'|'week'|'month'
      */
     changeView(to) {
@@ -127,6 +126,7 @@ class CalendarLayout extends React.Component {
                 header.props
             ),
             $el(content.Component, {
+                ref: content => { content && (this.contentController = content.getController()); },
                 grid: content.props.gridGeneratorFn(),
                 currentView: this.state.currentView,
                 calendarController: this.controller
@@ -151,6 +151,9 @@ function newController(component) {
         },
         get isCompactViewEnabled() {
             return component.state.isWindowNarrowerThanBreakPoint;
+        },
+        get contentController() {
+            return component.contentController;
         },
         get dateUtils() {
             return component.dateUtils;
