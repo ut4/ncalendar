@@ -1,86 +1,86 @@
 import CalendarLayout from '../src/CalendarLayout.js';
 import Content, {LoadType, Cell} from '../src/Content.js';
-import ContentLayerFactory from '../src/ContentLayerFactory.js';
+import ExtensionFactory from '../src/ExtensionFactory.js';
 import Constants from '../src/Constants.js';
 import {domUtils} from './resources/Utils.js';
-import TestContentLayer from './resources/TestContentLayer.js';
+import TestExtension from './resources/TestExtension.js';
 
-new ContentLayerFactory().register('atest', TestContentLayer);
+new ExtensionFactory().register('atest', TestExtension);
 
 QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
     hooks.beforeEach(() => {
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.contentApplyCallSpy = sinon.spy(Content.prototype, 'applyAsyncContent');
-        this.contentLayerLoadCallSpy = sinon.spy(TestContentLayer.prototype, 'load');
-        this.clickHandlerSpy = sinon.spy(TestContentLayer, 'testClickHandler');
+        this.extensionLoadCallSpy = sinon.spy(TestExtension.prototype, 'load');
+        this.clickHandlerSpy = sinon.spy(TestExtension, 'testClickHandler');
     });
     hooks.afterEach(() => {
         this.contentLoadCallSpy.restore();
         this.contentApplyCallSpy.restore();
-        this.contentLayerLoadCallSpy.restore();
-        TestContentLayer.testClickHandler.restore();
+        this.extensionLoadCallSpy.restore();
+        TestExtension.testClickHandler.restore();
     });
-    const render = (contentLayers = ['atest']) => {
+    const render = (extensions = ['atest']) => {
         return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {
             defaultView: Constants.VIEW_WEEK,
-            contentLayers: contentLayers
+            extensions: extensions
         }));
     };
-    QUnit.test('Instantioi & lataa & ajaa sisältökerroksen', assert => {
+    QUnit.test('Instantioi & lataa & ajaa laajennoksen', assert => {
         const rendered = render();
-        const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+        const expectedTestExtension = getInstantiatedExtensions(rendered)[0];
         assert.ok(
-            expectedTestLayer instanceof TestContentLayer,
-            'Pitäisi instantioida sisältökerros'
+            expectedTestExtension instanceof TestExtension,
+            'Pitäisi instantioida laajennos'
         );
         assert.ok(
-            isProbablyContentController(expectedTestLayer.args[0]),
-            '1. sisältökerroksen konstruktoriin passattu argumentti pitäisi olla contentController-instanssi'
+            isProbablyContentController(expectedTestExtension.args[0]),
+            '1. laajennoksen konstruktoriin passattu argumentti pitäisi olla contentController-instanssi'
         );
         assert.ok(
-            isProbablyCalendarController(expectedTestLayer.args[1]),
-            '2. sisältökerroksen konstruktoriin passattu argumentti pitäisi olla calendarController-instanssi'
+            isProbablyCalendarController(expectedTestExtension.args[1]),
+            '2. laajennoksen konstruktoriin passattu argumentti pitäisi olla calendarController-instanssi'
         );
         assert.deepEqual(
-            expectedTestLayer.getContentController().getLayer('atest'),
-            expectedTestLayer,
-            'contentController.getLayer pitäisi palauttaa instantoitu layer'
+            expectedTestExtension.getContentController().getExtension('atest'),
+            expectedTestExtension,
+            'contentController.getExtension pitäisi palauttaa instantoitu extension'
         );
         assert.deepEqual(
-            expectedTestLayer.getContentController(),
+            expectedTestExtension.getContentController(),
             getInstantiatedContent(rendered).getController(),
-            'Layerille passattu contentController pitäisi olla sama kuin content.getController'
+            'Extensionille passattu contentController pitäisi olla sama kuin content.getController'
         );
         //
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
             const renderedRows = getRenderedRows(rendered);
-            assert.ok(this.contentLayerLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerros');
-            assert.deepEqual(this.contentLayerLoadCallSpy.firstCall.args, [LoadType.INITIAL],
-                'Pitäisi passata sisältökerroksen loadTypeksi LoadType.INITIAL'
+            assert.ok(this.extensionLoadCallSpy.calledOnce, 'Pitäisi ladata laajennos');
+            assert.deepEqual(this.extensionLoadCallSpy.firstCall.args, [LoadType.INITIAL],
+                'Pitäisi passata laajennoksen loadTypeksi LoadType.INITIAL'
             );
             assert.ok(this.contentApplyCallSpy.calledOnce, 'Pitäisi ajaa ladattu sisältö');
             assert.equal(renderedRows.length, Constants.HOURS_IN_DAY);
             assert.ok(
-                isEveryCellDecoratedWith(rendered, expectedTestLayer.loadCount),
+                isEveryCellDecoratedWith(rendered, expectedTestExtension.loadCount),
                 'Jokainen solu pitäisi olla dekoroitu'
             );
             done();
         });
     });
-    QUnit.test('Lataa myös object-notaatiolla configuroidun sisältökerroksen', assert => {
+    QUnit.test('Lataa myös object-notaatiolla konfiguroidun laajennoksen', assert => {
         const rendered = render([{name: 'atest'}]);// [{name: 'atest'}] eikä ['atest']
-        const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+        const expectedTestExtension = getInstantiatedExtensions(rendered)[0];
         //
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
-            assert.ok(expectedTestLayer instanceof TestContentLayer,
-                'Pitäisi osata ladata myös object-notaatiolla configuroitu layer'
+            assert.ok(expectedTestExtension instanceof TestExtension,
+                'Pitäisi osata ladata myös object-notaatiolla konfiguroitu extension'
             );
             done();
         });
     });
-    QUnit.test('Skippaa renderöinnin, jos layerin .load palautti false', assert => {
+    QUnit.test('Skippaa renderöinnin, jos extensionin .load palautti false', assert => {
         render([{name: 'atest', args: (a, b) => [a, b, false]}]);
         //
         const done = assert.async();
@@ -89,22 +89,22 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             done();
         });
     });
-    QUnit.test('contentController.refresh ajaa sisältökerroksen uudestaan', assert => {
+    QUnit.test('contentController.refresh ajaa laajennoksen uudestaan', assert => {
         const rendered = render();
-        const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+        const expectedTestExtension = getInstantiatedExtensions(rendered)[0];
         //
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
-            const decoratingSpy = sinon.spy(expectedTestLayer, 'decorateCell');
+            const decoratingSpy = sinon.spy(expectedTestExtension, 'decorateCell');
             this.contentLoadCallSpy.reset();
             // Päivitä dekoroitava luku, ja triggeröi contentController.refresh
             const newDecorating = 45;
-            expectedTestLayer.setLoadCount(newDecorating);
-            expectedTestLayer.getContentController().refresh();
+            expectedTestExtension.setLoadCount(newDecorating);
+            expectedTestExtension.getContentController().refresh();
             assert.ok(
                 decoratingSpy.callCount,
                 Constants.DAYS_IN_WEEK * Constants.HOURS_IN_DAY,
-                'Pitäisi ajaa layerin dekorointi uudelleen'
+                'Pitäisi ajaa extensionin dekorointi uudelleen'
             );
             assert.ok(
                 isEveryCellDecoratedWith(rendered, newDecorating),
@@ -119,15 +119,15 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
     });
     QUnit.test('contentController.reRender renderöi sisällön uudestaan', assert => {
         const rendered = render();
-        const expectedTestLayer = getInstantiatedLayers(rendered)[0];
+        const expectedTestExtension = getInstantiatedExtensions(rendered)[0];
         //
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
-            const decoratingSpy = sinon.spy(expectedTestLayer, 'decorateCell');
+            const decoratingSpy = sinon.spy(expectedTestExtension, 'decorateCell');
             // Päivitä ensimmäisen solun sisältö & kutsu reRender
             const updatedFirstCellContent = 'klyu';
-            expectedTestLayer.getFirstCell().content = updatedFirstCellContent;
-            expectedTestLayer.getContentController().reRender();
+            expectedTestExtension.getFirstCell().content = updatedFirstCellContent;
+            expectedTestExtension.getContentController().reRender();
             // Assertoi, että renderöi päivitetyn sisällön
             assert.ok(
                 getRenderedRows(rendered)[0].textContent.indexOf(updatedFirstCellContent) > -1,
@@ -151,7 +151,7 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             ReactTestUtils.Simulate.click(tuesDayCell); // ei pitäisi olla klikattava
             assert.ok(
                 this.clickHandlerSpy.calledOnce,
-                'Pitäisi kutsua testilayerin lisäämää click-handleria'
+                'Pitäisi kutsua testiextensionin lisäämää click-handleria'
             );
             assert.deepEqual(this.clickHandlerSpy.firstCall.args.length, 2);
             assert.ok(
@@ -166,26 +166,26 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             done();
         });
     });
-    QUnit.test('Ei lataa sisältökerroksia jos niitä ei ole valittu', assert => {
+    QUnit.test('Ei lataa laajennoksia jos niitä ei ole valittu', assert => {
         const rendered = render([]);
-        assert.equal(getInstantiatedLayers(rendered).length, 0,
-            'Ei pitäisi instantioida sisältökerroksia'
+        assert.equal(getInstantiatedExtensions(rendered).length, 0,
+            'Ei pitäisi instantioida laajennoksia'
         );
         // Triggöi navigaatiotapahtuma
         ReactTestUtils.Simulate.click(domUtils.findButtonByContent(rendered, '<'));
         //
         assert.ok(
             this.contentLoadCallSpy.notCalled,
-            'Ei pitäisi ladata, tai uudelleenpäivittää sisältökerroksia'
+            'Ei pitäisi ladata, tai uudelleenpäivittää laajennoksia'
         );
     });
-    QUnit.test('Toolbarin next-sivutuspainike triggeröi sisältökerroksen päivityksen', assert => {
+    QUnit.test('Toolbarin next-sivutuspainike triggeröi laajennoksen päivityksen', assert => {
         testButtonClickTriggersDecoratorRefresh.call(this, '>', assert, LoadType.NAVIGATION);
     });
-    QUnit.test('Toolbarin prev-sivutuspainike triggeröi sisältökerroksen päivityksen', assert => {
+    QUnit.test('Toolbarin prev-sivutuspainike triggeröi laajennoksen päivityksen', assert => {
         testButtonClickTriggersDecoratorRefresh.call(this, '<', assert, LoadType.NAVIGATION);
     });
-    QUnit.test('Toolbarin näkymänvaihtopainike triggeröi sisältökerroksen päivityksen', assert => {
+    QUnit.test('Toolbarin näkymänvaihtopainike triggeröi laajennoksen päivityksen', assert => {
         testButtonClickTriggersDecoratorRefresh.call(this, 'Kuukausi', assert, LoadType.VIEW_CHANGE);
     });
     function testButtonClickTriggersDecoratorRefresh(buttonContent, assert, expectedLoadType) {
@@ -195,16 +195,16 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
             contentBefore = domUtils.getElementContent(rendered, '.main');
             this.contentLoadCallSpy.reset(); // pyyhi initial load
-            this.contentLayerLoadCallSpy.reset();
+            this.extensionLoadCallSpy.reset();
             // Triggöi navigaatiotapahtuma
             ReactTestUtils.Simulate.click(domUtils.findButtonByContent(rendered, buttonContent));
             //
-            assert.ok(this.contentLoadCallSpy.calledOnce, 'Pitäisi ladata sisältökerrokset uudelleen');
+            assert.ok(this.contentLoadCallSpy.calledOnce, 'Pitäisi ladata laajennokset uudelleen');
             return this.contentLoadCallSpy.firstCall.returnValue;
         }).then(() => {
-            assert.ok(this.contentLayerLoadCallSpy.calledOnce, 'Pitäisi triggeröidä sisältökerroksen load uudelleen');
-            assert.deepEqual(this.contentLayerLoadCallSpy.firstCall.args, [expectedLoadType],
-                'Pitäisi passata sisältökerroksen LoadType:ksi ' + expectedLoadType
+            assert.ok(this.extensionLoadCallSpy.calledOnce, 'Pitäisi triggeröidä laajennoksen load uudelleen');
+            assert.deepEqual(this.extensionLoadCallSpy.firstCall.args, [expectedLoadType],
+                'Pitäisi passata laajennoksen LoadType:ksi ' + expectedLoadType
             );
             const contentAfter = domUtils.getElementContent(rendered, '.main');
             assert.notEqual(contentAfter, contentBefore);
@@ -225,8 +225,8 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
     function getInstantiatedContent(rendered) {
         return ReactTestUtils.findRenderedComponentWithType(rendered, Content);
     }
-    function getInstantiatedLayers(rendered) {
-        return getInstantiatedContent(rendered).contentLayers || [];
+    function getInstantiatedExtensions(rendered) {
+        return getInstantiatedContent(rendered).extensions || [];
     }
     function isProbablyContentController(object) {
         return object instanceof Object && object.hasOwnProperty('refresh');

@@ -7,7 +7,7 @@ import './test/CalendarLayoutComponentTests(week).js';
 import './test/CalendarLayoutComponentTests(with-decorators).js';
 import './test/ContentClassTests.js';
 import './test/ContentComponentTests.js';
-import './test/ContentLayerFactoryTests.js';
+import './test/ExtensionFactoryTests.js';
 import './test/DateCursors.DateCursorFactoryTests.js';
 import './test/DateCursors.DayViewCursorRangeTests.js';
 import './test/DateCursors.MonthViewCursorRangeTests.js';

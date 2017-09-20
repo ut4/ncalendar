@@ -14,7 +14,7 @@ class CalendarLayout extends React.Component {
      * @param {object} props {
      *     defaultView: {string=},
      *     defaultDate: {Date=},
-     *     contentLayers: {Array=},
+     *     extensions: {Array=},
      *     toolbarParts: {string=},
      *     titleFormatters: {Object=},
      *     layoutChangeBreakPoint: {number=}
@@ -52,7 +52,7 @@ class CalendarLayout extends React.Component {
     }
     /**
      * Vaihtaa kalenterin currentView:iksi {to}, mikäli se ei ole jo valmiiksi,
-     * uudelleeninstantioi dateCursorin, ja triggeröi sisältökerroksien
+     * uudelleeninstantioi dateCursorin, ja triggeröi laajennoksien
      * uudelleenlatauksen.
      *
      * @param {string} to 'day'|'week'|'month'
@@ -126,7 +126,7 @@ class CalendarLayout extends React.Component {
                 header.props
             ),
             $el(content.Component, {
-                ref: content => { content && (this.contentController = content.getController()); },
+                ref: cmp => { this.contentController = cmp.getController(); },
                 grid: content.props.gridGeneratorFn(),
                 currentView: this.state.currentView,
                 calendarController: this.controller

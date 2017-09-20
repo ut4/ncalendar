@@ -6,7 +6,7 @@ QUnit.module('settingsFactory', function() {
         [
             ['defaultView', Constants.VIEW_DAY],
             ['defaultDate', new Date(2015, 3, 16)],
-            ['contentLayers', ['foo']],
+            ['extensions', ['foo']],
             ['toolbarParts', 'title|prev,next'],
             ['titleFormatters', {[Constants.VIEW_DAY]: () => {}}],
             ['layoutChangeBreakPoint', 600],
@@ -21,7 +21,7 @@ QUnit.module('settingsFactory', function() {
         [
             {defaultView: 'bogus'},
             {defaultDate: 'bogus'},
-            {contentLayers: 'shh'},
+            {extensions: 'shh'},
             {toolbarParts: /bogus/},
             {toolbarParts: 'title,bogus'},
             {toolbarParts: 'title,,'},
@@ -41,7 +41,7 @@ QUnit.module('settingsFactory', function() {
         const settings = settingsFactory({foo: 'bar'});
         assert.equal(settings.defaultView, Constants.VIEW_DEFAULT);
         assert.equal(settings.defaultDate.toGMTString(), now.toGMTString());
-        assert.deepEqual(settings.contentLayers, []);
+        assert.deepEqual(settings.extensions, []);
         assert.deepEqual(settings.toolbarParts, 'prev,next,today|title|month,week,day');
         assert.deepEqual(settings.titleFormatters, {});
         assert.deepEqual(settings.layoutChangeBreakPoint, 800);

@@ -1,7 +1,7 @@
 import CalendarLayout from './src/CalendarLayout.js';
-import ContentLayerFactory from './src/ContentLayerFactory.js';
+import ExtensionFactory from './src/ExtensionFactory.js';
 
-const contentLayerFactory = new ContentLayerFactory();
+const extensionFactory = new ExtensionFactory();
 
 /**
  * Kirjaston public API.
@@ -9,7 +9,7 @@ const contentLayerFactory = new ContentLayerFactory();
 export default {
     /**
      * @param {HTMLElement} el DOM-elementti, johon kalenteri renderöidään
-     * @param {Object=} settings Kalenterin configuraatio
+     * @param {Object=} settings Kalenterin konfiguraatio
      * @returns {Object} Kalenteri-instanssin kontrolleri/API
      */
     newCalendar: (el, settings) => {
@@ -17,9 +17,9 @@ export default {
     },
     /**
      * @param {string} name Nimi, jolla rekisteröidään
-     * @param {Object|Function} layer Sisältökerroksen implementaatio @see https://github.com/ut4/ncalendar#extending
+     * @param {Object|Function} extension Laajennoksen implementaatio @see https://github.com/ut4/ncalendar#extending
      */
-    registerContentLayer: (name, layer) => contentLayerFactory.register(name, layer),
+    registerExtension: (name, extension) => extensionFactory.register(name, extension),
     /**
      * @prop {React.Component} Kalenterin juurikomponentti @see https://github.com/ut4/ncalendar#usage-jsx
      */

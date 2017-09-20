@@ -67,8 +67,8 @@ class PartGenerators {
 const validPartNames = Object.getOwnPropertyNames(PartGenerators.prototype).filter(prop => prop !== 'constructor');
 
 /**
- * Manageri, jolla esim. sisältökerros voi lisätä omia toolbarPart:eja, joihin
- * taas voidaan viitata rekisteröinnin jälkeen kalenterin toolbarParts-asetuksessa.
+ * Manageri, jolla esim. laajennos voi lisätä omia toolbarPart:eja, joihin taas
+ * voidaan viitata rekisteröinnin jälkeen kalenterin toolbarParts-asetuksessa.
  */
 const partGeneratorManager = {
     /**

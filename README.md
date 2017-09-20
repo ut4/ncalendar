@@ -75,12 +75,12 @@ const mySettings = {
      */
     defaultDate: new Date(2017, 6, 30),
     /**
-     * Ladattavat sisältökerrokset.
+     * Ladattavat laajennokset.
      *
      * @prop {string|Object[]}
      * @default []
      */
-    contentLayers: [
+    extensions: [
         'event',
         // tai
         {name: 'event'}
@@ -130,7 +130,7 @@ const mySettings = {
 ```javascript
 // -- 1. Implementoi ----
 // -----------------------------------------------------------------------------
-class MyContentLayer {
+class MyExtension {
     /**
      * @param {string} myArgument
      * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
@@ -147,7 +147,7 @@ class MyContentLayer {
      * kalenterin cursorRange päivittyy. Hyvä paikka ladata jotain esim.
      * backendistä..
      *
-     * Jos metodi palauttaa false|promisejokaresolvaafalse, layerin dekorointi ja
+     * Jos metodi palauttaa false|promisejokaresolvaafalse, laajennoksen dekorointi ja
      * renderöinti ohitetaan, muussa tapauksessa paluuarvoa ei huomioida mitenkään.
      *
      * @param {string} loadType 'initial'|'navigation'|'view-change'
@@ -176,8 +176,8 @@ class MyContentLayer {
         }
         if (cell.date.getDay() === 5) {
             cell.content = `Friday, ${this.text}!`;
-            // contentController.refresh = dekoroi & renderöi layerit uudelleen
-            // contentController.reRender = pelkästään renderöi layerit uudelleen
+            // contentController.refresh = dekoroi & renderöi laajennokset uudelleen
+            // contentController.reRender = pelkästään renderöi laajennokset uudelleen
             cell.clickHandlers.push((cell, e) => {
                 if (Math.random() > 0.5) {
                     console.log('Refreshing...');
@@ -195,20 +195,20 @@ class MyContentLayer {
 
 // -- 2. Rekisteröi ----
 // -----------------------------------------------------------------------------
-// (a) - preconfiguroitu
-nullcalendar.registerContentLayer('foo1', (contentCtrl, calendarCtrl) =>
-    new MyContentLayer('yayy', contentCtrl, calendarCtrl)
+// (a) - prekonfiguroitu
+nullcalendar.registerExtension('foo1', (contentCtrl, calendarCtrl) =>
+    new MyExtension('yayy', contentCtrl, calendarCtrl)
 );
-// (b) - configuroimaton
-nullcalendar.registerContentLayer('foo2', MyContentLayer);
+// (b) - konfiguroimaton
+nullcalendar.registerExtension('foo2', MyExtension);
 
 
 // -- 3. Ota käyttöön ----
 // -----------------------------------------------------------------------------
-// (a) - preconfiguroitu
-nullcalendar.newCalendar(myEl, {contentLayers: ['foo1']});
-// (b) - configuroimaton
-nullcalendar.newCalendar(myEl, {contentLayers: [
+// (a) - prekonfiguroitu
+nullcalendar.newCalendar(myEl, {extensions: ['foo1']});
+// (b) - konfiguroimaton
+nullcalendar.newCalendar(myEl, {extensions: [
     {name:'foo2', args: (contentCtrl, calendarCtrl) => ['yayy', contentCtrl, calendarCtrl]}
 ]});
 ```
@@ -218,7 +218,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 ### Methods
 
 - nullcalendar.newCalendar(el[, settings])
-- nullcalendar.registerContentLayer(name, layer)
+- nullcalendar.registerExtension(name, extension)
 
 ### Properties
 
@@ -247,7 +247,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 
 - contentController.refresh()
 - contentController.reRender()
-- contentController.getLayer(name)
+- contentController.getExtension(name)
 
 ### Properties
 

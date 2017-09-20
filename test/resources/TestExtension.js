@@ -1,10 +1,10 @@
 import ComponentConstruct from '../../src/ComponentConstruct.js';
 
 /*
- * Testisisältökerros, joka dekoroi kalenterin jokaisen solun komponentilla,
- * johon renderöityy kerroksen latauskerrat.
+ * Testilaajennos, joka dekoroi kalenterin jokaisen solun komponentilla,
+ * johon renderöityy laajennoksen sisällön latauskerrat.
  */
-class TestContentLayer {
+class TestExtension {
     constructor(contentController, calendarController, loadReturnValue = 'foo') {
         this.args = [...arguments];
         this.contentController = contentController;
@@ -30,7 +30,7 @@ class TestContentLayer {
     decorateCell(cell) {
         cell.children.push(new ComponentConstruct('span', null, this.loadCount));
         if (cell && !this.hasOneClickHandler) {
-            cell.clickHandlers.push(TestContentLayer.testClickHandler);
+            cell.clickHandlers.push(TestExtension.testClickHandler);
             this.hasOneClickHandler = true;
             this.firstCell = cell;
         }
@@ -40,4 +40,4 @@ class TestContentLayer {
     }
 }
 
-export default TestContentLayer;
+export default TestExtension;

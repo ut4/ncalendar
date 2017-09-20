@@ -1,5 +1,5 @@
 import Constants from './Constants.js';
-import ContentLayerFactory from './ContentLayerFactory.js';
+import ExtensionFactory from './ExtensionFactory.js';
 
 const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
 const LoadType = Object.freeze({
@@ -10,7 +10,7 @@ const LoadType = Object.freeze({
 
 /*
  * Kalenterin pääsisältö, renderöi ViewLayoutin generoiman gridin, ja lisää
- * valittujen sisältökerroksien (jos niitä on) luoman sisällön gridin soluihin.
+ * valittujen laajennoksien (jos niitä on) luoman sisällön gridin soluihin.
  *  ___________________________
  * |__________Toolbar__________|
  * |__________Header___________|
@@ -28,25 +28,25 @@ class Content extends React.Component {
      */
     constructor(props) {
         super(props);
-        const selectedContentLayers = this.props.calendarController.settings.contentLayers;
-        this.hasAsyncContent = selectedContentLayers.length > 0;
+        const selectedExtensions = this.props.calendarController.settings.extensions;
+        this.hasAsyncContent = selectedExtensions.length > 0;
         this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
             this.controller = this.newController();
-            const contentLayerFactory = new ContentLayerFactory();
-            this.contentLayers = selectedContentLayers.map(layerConfig => {
-                const instance = contentLayerFactory.make(layerConfig, [
+            const extensionFactory = new ExtensionFactory();
+            this.extensions = selectedExtensions.map(extensionConfig => {
+                const instance = extensionFactory.make(extensionConfig, [
                     this.controller,
                     this.props.calendarController
                 ]);
-                instance.configuredName = layerConfig.name || layerConfig;
+                instance.configuredName = extensionConfig.name || extensionConfig;
                 return instance;
             });
             this.loadAsyncContent(LoadType.INITIAL);
         }
     }
     /**
-     * Triggeröi sisältökerroksien päivityksen, jos niitä on.
+     * Triggeröi laajennoksien päivityksen, jos niitä on.
      */
     componentWillReceiveProps(props) {
         if (this.hasAsyncContent) {
@@ -58,33 +58,33 @@ class Content extends React.Component {
         }
     }
     /**
-     * Disabloi sisältökerroksien lataustapahtuman jälkeisen renderöinnin, jos
-     * yksikään ladatuista kerroksista ei palauttanut sisältöä.
+     * Disabloi laajennoksien lataustapahtuman jälkeisen renderöinnin, jos
+     * yksikään ladatuista laajennoksista ei palauttanut sisältöä.
      */
     shouldComponentUpdate(_, state) {
         return state.currentlyHasAsyncContent !== false;
     }
     /**
-     * Palauttaa sisältö-API:n, jonka kautta pääsee käsiksi mm. sisältökerroksien
-     * omiin apeihin. Jos valittuja sisältökerroksia ei ole, palauttaa undefined.
+     * Palauttaa sisältö-API:n, jonka kautta pääsee käsiksi mm. laajennoksien
+     * omiin apeihin. Jos valittuja laajennoksia ei ole, palauttaa undefined.
      */
     getController() {
         return this.controller;
     }
     /**
-     * Palauttaa instantoidun sisältökerroksen {name}, tai undefined, jos sellaista
+     * Palauttaa instantoidun laajennoksen {name}, tai undefined, jos sellaista
      * ei löytynyt.
      *
      * @param {string} name
-     * @returns {Object} instanssi sisältökerroksesta
+     * @returns {Object} laajennosinstanssi
      */
-    getLayer(name) {
-        return this.contentLayers.find(layerInstance =>
-            layerInstance.configuredName === name
+    getExtension(name) {
+        return this.extensions.find(extensionInstance =>
+            extensionInstance.configuredName === name
         );
     }
     /**
-     * Poistaa props.gridistä sisältökerroksien modifikaatiot (children &
+     * Poistaa props.gridistä laajennoksien modifikaatiot (children &
      * clickHandlers).
      *
      * @access private
@@ -98,39 +98,39 @@ class Content extends React.Component {
         }));
     }
     /**
-     * Lataa & ajaa sisältökerrokset, esim. eventLayerin tapahtumat.
+     * Lataa & ajaa laajennokset, esim. eventExtensionin tapahtumat.
      *
      * @access private
      */
     loadAsyncContent(loadType) {
         return Promise.all(
-            this.contentLayers.map(layer => layer.load(loadType))
+            this.extensions.map(extension => extension.load(loadType))
         ).then(returnValues => {
-            const layersWhichMaybeHadContent = this.contentLayers.filter((layer, i) =>
-                // Layerit, joiden load palautti false, skipataan. Jos layer
+            const extensionsWhichMaybeHadContent = this.extensions.filter((extension, i) =>
+                // Extensionit, joiden load palautti false, skipataan. Jos extension
                 // ei palauttanut mitään, tai jotain muuta kuin false, ladataan
                 // normaalisti.
                 returnValues[i] !== false
             );
-            if (layersWhichMaybeHadContent.length > 0) {
-                this.applyAsyncContent(layersWhichMaybeHadContent);
+            if (extensionsWhichMaybeHadContent.length > 0) {
+                this.applyAsyncContent(extensionsWhichMaybeHadContent);
                 this.setState({currentlyHasAsyncContent: true});
             }
         });
     }
     /**
-     * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne sisältökerroksien
-     * dekoroitavaksi. Sisältökerros voi tällöin esim. lisätä solun children-,
+     * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne laajennoksien
+     * dekoroitavaksi. Laajennos voi tällöin esim. lisätä solun children-,
      * tai clickHandlers-taulukkoon omat lisäyksensä.
      *
      * @access private
      */
-    applyAsyncContent(layersToLoad) {
+    applyAsyncContent(extensionsToLoad) {
         this.resetGrid();
-        (layersToLoad || this.contentLayers).forEach(layer => {
+        (extensionsToLoad || this.extensions).forEach(extension => {
             this.props.grid.forEach(row => {
                 row.forEach(cell => {
-                    (cell instanceof Cell) && layer.decorateCell(cell);
+                    (cell instanceof Cell) && extension.decorateCell(cell);
                 });
             });
         });
@@ -176,7 +176,7 @@ class Content extends React.Component {
             : children;
     }
     /**
-     * Public API-versio tästä luokasta sisältökerroksia varten.
+     * Public API-versio tästä luokasta laajennoksia varten.
      *
      * @access private
      */
@@ -192,7 +192,7 @@ class Content extends React.Component {
             reRender: () => {
                 this.forceUpdate();
             },
-            getLayer: name => this.getLayer(name),
+            getExtension: name => this.getExtension(name),
             getRenderedGrid: () => this.mainEl
         };
     }
