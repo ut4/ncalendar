@@ -44,14 +44,12 @@ QUnit.module('ExtensionFactory', function (hooks) {
     });
     QUnit.test('.make handlaa myös object-notaation', assert => {
         this.extensionFactory.register('test1', TestExtension);
-        this.extensionFactory.register('test2', function() { return new TestExtension('a', ...arguments); });
+        this.extensionFactory.register('test2', a => new TestExtension(a));
         //
-        const defaultArgs1 = ['a', 'b'];
-        const defaultArgs2 = ['c', 'd'];
-        const customArgs1 = {foo: 'bar'};
-        const customArgs2 = {baz: 'hax'};
-        const result1 = this.extensionFactory.make({name: 'test1', args: (a, b) => [customArgs1, a, b]}, defaultArgs1);
-        const result2 = this.extensionFactory.make({name: 'test2', args: (c, d) => [customArgs2, c, d]}, defaultArgs2);
+        const someValue1 = {foo: 'bar'};
+        const someValue2 = {baz: 'hax'};
+        const result1 = this.extensionFactory.make({name: 'test1', setup: ext => ext.setSomeValue(someValue1)}, []);
+        const result2 = this.extensionFactory.make({name: 'test2', setup: ext => ext.setSomeValue(someValue2)}, []);
         //
         assert.ok(result1 instanceof TestExtension,
             'Pitäisi luoda laajennos'
@@ -59,11 +57,11 @@ QUnit.module('ExtensionFactory', function (hooks) {
         assert.ok(result2 instanceof TestExtension,
             'Pitäisi luoda laajennos'
         );
-        assert.deepEqual(result1.args, [customArgs1, ...defaultArgs1],
-            'Pitäisi passata konstruktorille custom-argumentit'
+        assert.deepEqual(result1.someValue, someValue1,
+            'Pitäisi triggeröidä setup'
         );
-        assert.deepEqual(result2.args, ['a', customArgs2, ...defaultArgs2],
-            'Pitäisi passata factorylle custom-argumentit'
+        assert.deepEqual(result2.someValue, someValue2,
+            'Pitäisi triggeröidä setup'
         );
     });
 });

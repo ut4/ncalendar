@@ -1,5 +1,4 @@
 import Constants from './Constants.js';
-import ExtensionFactory from './ExtensionFactory.js';
 
 const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
 const LoadType = Object.freeze({
@@ -22,26 +21,16 @@ class Content extends React.Component {
     /**
      * @param {object} props {
      *     grid: {Array},
-     *     calendarController: {Object},
+     *     extensions: {Array},
      *     currentView: {string}
      * }
      */
     constructor(props) {
         super(props);
-        const selectedExtensions = this.props.calendarController.settings.extensions;
-        this.hasAsyncContent = selectedExtensions.length > 0;
+        this.hasAsyncContent = this.props.extensions.length > 0;
         this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
             this.controller = this.newController();
-            const extensionFactory = new ExtensionFactory();
-            this.extensions = selectedExtensions.map(extensionConfig => {
-                const instance = extensionFactory.make(extensionConfig, [
-                    this.controller,
-                    this.props.calendarController
-                ]);
-                instance.configuredName = extensionConfig.name || extensionConfig;
-                return instance;
-            });
             this.loadAsyncContent(LoadType.INITIAL);
         }
     }
@@ -72,18 +61,6 @@ class Content extends React.Component {
         return this.controller;
     }
     /**
-     * Palauttaa instantoidun laajennoksen {name}, tai undefined, jos sellaista
-     * ei löytynyt.
-     *
-     * @param {string} name
-     * @returns {Object} laajennosinstanssi
-     */
-    getExtension(name) {
-        return this.extensions.find(extensionInstance =>
-            extensionInstance.configuredName === name
-        );
-    }
-    /**
      * Poistaa props.gridistä laajennoksien modifikaatiot (children &
      * clickHandlers).
      *
@@ -104,9 +81,9 @@ class Content extends React.Component {
      */
     loadAsyncContent(loadType) {
         return Promise.all(
-            this.extensions.map(extension => extension.load(loadType))
+            this.props.extensions.map(extension => extension.load(loadType))
         ).then(returnValues => {
-            const extensionsWhichMaybeHadContent = this.extensions.filter((extension, i) =>
+            const extensionsWhichMaybeHadContent = this.props.extensions.filter((extension, i) =>
                 // Extensionit, joiden load palautti false, skipataan. Jos extension
                 // ei palauttanut mitään, tai jotain muuta kuin false, ladataan
                 // normaalisti.
@@ -127,7 +104,7 @@ class Content extends React.Component {
      */
     applyAsyncContent(extensionsToLoad) {
         this.resetGrid();
-        (extensionsToLoad || this.extensions).forEach(extension => {
+        (extensionsToLoad || this.props.extensions).forEach(extension => {
             this.props.grid.forEach(row => {
                 row.forEach(cell => {
                     (cell instanceof Cell) && extension.decorateCell(cell);
@@ -182,9 +159,6 @@ class Content extends React.Component {
      */
     newController() {
         return {
-            LoadType,
-            Cell,
-            PlaceholderCell,
             refresh: () => {
                 this.applyAsyncContent();
                 this.forceUpdate();
@@ -192,7 +166,6 @@ class Content extends React.Component {
             reRender: () => {
                 this.forceUpdate();
             },
-            getExtension: name => this.getExtension(name),
             getRenderedGrid: () => this.mainEl
         };
     }

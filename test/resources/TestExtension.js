@@ -5,12 +5,17 @@ import ComponentConstruct from '../../src/ComponentConstruct.js';
  * johon renderöityy laajennoksen sisällön latauskerrat.
  */
 class TestExtension {
-    constructor(contentController, calendarController, loadReturnValue = 'foo') {
+    constructor(calendarController) {
         this.args = [...arguments];
-        this.contentController = contentController;
-        this.calendarController = calendarController;
+        this.calendar = calendarController;
         this.firstCell = null;
         this.loadCount = 0;
+        this.loadReturnValue = 'foo';
+    }
+    setSomeValue(value) {
+        this.someValue = value;
+    }
+    setLoadReturnValue(loadReturnValue) {
         this.loadReturnValue = loadReturnValue;
     }
     load() {
@@ -22,7 +27,7 @@ class TestExtension {
         this.loadCount = loadCount;
     }
     getContentController() {
-        return this.contentController;
+        return this.calendar.contentController;
     }
     getFirstCell() {
         return this.firstCell;

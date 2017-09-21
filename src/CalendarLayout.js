@@ -5,6 +5,7 @@ import {DateCursorFactory} from './DateCursors.js';
 import Constants from './Constants.js';
 import settingsFactory, {getValidViewName} from './settingsFactory.js';
 import DateUtils from './DateUtils.js';
+import ExtensionFactory from './ExtensionFactory.js';
 
 /*
  * Kalenterin juurikomponentti.
@@ -36,6 +37,14 @@ class CalendarLayout extends React.Component {
         this.state = state;
         //
         this.controller = newController(this);
+        if (this.settings.extensions.length > 0) {
+            const extensionFactory = new ExtensionFactory();
+            this.extensions = this.settings.extensions.map(setting => {
+                const ext = extensionFactory.make(setting, [this.controller]);
+                ext.configuredName = setting.name || setting;
+                return ext;
+            });
+        }
     }
     /**
      * Lisää matchmedia-kuuntelijan.
@@ -49,6 +58,18 @@ class CalendarLayout extends React.Component {
      */
     getController() {
         return this.controller;
+    }
+    /**
+     * Palauttaa instantoidun laajennoksen {name}, tai undefined, jos sellaista
+     * ei löytynyt.
+     *
+     * @param {string} name
+     * @returns {Object} laajennosinstanssi
+     */
+    getExtension(name) {
+        return this.extensions.find(extensionInstance =>
+            extensionInstance.configuredName === name
+        );
     }
     /**
      * Vaihtaa kalenterin currentView:iksi {to}, mikäli se ei ole jo valmiiksi,
@@ -129,7 +150,7 @@ class CalendarLayout extends React.Component {
                 ref: cmp => { this.contentController = cmp.getController(); },
                 grid: content.props.gridGeneratorFn(),
                 currentView: this.state.currentView,
-                calendarController: this.controller
+                extensions: this.extensions
             })
         );
     }
@@ -166,7 +187,8 @@ function newController(component) {
         },
         closeModal: () => {
             component.modal.close();
-        }
+        },
+        getExtension: name => component.getExtension(name)
     };
 }
 

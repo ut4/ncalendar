@@ -4,7 +4,7 @@ import './test/CalendarLayoutComponentTests.js';
 import './test/CalendarLayoutComponentTests(day).js';
 import './test/CalendarLayoutComponentTests(month).js';
 import './test/CalendarLayoutComponentTests(week).js';
-import './test/CalendarLayoutComponentTests(with-decorators).js';
+import './test/CalendarLayoutComponentTests(with-extension).js';
 import './test/ContentClassTests.js';
 import './test/ContentComponentTests.js';
 import './test/ExtensionFactoryTests.js';

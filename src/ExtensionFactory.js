@@ -44,25 +44,27 @@ class ExtensionFactory {
      * @param {Array} args
      * @returns {Object} Uusi instanssi laajennoksesta {extension|extension.name}
      */
-    make(extension, args) {
-        if (typeof extension !== 'string') {
-            extension.args && (args = extension.args(...args));
-            extension = extension.name || '';
+    make(key, args) {
+        const name = key.name || key;
+        const setupFn = key.setup || null;
+        const registered = register[name];
+        let out;
+        if (!registered) {
+            throw new Error(`Extensionia "${name}" ei ole rekisteröity.`);
         }
-        const item = register[extension];
-        if (!item) {
-            throw new Error(`Extensionia "${extension}" ei ole rekisteröity.`);
-        }
-        if (!isValidExtension(item.prototype)) {
-            const providedExtension = item(...args);
-            if (!isValidExtension(providedExtension)) {
+        // Konstruktori
+        if (isValidExtension(registered.prototype)) {
+            out = new registered(...args);
+        // Factory-funktio
+        } else {
+            out = registered(...args);
+            if (!isValidExtension(out)) {
                 throw new Error('Laajennos-factory:n palauttama instanssi ' +
                     ' tulisi implementoida metodit "load", ja "decorateCell"');
             }
-            return providedExtension;
-        } else {
-            return new item(...args);
         }
+        setupFn && setupFn(out);
+        return out;
     }
 }
 

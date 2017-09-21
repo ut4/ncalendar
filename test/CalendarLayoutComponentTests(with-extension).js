@@ -2,12 +2,12 @@ import CalendarLayout from '../src/CalendarLayout.js';
 import Content, {LoadType, Cell} from '../src/Content.js';
 import ExtensionFactory from '../src/ExtensionFactory.js';
 import Constants from '../src/Constants.js';
-import {domUtils} from './resources/Utils.js';
+import { domUtils } from './resources/Utils.js';
 import TestExtension from './resources/TestExtension.js';
 
 new ExtensionFactory().register('atest', TestExtension);
 
-QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
+QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
     hooks.beforeEach(() => {
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.contentApplyCallSpy = sinon.spy(Content.prototype, 'applyAsyncContent');
@@ -23,7 +23,7 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
     const render = (extensions = ['atest']) => {
         return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {
             defaultView: Constants.VIEW_WEEK,
-            extensions: extensions
+            extensions
         }));
     };
     QUnit.test('Instantioi & lataa & ajaa laajennoksen', assert => {
@@ -34,22 +34,13 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             'Pitäisi instantioida laajennos'
         );
         assert.ok(
-            isProbablyContentController(expectedTestExtension.args[0]),
-            '1. laajennoksen konstruktoriin passattu argumentti pitäisi olla contentController-instanssi'
-        );
-        assert.ok(
-            isProbablyCalendarController(expectedTestExtension.args[1]),
+            isProbablyCalendarController(expectedTestExtension.args[0]),
             '2. laajennoksen konstruktoriin passattu argumentti pitäisi olla calendarController-instanssi'
         );
         assert.deepEqual(
-            expectedTestExtension.getContentController().getExtension('atest'),
+            getInstantiatedCalendar(rendered).getController().getExtension('atest'),
             expectedTestExtension,
-            'contentController.getExtension pitäisi palauttaa instantoitu extension'
-        );
-        assert.deepEqual(
-            expectedTestExtension.getContentController(),
-            getInstantiatedContent(rendered).getController(),
-            'Extensionille passattu contentController pitäisi olla sama kuin content.getController'
+            'calendarController.getExtension pitäisi palauttaa instantoitu laajennos'
         );
         //
         const done = assert.async();
@@ -81,7 +72,7 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
         });
     });
     QUnit.test('Skippaa renderöinnin, jos extensionin .load palautti false', assert => {
-        render([{name: 'atest', args: (a, b) => [a, b, false]}]);
+        render([{name: 'atest', setup: myExt => myExt.setLoadReturnValue(false)}]);
         //
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
@@ -222,14 +213,11 @@ QUnit.module('CalendarLayoutComponent(with-decorators)', function (hooks) {
             rendered, 'row'
         )).slice(2);// toolbarin, ja headerin rivit pois
     }
-    function getInstantiatedContent(rendered) {
-        return ReactTestUtils.findRenderedComponentWithType(rendered, Content);
+    function getInstantiatedCalendar(rendered) {
+        return ReactTestUtils.findRenderedComponentWithType(rendered, CalendarLayout);
     }
     function getInstantiatedExtensions(rendered) {
-        return getInstantiatedContent(rendered).extensions || [];
-    }
-    function isProbablyContentController(object) {
-        return object instanceof Object && object.hasOwnProperty('refresh');
+        return getInstantiatedCalendar(rendered).extensions || [];
     }
     function isProbablyCalendarController(object) {
         return object instanceof Object && object.hasOwnProperty('changeView');

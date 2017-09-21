@@ -130,17 +130,26 @@ const mySettings = {
 ```javascript
 // -- 1. Implementoi ----
 // -----------------------------------------------------------------------------
+import { LoadType, PlaceholderCell } from './src/Content.js';
+
+/*
+ * Laajennos, joka lisää kalenterin jokaisen perjantain sisällöksi {this.fridayText}.
+ */
 class MyExtension {
     /**
-     * @param {string} myArgument
-     * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
      * @param {Object} calendarController Vastaa yhden kalenterin ohjailusta. Sama kuin nullcalendar.newCalendar() paluuarvo. @see https://github.com/ut4/ncalendar#calendarcontroller-api
      */
-    constructor(myArgument, contentController, calendarController) {
-        console.log(typeof contentController.refresh);     // function
+    constructor(calendarController) {
         console.log(typeof calendarController.changeView); // function
-        this.contentController = contentController;
-        this.text = myArgument;
+        this.calendar = calendarController;
+    }
+    /**
+     * Aseta jokaiselle perjantaille lisättävä teksti.
+     *
+     * @param {string} someText
+     */
+    setFridayText(someString) {
+        this.fridayText = someString;
     }
     /**
      * Triggeröityy aina kun sivu ladataan, kalenterin näkymä vaihtuu, tai
@@ -155,7 +164,7 @@ class MyExtension {
      */
     load(loadType) {
         console.log('Loadtype:' + loadType);
-        if (loadType !== this.contentController.LoadType.INITIAL) {
+        if (loadType !== LoadType.INITIAL) {
             return false;
         }
         return Promise.resolve().then(() => {
@@ -171,22 +180,22 @@ class MyExtension {
      * @returns {void}
      */
     decorateCell(cell) {
-        if (cell instanceof this.contentController.PlaceholderCell) {
+        if (cell instanceof PlaceholderCell) {
             return;
         }
         if (cell.date.getDay() === 5) {
-            cell.content = `Friday, ${this.text}!`;
+            cell.content = `Friday, ${this.fridayText}!`;
             // contentController.refresh = dekoroi & renderöi laajennokset uudelleen
             // contentController.reRender = pelkästään renderöi laajennokset uudelleen
             cell.clickHandlers.push((cell, e) => {
                 if (Math.random() > 0.5) {
                     console.log('Refreshing...');
-                    this.text = this.text === 'yayy' ? 'nyayy' : 'yayy';
-                    this.contentController.refresh();
+                    this.fridayText = this.fridayText === 'yayy' ? 'nyayy' : 'yayy';
+                    this.calendar.contentController.refresh();
                 } else {
                     console.log('ReRendering...');
                     cell.content += '!';
-                    this.contentController.reRender();
+                    this.calendar.contentController.reRender();
                 }
             });
         }
@@ -195,22 +204,28 @@ class MyExtension {
 
 // -- 2. Rekisteröi ----
 // -----------------------------------------------------------------------------
-// (a) - prekonfiguroitu
-nullcalendar.registerExtension('foo1', (contentCtrl, calendarCtrl) =>
-    new MyExtension('yayy', contentCtrl, calendarCtrl)
-);
-// (b) - konfiguroimaton
+// (a) - konfiguroimaton
 nullcalendar.registerExtension('foo2', MyExtension);
+// (b) - prekonfiguroitu
+nullcalendar.registerExtension('foo1', calendarCtrl => {
+    const myExtension = new MyExtension(calendarCtrl);
+    myExtension.setFridayText('yayy');
+    return myExtension;
+});
 
 
 // -- 3. Ota käyttöön ----
 // -----------------------------------------------------------------------------
-// (a) - prekonfiguroitu
-nullcalendar.newCalendar(myEl, {extensions: ['foo1']});
-// (b) - konfiguroimaton
-nullcalendar.newCalendar(myEl, {extensions: [
-    {name:'foo2', args: (contentCtrl, calendarCtrl) => ['yayy', contentCtrl, calendarCtrl]}
-]});
+// (a) - konfiguroimaton
+nullcalendar.newCalendar(myEl, {
+    extensions: [
+        {name: 'foo2', setup: myExtension => myExtension.setFridayText('yayy')}
+    ]
+});
+// (b) - prekonfiguroitu
+nullcalendar.newCalendar(myEl, {
+    extensions: ['foo1']
+});
 ```
 
 ## Global-API
@@ -231,6 +246,7 @@ nullcalendar.newCalendar(myEl, {extensions: [
 - calendarController.changeView(to)
 - calendarController.openModal(componentConstruct)
 - calendarController.closeModal()
+- calendarController.getExtension(name)
 
 ### Getters
 
@@ -247,13 +263,6 @@ nullcalendar.newCalendar(myEl, {extensions: [
 
 - contentController.refresh()
 - contentController.reRender()
-- contentController.getExtension(name)
-
-### Properties
-
-- contentController.LoadType
-- contentController.Cell
-- contentController.PlaceholderCell
 
 # License
 
