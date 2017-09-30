@@ -144,14 +144,6 @@ class MyExtension {
         this.calendar = calendarController;
     }
     /**
-     * Aseta jokaiselle perjantaille lisättävä teksti.
-     *
-     * @param {string} someText
-     */
-    setFridayText(someString) {
-        this.fridayText = someString;
-    }
-    /**
      * Triggeröityy aina kun sivu ladataan, kalenterin näkymä vaihtuu, tai
      * kalenterin cursorRange päivittyy. Hyvä paikka ladata jotain esim.
      * backendistä..
@@ -199,6 +191,38 @@ class MyExtension {
                 }
             });
         }
+    }
+    /**
+     * Mahdollista custom -toolbar-osien lisäyksen kalenteriin, joihin taas voidaan
+     * viitata settings-objektin toolbarParts-asetuksessa.
+     *
+     * @param {Object} registry @see https://github.com/ut4/ncalendar#toolbarpartregistry
+     */
+    addToolbarPartFactories(registry) {
+        const toolbarPartName = 'abutton';
+        const toolbarPartFactory = () => $el(
+            'span',
+            {onClick: () =>
+                this.calendar.getExtension('foo1').setAndRenderFridayText('fyyyy')
+            },
+            'Click dis '
+        );
+        registry.add(toolbarPartName, toolbarPartFactory);
+    }
+    /**
+     * Aseta jokaiselle perjantaille lisättävä teksti.
+     *
+     * @param {string} someText
+     */
+    setFridayText(someString) {
+        this.fridayText = someString;
+    }
+    /**
+     * Laajennoksen ulkopuolelta kutsuttava metodi.
+     */
+    setAndRenderFridayText(newText) {
+        this.setFridayText(newText);
+        this.calendar.contentController.refresh();
     }
 }
 
@@ -263,6 +287,12 @@ nullcalendar.newCalendar(myEl, {
 
 - contentController.refresh()
 - contentController.reRender()
+
+## ToolbarPartRegistry
+
+### Methods
+
+- toolbarPartRegistry.add(name, factoryFn)
 
 # License
 

@@ -20,10 +20,11 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
         this.extensionLoadCallSpy.restore();
         TestExtension.testClickHandler.restore();
     });
-    const render = (extensions = ['atest']) => {
+    const render = (extensions = ['atest'], toolbarParts = undefined) => {
         return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {
             defaultView: Constants.VIEW_WEEK,
-            extensions
+            extensions,
+            toolbarParts
         }));
     };
     QUnit.test('Instantioi & lataa & ajaa laajennoksen', assert => {
@@ -178,6 +179,19 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
     });
     QUnit.test('Toolbarin näkymänvaihtopainike triggeröi laajennoksen päivityksen', assert => {
         testButtonClickTriggersDecoratorRefresh.call(this, 'Kuukausi', assert, LoadType.VIEW_CHANGE);
+    });
+    QUnit.test('Renderöi laajennoksen lisäämän toobarPartin', assert => {
+        const rendered = render(undefined, 'week|fill|day,abutton');
+        const toolbar = ReactTestUtils.findRenderedDOMComponentWithClass(rendered, 'toolbar');
+        //                         .row       .col
+        const columns = toolbar.children[0].children;
+        assert.equal(columns.length, 3, 'Pitäisi renderöidä kolme saraketta');
+        assert.equal(columns[0].querySelector('button').textContent, 'Viikko');
+        assert.equal(columns[1].textContent, '');
+        const lastColumnButtons = columns[2].querySelectorAll('button');
+        assert.equal(lastColumnButtons[0].textContent, 'Päivä');
+        const expectedToolbarButtonText = getInstantiatedExtensions(rendered)[0].getToolbarButtonText();
+        assert.equal(lastColumnButtons[1].textContent, expectedToolbarButtonText);
     });
     function testButtonClickTriggersDecoratorRefresh(buttonContent, assert, expectedLoadType) {
         let contentBefore;

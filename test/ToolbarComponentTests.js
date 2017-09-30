@@ -9,7 +9,8 @@ QUnit.module('ToolbarComponent', function() {
             dateCursor: {range: {start: new Date(), end: new Date()}}
         };
         return rtu.renderIntoDocument($el(Toolbar, Object.assign({
-            calendarController: fakeCalendarController
+            calendarController: fakeCalendarController,
+            extensions: []
         }, props)));
     }
     QUnit.test('Renderöi custom osiot & titlen', assert => {

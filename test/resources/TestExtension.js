@@ -11,6 +11,7 @@ class TestExtension {
         this.firstCell = null;
         this.loadCount = 0;
         this.loadReturnValue = 'foo';
+        this.toolbarButtonText = 'Foo';
     }
     setSomeValue(value) {
         this.someValue = value;
@@ -39,6 +40,12 @@ class TestExtension {
             this.hasOneClickHandler = true;
             this.firstCell = cell;
         }
+    }
+    addToolbarPartFactories(registry) {
+        registry.add('abutton', () => $el('button', null, this.toolbarButtonText));
+    }
+    getToolbarButtonText() {
+        return this.toolbarButtonText;
     }
     static testClickHandler() {
         //

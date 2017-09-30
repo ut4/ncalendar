@@ -1,5 +1,4 @@
 import Constants from './Constants.js';
-import { validPartNames } from './Toolbar.js';
 
 function validateViewKey(viewNameKey) {
     const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
@@ -22,9 +21,8 @@ function validateToolbarParts(candidate) {
         return 'toolbarParts-asetus tulisi olla merkkijono. esim \'prev,next|title|day,week\'';
     }
     for (const part of candidate.replace(/\|/g, ',').split(',')) {
-        if (validPartNames.indexOf(part) < 0) {
-            return 'titlePart "' + part + '" ei ole validi. Tuetut arvot: ' +
-                validPartNames.join(',');
+        if (!part.length) {
+            return 'Toolbarpart-osa ei voi olla tyhjä';
         }
     }
 }

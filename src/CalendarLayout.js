@@ -44,6 +44,8 @@ class CalendarLayout extends React.Component {
                 ext.configuredName = setting.name || setting;
                 return ext;
             });
+        } else {
+            this.extensions = [];
         }
     }
     /**
@@ -141,6 +143,7 @@ class CalendarLayout extends React.Component {
                 parts: this.settings.toolbarParts,
                 calendarController: this.controller,
                 dateUtils: this.dateUtils,
+                extensions: this.extensions,
                 titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
             }),
             header !== null && $el(header.Component,

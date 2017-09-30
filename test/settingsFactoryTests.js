@@ -23,7 +23,6 @@ QUnit.module('settingsFactory', function() {
             {defaultDate: 'bogus'},
             {extensions: 'shh'},
             {toolbarParts: /bogus/},
-            {toolbarParts: 'title,bogus'},
             {toolbarParts: 'title,,'},
             {titleFormatters: {[Constants.VIEW_DAY]: 'bogus'}},
             {titleFormatters: {bogus: () => {}}},
