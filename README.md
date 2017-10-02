@@ -75,12 +75,12 @@ const mySettings = {
      */
     defaultDate: new Date(2017, 6, 30),
     /**
-     * Ladattavat sisältökerrokset.
+     * Ladattavat laajennokset.
      *
      * @prop {string|Object[]}
      * @default []
      */
-    contentLayers: [
+    extensions: [
         'event',
         // tai
         {name: 'event'}
@@ -130,24 +130,25 @@ const mySettings = {
 ```javascript
 // -- 1. Implementoi ----
 // -----------------------------------------------------------------------------
-class MyContentLayer {
+import { LoadType, PlaceholderCell } from './src/Content.js';
+
+/*
+ * Laajennos, joka lisää kalenterin jokaisen perjantain sisällöksi {this.fridayText}.
+ */
+class MyExtension {
     /**
-     * @param {string} myArgument
-     * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
      * @param {Object} calendarController Vastaa yhden kalenterin ohjailusta. Sama kuin nullcalendar.newCalendar() paluuarvo. @see https://github.com/ut4/ncalendar#calendarcontroller-api
      */
-    constructor(myArgument, contentController, calendarController) {
-        console.log(typeof contentController.refresh);     // function
+    constructor(calendarController) {
         console.log(typeof calendarController.changeView); // function
-        this.contentController = contentController;
-        this.text = myArgument;
+        this.calendar = calendarController;
     }
     /**
      * Triggeröityy aina kun sivu ladataan, kalenterin näkymä vaihtuu, tai
      * kalenterin cursorRange päivittyy. Hyvä paikka ladata jotain esim.
      * backendistä..
      *
-     * Jos metodi palauttaa false|promisejokaresolvaafalse, layerin dekorointi ja
+     * Jos metodi palauttaa false|promisejokaresolvaafalse, laajennoksen dekorointi ja
      * renderöinti ohitetaan, muussa tapauksessa paluuarvoa ei huomioida mitenkään.
      *
      * @param {string} loadType 'initial'|'navigation'|'view-change'
@@ -155,7 +156,7 @@ class MyContentLayer {
      */
     load(loadType) {
         console.log('Loadtype:' + loadType);
-        if (loadType !== this.contentController.LoadType.INITIAL) {
+        if (loadType !== LoadType.INITIAL) {
             return false;
         }
         return Promise.resolve().then(() => {
@@ -171,46 +172,84 @@ class MyContentLayer {
      * @returns {void}
      */
     decorateCell(cell) {
-        if (cell instanceof this.contentController.PlaceholderCell) {
+        if (cell instanceof PlaceholderCell) {
             return;
         }
         if (cell.date.getDay() === 5) {
-            cell.content = `Friday, ${this.text}!`;
-            // contentController.refresh = dekoroi & renderöi layerit uudelleen
-            // contentController.reRender = pelkästään renderöi layerit uudelleen
+            cell.content = `Friday, ${this.fridayText}!`;
+            // contentController.refresh = dekoroi & renderöi laajennokset uudelleen
+            // contentController.reRender = pelkästään renderöi laajennokset uudelleen
             cell.clickHandlers.push((cell, e) => {
                 if (Math.random() > 0.5) {
                     console.log('Refreshing...');
-                    this.text = this.text === 'yayy' ? 'nyayy' : 'yayy';
-                    this.contentController.refresh();
+                    this.fridayText = this.fridayText === 'yayy' ? 'nyayy' : 'yayy';
+                    this.calendar.contentController.refresh();
                 } else {
                     console.log('ReRendering...');
                     cell.content += '!';
-                    this.contentController.reRender();
+                    this.calendar.contentController.reRender();
                 }
             });
         }
+    }
+    /**
+     * Mahdollista custom -toolbar-osien lisäyksen kalenteriin, joihin taas voidaan
+     * viitata settings-objektin toolbarParts-asetuksessa.
+     *
+     * @param {Object} registry @see https://github.com/ut4/ncalendar#toolbarpartregistry
+     */
+    addToolbarPartFactories(registry) {
+        const toolbarPartName = 'abutton';
+        const toolbarPartFactory = () => $el(
+            'span',
+            {onClick: () =>
+                this.calendar.getExtension('foo1').setAndRenderFridayText('fyyyy')
+            },
+            'Click dis '
+        );
+        registry.add(toolbarPartName, toolbarPartFactory);
+    }
+    /**
+     * Aseta jokaiselle perjantaille lisättävä teksti.
+     *
+     * @param {string} someText
+     */
+    setFridayText(someString) {
+        this.fridayText = someString;
+    }
+    /**
+     * Laajennoksen ulkopuolelta kutsuttava metodi.
+     */
+    setAndRenderFridayText(newText) {
+        this.setFridayText(newText);
+        this.calendar.contentController.refresh();
     }
 }
 
 // -- 2. Rekisteröi ----
 // -----------------------------------------------------------------------------
-// (a) - preconfiguroitu
-nullcalendar.registerContentLayer('foo1', (contentCtrl, calendarCtrl) =>
-    new MyContentLayer('yayy', contentCtrl, calendarCtrl)
-);
-// (b) - configuroimaton
-nullcalendar.registerContentLayer('foo2', MyContentLayer);
+// (a) - konfiguroimaton
+nullcalendar.registerExtension('foo2', MyExtension);
+// (b) - prekonfiguroitu
+nullcalendar.registerExtension('foo1', calendarCtrl => {
+    const myExtension = new MyExtension(calendarCtrl);
+    myExtension.setFridayText('yayy');
+    return myExtension;
+});
 
 
 // -- 3. Ota käyttöön ----
 // -----------------------------------------------------------------------------
-// (a) - preconfiguroitu
-nullcalendar.newCalendar(myEl, {contentLayers: ['foo1']});
-// (b) - configuroimaton
-nullcalendar.newCalendar(myEl, {contentLayers: [
-    {name:'foo2', args: (contentCtrl, calendarCtrl) => ['yayy', contentCtrl, calendarCtrl]}
-]});
+// (a) - konfiguroimaton
+nullcalendar.newCalendar(myEl, {
+    extensions: [
+        {name: 'foo2', setup: myExtension => myExtension.setFridayText('yayy')}
+    ]
+});
+// (b) - prekonfiguroitu
+nullcalendar.newCalendar(myEl, {
+    extensions: ['foo1']
+});
 ```
 
 ## Global-API
@@ -218,7 +257,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 ### Methods
 
 - nullcalendar.newCalendar(el[, settings])
-- nullcalendar.registerContentLayer(name, layer)
+- nullcalendar.registerExtension(name, extension)
 
 ### Properties
 
@@ -231,6 +270,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 - calendarController.changeView(to)
 - calendarController.openModal(componentConstruct)
 - calendarController.closeModal()
+- calendarController.getExtension(name)
 
 ### Getters
 
@@ -238,6 +278,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 - calendarController.dateCursor
 - calendarController.settings
 - calendarController.isCompactViewEnabled
+- calendarController.contentController
 - calendarController.dateUtils
 
 ## ContentController-API
@@ -247,11 +288,11 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 - contentController.refresh()
 - contentController.reRender()
 
-### Properties
+## ToolbarPartRegistry
 
-- contentController.LoadType
-- contentController.Cell
-- contentController.PlaceholderCell
+### Methods
+
+- toolbarPartRegistry.add(name, factoryFn)
 
 ## Events-extension
 

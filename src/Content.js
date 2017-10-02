@@ -1,5 +1,4 @@
 import Constants from './Constants.js';
-import ContentLayerFactory from './ContentLayerFactory.js';
 
 const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
 const LoadType = Object.freeze({
@@ -10,7 +9,7 @@ const LoadType = Object.freeze({
 
 /*
  * Kalenterin pääsisältö, renderöi ViewLayoutin generoiman gridin, ja lisää
- * valittujen sisältökerroksien (jos niitä on) luoman sisällön gridin soluihin.
+ * valittujen laajennoksien (jos niitä on) luoman sisällön gridin soluihin.
  *  ___________________________
  * |__________Toolbar__________|
  * |__________Header___________|
@@ -22,40 +21,21 @@ class Content extends React.Component {
     /**
      * @param {object} props {
      *     grid: {Array},
-     *     calendarController: {Object},
+     *     extensions: {Array},
      *     currentView: {string}
      * }
      */
     constructor(props) {
         super(props);
-        const selectedContentLayers = this.props.calendarController.settings.contentLayers;
-        this.hasAsyncContent = selectedContentLayers.length > 0;
+        this.hasAsyncContent = this.props.extensions.length > 0;
         this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
-            const contentLayerFactory = new ContentLayerFactory();
-            this.contentLayers = selectedContentLayers.map(layerConfig =>
-                contentLayerFactory.make(layerConfig, [
-                    this.newController(),
-                    this.props.calendarController
-                ])
-            );
+            this.controller = this.newController();
             this.loadAsyncContent(LoadType.INITIAL);
         }
     }
     /**
-     * Poistaa props.gridistä sisältökerroksien modifikaatiot (children &
-     * clickHandlers).
-     */
-    resetGrid() {
-        return this.props.grid.map(rows => rows.map(cell => {
-            if (cell && !(cell instanceof ImmutableCell)) {
-                cell.children = [];
-                cell.clickHandlers = [];
-            }
-        }));
-    }
-    /**
-     * Triggeröi sisältökerroksien päivityksen, jos niitä on.
+     * Triggeröi laajennoksien päivityksen, jos niitä on.
      */
     componentWillReceiveProps(props) {
         if (this.hasAsyncContent) {
@@ -67,46 +47,67 @@ class Content extends React.Component {
         }
     }
     /**
-     * Disabloi sisältökerroksien lataustapahtuman jälkeisen renderöinnin, jos
-     * yksikään ladatuista kerroksista ei palauttanut sisältöä.
+     * Disabloi laajennoksien lataustapahtuman jälkeisen renderöinnin, jos
+     * yksikään ladatuista laajennoksista ei palauttanut sisältöä.
      */
     shouldComponentUpdate(_, state) {
         return state.currentlyHasAsyncContent !== false;
     }
     /**
-     * Lataa & ajaa sisältökerrokset, esim. eventLayerin tapahtumat.
+     * Palauttaa sisältö-API:n, jonka kautta pääsee käsiksi mm. laajennoksien
+     * omiin apeihin. Jos valittuja laajennoksia ei ole, palauttaa undefined.
+     */
+    getController() {
+        return this.controller;
+    }
+    /**
+     * Poistaa props.gridistä laajennoksien modifikaatiot (children &
+     * clickHandlers).
+     *
+     * @access private
+     */
+    resetGrid() {
+        return this.props.grid.map(rows => rows.map(cell => {
+            if (cell && !(cell instanceof ImmutableCell)) {
+                cell.children = [];
+                cell.clickHandlers = [];
+            }
+        }));
+    }
+    /**
+     * Lataa & ajaa laajennokset, esim. eventExtensionin tapahtumat.
      *
      * @access private
      */
     loadAsyncContent(loadType) {
         return Promise.all(
-            this.contentLayers.map(layer => layer.load(loadType))
+            this.props.extensions.map(extension => extension.load(loadType))
         ).then(returnValues => {
-            const layersWhichMaybeHadContent = this.contentLayers.filter((layer, i) =>
-                // Layerit, joiden load palautti false, skipataan. Jos layer
+            const extensionsWhichMaybeHadContent = this.props.extensions.filter((extension, i) =>
+                // Extensionit, joiden load palautti false, skipataan. Jos extension
                 // ei palauttanut mitään, tai jotain muuta kuin false, ladataan
                 // normaalisti.
                 returnValues[i] !== false
             );
-            if (layersWhichMaybeHadContent.length > 0) {
-                this.applyAsyncContent(layersWhichMaybeHadContent);
+            if (extensionsWhichMaybeHadContent.length > 0) {
+                this.applyAsyncContent(extensionsWhichMaybeHadContent);
                 this.setState({currentlyHasAsyncContent: true});
             }
         });
     }
     /**
-     * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne sisältökerroksien
-     * dekoroitavaksi. Sisältökerros voi tällöin esim. lisätä solun children-,
+     * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne laajennoksien
+     * dekoroitavaksi. Laajennos voi tällöin esim. lisätä solun children-,
      * tai clickHandlers-taulukkoon omat lisäyksensä.
      *
      * @access private
      */
-    applyAsyncContent(layersToLoad) {
+    applyAsyncContent(extensionsToLoad) {
         this.resetGrid();
-        (layersToLoad || this.contentLayers).forEach(layer => {
+        (extensionsToLoad || this.props.extensions).forEach(extension => {
             this.props.grid.forEach(row => {
                 row.forEach(cell => {
-                    (cell instanceof Cell) && layer.decorateCell(cell);
+                    (cell instanceof Cell) && extension.decorateCell(cell);
                 });
             });
         });
@@ -152,13 +153,12 @@ class Content extends React.Component {
             : children;
     }
     /**
-     * Public API-versio tästä luokasta sisältökerroksia varten.
+     * Public API-versio tästä luokasta laajennoksia varten.
+     *
+     * @access private
      */
     newController() {
         return {
-            LoadType,
-            Cell,
-            PlaceholderCell,
             refresh: () => {
                 this.applyAsyncContent();
                 this.forceUpdate();

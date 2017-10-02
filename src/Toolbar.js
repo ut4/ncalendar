@@ -19,7 +19,7 @@ const titleFormatters = {
 
 /*
  * Kalenterilayoutin ylin osa. Sisältää oletuksena päänavigaatiopainikkeet,
- * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa.
+ * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa asetuksien kautta.
  *  ___________________________
  * |______--> Toolbar <--______|
  * |__________Header___________|
@@ -33,25 +33,30 @@ class Toolbar extends React.Component {
      *     parts: {string},
      *     calendarController: {Object},
      *     dateUtils: {Object},
+     *     extensions: {Array},
      *     titleFormatter: {Function=}
      * }
      */
     constructor(props) {
         super(props);
-        this.partGenerators = new PartGenerators(props);
+        this.partFactories = new DefaultPartFactories(props);
+        const toolbarPartRegistry = new ToolbarPartRegistry(this.partFactories);
+        this.props.extensions.forEach(extension =>
+            extension.addToolbarPartFactories(toolbarPartRegistry)
+        );
     }
     render() {
         return $el('div', {className: 'toolbar'},
             $el('div', {className: 'row'}, this.props.parts.split('|').map((group, r) =>
                 $el('div', {className: 'col', key: r},
-                    group.split(',').map(partName => this.partGenerators[partName]())
+                    group.split(',').map(partName => this.partFactories[partName]())
                 )
             ))
         );
     }
 }
 
-class PartGenerators {
+class DefaultPartFactories {
     constructor(props) { this.ctrl = props.calendarController; this.props = props; }
     prev() { return $el('button', {onClick: () => this.ctrl.dateCursor.prev(), key: 'prev' }, '<'); }
     next() { return $el('button', {onClick: () => this.ctrl.dateCursor.next(), key: 'next' }, '>'); }
@@ -64,7 +69,32 @@ class PartGenerators {
     day() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_DAY); }, key: 'day'}, 'Päivä'); }
     fill() { return null; }
 }
-const validPartNames = Object.getOwnPropertyNames(PartGenerators.prototype).filter(prop => prop !== 'constructor');
+
+/**
+ * Manageri, joka validoi ja rekisteröi laajennoksien määrittelemät
+ * toolbarPartFactoryt.
+ */
+class ToolbarPartRegistry {
+    constructor(defaultFactories) {
+        this.register = defaultFactories;
+    }
+    /**
+     * @access public
+     * @param {string} name
+     * @param {Function} factoryFn
+     */
+    add(name, factory) {
+        if (typeof name !== 'string') {
+            throw new Error('ToolbarPartFactoryn nimi pitäisi olla typpiä "string"');
+        }
+        if (typeof factory !== 'function') {
+            throw new Error('ToolbarPartFactory pitäisi olla funktio');
+        }
+        if (this.register[name]) {
+            throw new Error(`Toolbarpart-factory "${name}" on jo rekisteröity`);
+        }
+        this.register[name] = factory;
+    }
+}
 
 export default Toolbar;
-export { validPartNames };

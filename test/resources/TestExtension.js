@@ -1,16 +1,22 @@
 import ComponentConstruct from '../../src/ComponentConstruct.js';
 
 /*
- * Testisisältökerros, joka dekoroi kalenterin jokaisen solun komponentilla,
- * johon renderöityy kerroksen latauskerrat.
+ * Testilaajennos, joka dekoroi kalenterin jokaisen solun komponentilla,
+ * johon renderöityy laajennoksen sisällön latauskerrat.
  */
-class TestContentLayer {
-    constructor(contentController, calendarController, loadReturnValue = 'foo') {
+class TestExtension {
+    constructor(calendarController) {
         this.args = [...arguments];
-        this.contentController = contentController;
-        this.calendarController = calendarController;
+        this.calendar = calendarController;
         this.firstCell = null;
         this.loadCount = 0;
+        this.loadReturnValue = 'foo';
+        this.toolbarButtonText = 'Foo';
+    }
+    setSomeValue(value) {
+        this.someValue = value;
+    }
+    setLoadReturnValue(loadReturnValue) {
         this.loadReturnValue = loadReturnValue;
     }
     load() {
@@ -22,7 +28,7 @@ class TestContentLayer {
         this.loadCount = loadCount;
     }
     getContentController() {
-        return this.contentController;
+        return this.calendar.contentController;
     }
     getFirstCell() {
         return this.firstCell;
@@ -30,14 +36,20 @@ class TestContentLayer {
     decorateCell(cell) {
         cell.children.push(new ComponentConstruct('span', null, this.loadCount));
         if (cell && !this.hasOneClickHandler) {
-            cell.clickHandlers.push(TestContentLayer.testClickHandler);
+            cell.clickHandlers.push(TestExtension.testClickHandler);
             this.hasOneClickHandler = true;
             this.firstCell = cell;
         }
+    }
+    addToolbarPartFactories(registry) {
+        registry.add('abutton', () => $el('button', null, this.toolbarButtonText));
+    }
+    getToolbarButtonText() {
+        return this.toolbarButtonText;
     }
     static testClickHandler() {
         //
     }
 }
 
-export default TestContentLayer;
+export default TestExtension;

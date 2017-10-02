@@ -1,5 +1,4 @@
 import Constants from './Constants.js';
-import { validPartNames } from './Toolbar.js';
 
 function validateViewKey(viewNameKey) {
     const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
@@ -12,9 +11,9 @@ function validateDefaultDate(candidate) {
         return 'defaultDate-asetus tulisi olla Date-instanssi';
     }
 }
-function validateLayers(candidate) {
+function validateExtensions(candidate) {
     if (!Array.isArray(candidate)) {
-        return 'contentLayers-asetus tulisi olla taulukko';
+        return 'extensions-asetus tulisi olla taulukko';
     }
 }
 function validateToolbarParts(candidate) {
@@ -22,9 +21,8 @@ function validateToolbarParts(candidate) {
         return 'toolbarParts-asetus tulisi olla merkkijono. esim \'prev,next|title|day,week\'';
     }
     for (const part of candidate.replace(/\|/g, ',').split(',')) {
-        if (validPartNames.indexOf(part) < 0) {
-            return 'titlePart "' + part + '" ei ole validi. Tuetut arvot: ' +
-                validPartNames.join(',');
+        if (!part.length) {
+            return 'Toolbarpart-osa ei voi olla tyhjä';
         }
     }
 }
@@ -72,7 +70,7 @@ const getValidViewName = value => getValidValue(value, validateViewKey, Constant
  * @returns {Object} {
  *     defaultView: {string},
  *     defaultDate: {Date},
- *     contentLayers: {Array},
+ *     extensions: {Array},
  *     toolbarParts: {string},
  *     titleFormatters: {Object},
  *     layoutChangeBreakPoint: {number},
@@ -83,7 +81,7 @@ const getValidViewName = value => getValidValue(value, validateViewKey, Constant
 export default userSettings => ({
     defaultView: getValidViewName(userSettings.defaultView),
     defaultDate: getValidValue(userSettings.defaultDate, validateDefaultDate, new Date()),
-    contentLayers: getValidValue(userSettings.contentLayers, validateLayers, []),
+    extensions: getValidValue(userSettings.extensions, validateExtensions, []),
     toolbarParts: getValidValue(userSettings.toolbarParts, validateToolbarParts, 'prev,next,today|title|month,week,day'),
     titleFormatters: getValidValue(userSettings.titleFormatters, validateFormatters, {}),
     layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800),
