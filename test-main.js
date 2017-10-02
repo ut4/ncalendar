@@ -1,7 +1,7 @@
 import './main.js';
 import './test-header.js';
-import './test/event/CalendarLayoutComponentTests(with-eventlayer).js';
-import './test/event/EventLayerTests.js';
+import './test/event/CalendarLayoutComponentTests(with-event-extension).js';
+import './test/event/EventExtensionTests.js';
 import './test/event/EventModalComponentTests.js';
 import './test/event/EventTests.js';
 import './test/event/MonthViewEventRenderingTests.js';

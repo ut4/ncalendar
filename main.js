@@ -1,9 +1,9 @@
 import './app-header.js';
 import nullcalendar from './nullcalendar.js';
-import EventLayer from './src/event/EventLayer.js';
+import EventExtension from './src/event/EventExtension.js';
 import RepositoryFactory from './src/event/RepositoryFactory.js';
 
-nullcalendar.registerContentLayer('event', EventLayer);
-nullcalendar.events = {EventLayer, RepositoryFactory};
+nullcalendar.registerExtension('event', EventExtension);
+nullcalendar.events = {EventExtension, RepositoryFactory};
 
 export default nullcalendar;

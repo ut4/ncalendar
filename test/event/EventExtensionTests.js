@@ -1,10 +1,12 @@
-import EventLayer from '../../src/event/EventLayer.js';
+import EventExtension from '../../src/event/EventExtension.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
 
-QUnit.module('event/EventLayer', function() {
+QUnit.module('event/EventExtension', function() {
     QUnit.test('construct luo repositoryn settings-objektin perusteella', assert => {
         const settings = {repository: 'memory', defaultEvents: [{start: new Date(), title: 'foo'}]};
-        const constructedRepository = new EventLayer(settings, null, null).repository;
+        const extension = new EventExtension(null);
+        extension.initialize(settings);
+        const constructedRepository = extension.repository;
         //
         assert.ok(constructedRepository instanceof InMemoryEventRepository,
             'Pitäisi luoda settings.repository:yn määritelty repository'

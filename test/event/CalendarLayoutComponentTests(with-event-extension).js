@@ -2,15 +2,15 @@ import {domUtils} from '../resources/Utils.js';
 import CalendarLayout from '../../src/CalendarLayout.js';
 import Content from '../../src/Content.js';
 import Event from '../../src/event/Event.js';
-import EventLayer from '../../src/event/EventLayer.js';
+import EventExtension from '../../src/event/EventExtension.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
-import ContentLayerFactory from '../../src/ContentLayerFactory.js';
+import ExtensionFactory from '../../src/ExtensionFactory.js';
 
 const now = new Date();
 const rtu = ReactTestUtils;
-new ContentLayerFactory().register('eventasd', EventLayer);
+new ExtensionFactory().register('eventasd', EventExtension);
 
-QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
+QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hooks) {
     let testEvents;
     let repository;
     hooks.beforeEach(() => {
@@ -27,9 +27,7 @@ QUnit.module('event/CalendarLayoutComponent(with-eventlayer)', function(hooks) {
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.rendered = rtu.renderIntoDocument(
             $el(CalendarLayout, {
-                contentLayers: [{name: 'eventasd', args: (contentCtrl, calCtrl) =>
-                    [repository, contentCtrl, calCtrl]
-                }]
+                extensions: [{name: 'eventasd', setup: ext => ext.initialize(repository)}]
             })
         );
     });

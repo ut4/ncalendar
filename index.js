@@ -16,8 +16,8 @@ const defaultEvents = [
 nullcalendar.registerContentLayer('myevent', (a, b) =>
     new EventLayer(new RepositoryFactory().make('memory', {defaultEvents}), a, b)
 );
-nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: ['myevent']});*/
+nullcalendar.newCalendar(document.getElementById('cal'), {extensions: ['myevent']});*/
 // Tapa 2
-nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: [
-    {name: 'event', args: (a, b) => [{repository: 'memory', defaultEvents}, a, b]}
+nullcalendar.newCalendar(document.getElementById('cal'), {extensions: [
+    {name: 'event', setup: ext => ext.initialize({repository: 'memory', defaultEvents})}
 ]});

@@ -7,8 +7,8 @@ const renderingTestUtils = {
             $el(CalendarLayout, {
                 defaultView,
                 defaultDate: new Date(defaultDate),
-                contentLayers: [{name: 'event', args: (a, b) =>
-                    [{repository: 'memory', defaultEvents: arrayUtils.shuffle(defaultEvents)}, a, b]
+                extensions: [{name: 'event', setup: ext =>
+                    ext.initialize({repository: 'memory', defaultEvents: arrayUtils.shuffle(defaultEvents)})
                 }]
             })
         );

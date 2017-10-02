@@ -9,25 +9,27 @@ import { PlaceholderCell } from '../Content.js';
 import Constants from '../Constants.js';
 
 /*
- * Tapahtumasisältökerros, lisää kalenterisolujen children-taulukkoon {repository}:n
+ * Tapahtumalaajennos, lisää kalenterisolujen children-taulukkoon {repository}:n
  * löytämät tapahtumat {calendarController.dateCursor.range}:n ajalta.
  */
-class EventLayer {
+class EventExtension {
     /**
-     * @param {Object} repositoryOrSettings Luokka, joka tarjoaa & tallentaa tapahtumadatan | configuraatio, jonka perusteella em. luokan voi tehdä
-     * @param {Object} contentController Kalenterisisällön API
      * @param {Object} calendarController Kalenterin API
      */
-    constructor(repositoryOrSettings, contentController, calendarController) {
-        this.repository = !isValidRepository(repositoryOrSettings)
-            ? new RepositoryFactory().make(repositoryOrSettings.repository, repositoryOrSettings)
-            : repositoryOrSettings;
-        this.contentController = contentController;
-        this.calendarController = calendarController;
+    constructor(calendarController) {
+        this.calendar = calendarController;
         /**
          * @prop {Object} key = eventin id, value = stackIndex-arvo
          */
         this.stackIndexes = {};
+    }
+    /**
+     * @param {Object} repositoryOrSettings Luokka, joka tarjoaa & tallentaa tapahtumadatan | configuraatio, jonka perusteella em. luokan voi tehdä
+     */
+    initialize(repositoryOrSettings) {
+        this.repository = !isValidRepository(repositoryOrSettings)
+            ? new RepositoryFactory().make(repositoryOrSettings.repository, repositoryOrSettings)
+            : repositoryOrSettings;
     }
     /**
      * Hakee tapahtumadatan repositorystä ja asettaa ne {this.events}iin.
@@ -36,11 +38,11 @@ class EventLayer {
      */
     load() {
         this.eventSplitter = newSplitter(
-            this.calendarController.currentView,
-            this.calendarController.dateUtils,
-            this.calendarController.dateCursor
+            this.calendar.currentView,
+            this.calendar.dateUtils,
+            this.calendar.dateCursor
         );
-        const range = this.calendarController.dateCursor.range;
+        const range = this.calendar.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {
                 this.events = this.makeEventCollection(events);
@@ -68,10 +70,13 @@ class EventLayer {
             return this.newEventConstruct(event);
         }));
         //
-        cell.clickHandlers.push(() => this.calendarController.openModal(new ComponentConstruct(
+        cell.clickHandlers.push(() => this.calendar.openModal(new ComponentConstruct(
             EventModal,
             {event: new Event({start: new Date(cell.date)}), onConfirm: event => this.createEvent(event)}
         )));
+    }
+    addToolbarPartFactories() {
+        //
     }
     /**
      * @access protected
@@ -80,9 +85,9 @@ class EventLayer {
         this.repository.insert(event).then(
             created => {
                 this.events.push(created);
-                this.events = this.events.sortByLength();
+                this.events = this.eventSplitter.sort(this.events);
                 this.eventSplitter.splitLongEvent(created, spawning => this.events.push(spawning));
-                this.contentController.refresh();
+                this.calendar.contentController.refresh();
             },
             () => {}
         );
@@ -98,7 +103,7 @@ class EventLayer {
                 this.clearSpawnings(event);
                 // ...ja laske ne uudelleen
                 this.eventSplitter.splitLongEvent(updated, spawning => this.events.unshift(spawning));
-                this.contentController.refresh();
+                this.calendar.contentController.refresh();
             },
             () => {}
         );
@@ -111,7 +116,7 @@ class EventLayer {
             () => {
                 this.events.splice(this.events.indexOf(event), 1);
                 this.clearSpawnings(event);
-                this.contentController.refresh();
+                this.calendar.contentController.refresh();
             },
             () => {}
         );
@@ -136,14 +141,14 @@ class EventLayer {
      */
     newEventConstruct(event) {
         return new ComponentConstruct(
-            this.calendarController.currentView !== Constants.VIEW_MONTH ? EventComponent : MonthEventComponent,
+            this.calendar.currentView !== Constants.VIEW_MONTH ? EventComponent : MonthEventComponent,
             {
                 event,
                 stackIndex: this.stackIndexes[event.id],
                 cellPadding: this.getCellPadding(),
                 onEdit: () => {
                     if (event.isSpawning) event = this.getMasterEvent(event);
-                    this.calendarController.openModal(new ComponentConstruct(
+                    this.calendar.openModal(new ComponentConstruct(
                         EventModal,
                         {
                             event: new Event(event),
@@ -163,10 +168,10 @@ class EventLayer {
         if (!this.events.length) {
             return [];
         }
-        return this.calendarController.currentView === Constants.VIEW_MONTH
-            ? this.events.filterByDate(date.getDate(), this.calendarController.dateCursor.range.start.getMonth())
-            : this.events.filterByWeekDay(date.getDay(), this.calendarController.currentView === Constants.VIEW_DAY ||
-                !this.calendarController.isCompactViewEnabled ? date.getHours() : null
+        return this.calendar.currentView === Constants.VIEW_MONTH
+            ? this.events.filterByDate(date.getDate(), this.calendar.dateCursor.range.start.getMonth())
+            : this.events.filterByWeekDay(date.getDay(), this.calendar.currentView === Constants.VIEW_DAY ||
+                !this.calendar.isCompactViewEnabled ? date.getHours() : null
             );
     }
     /**
@@ -177,7 +182,7 @@ class EventLayer {
         if (!this.events.length) {
             return [];
         }
-        return this.calendarController.currentView !== Constants.VIEW_MONTH
+        return this.calendar.currentView !== Constants.VIEW_MONTH
             ? this.events.getOngoingWeekEvents(compareDate.getDay(), compareDate.getHours())
             : this.events.getOngoingMonthEvents(compareDate.getDate(), compareDate.getMonth());
     }
@@ -221,7 +226,7 @@ class EventLayer {
      */
     getCellPadding() {
         if (!this.computedPadding) {
-            const renderedGrid = this.contentController.getRenderedGrid();
+            const renderedGrid = this.calendar.contentController.getRenderedGrid();
             if (renderedGrid) {
                 //                                  .main        .row        .col        .cell
                 const padding = getComputedStyle(renderedGrid.children[0].children[0].children[0]).paddingTop;
@@ -238,4 +243,4 @@ function isValidRepository(obj) {
     return obj && typeof obj.getAll === 'function';
 }
 
-export default EventLayer;
+export default EventExtension;
