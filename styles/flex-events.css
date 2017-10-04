@@ -33,7 +33,7 @@
 .cal.day .event.has-split-end { border-bottom-right-radius: 0; border-bottom-left-radius: 0;
     margin-bottom: -2px; border-bottom: none; }
 
-/* -- layout month ---------------------------------------------------------- */
+/* -- layout month & week-compact ------------------------------------------- */
 .cal.month .event,
 .cal.month-compact .event,
 .cal.week-compact .event { min-height: 17px; position: absolute; width: 100%; white-space: nowrap; }

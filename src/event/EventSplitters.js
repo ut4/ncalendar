@@ -20,9 +20,9 @@ class MonthEventSplitter {
      * @returns {boolean}
      */
     isMultiEvent(event) {
-        const durationInDays = (event.end - event.start) / 1000 / 60 / 60 / 24;
+        const durationInDays = getEventDurationInDays(event);
         // Seuraavalle viikolle menevät päiväneljännekset
-        return ((event.start.getDay() || 7) + durationInDays - Constants.DAYS_IN_WEEK - 1 > 0.25);
+        return ((event.start.getDay() || 7) + durationInDays - Constants.DAYS_IN_WEEK - 1) > 0.25;
     }
     /**
      * @access public
@@ -41,6 +41,25 @@ class MonthEventSplitter {
      */
     sort(events) {
         return events.sortByLength();
+    }
+}
+
+class CompactMonthEventSplitter extends MonthEventSplitter {
+    /**
+     * @inheritdoc
+     */
+    isMultiEvent(event) {
+        // Seuraavalle riville menevät päiväneljännekset
+        return (getEventDurationInDays(event) - (event.start.getDate() % 2)) > 0.25;
+    }
+    /**
+     * @inheritdoc
+     */
+    getSplitPosition(event) {
+        const firstDayOfNextRow = new Date(event.start);
+        const eventStartDate = event.start.getDate();
+        firstDayOfNextRow.setDate(eventStartDate + (eventStartDate % 2 ? 2 : 1));
+        return firstDayOfNextRow;
     }
 }
 
@@ -75,6 +94,24 @@ class WeekEventSplitter {
      */
     sort(events) {
         return events.sort((a, b) => a.start > b.start ? 1 : -1);
+    }
+}
+
+class CompactWeekEventSplitter extends WeekEventSplitter {
+    /**
+     * @inheritdoc
+     */
+    isMultiEvent(event) {
+        // Seuraavalle riville menevät päiväneljännekset
+        return (getEventDurationInDays(event) - ((event.start.getDay() || 7) % 2 + 1)) > 0.25;
+    }
+    /**
+     * @inheritdoc
+     */
+    getSplitPosition(event) {
+        const firstDayOfNextRow = new Date(event.start);
+        firstDayOfNextRow.setDate(event.start.getDate() + ((event.start.getDay() || 7) % 2 + 1));
+        return firstDayOfNextRow;
     }
 }
 
@@ -131,6 +168,15 @@ class SplitterDecorator {
 }
 
 /**
+ * @access protected
+ * @param {Event} event
+ * @returns {number}
+ */
+function getEventDurationInDays(event) {
+   return (event.end - event.start) / 1000 / 60 / 60 / 24;
+}
+
+/**
  * @param {string} viewName
  * @param {DateUtils} dateUtils
  * @returns {MonthEventSplitter|WeekEventSplitter}
@@ -138,8 +184,11 @@ class SplitterDecorator {
 function newSplitter(viewName, dateUtils, dateCursor) {
     const splitterMap = {
         [Constants.VIEW_MONTH]: MonthEventSplitter,
+        [Constants.VIEW_MONTH + '-compact']: CompactMonthEventSplitter,
         [Constants.VIEW_WEEK]: WeekEventSplitter,
-        [Constants.VIEW_DAY]: DayEventSplitter
+        [Constants.VIEW_WEEK + '-compact']: CompactWeekEventSplitter,
+        [Constants.VIEW_DAY]: DayEventSplitter,
+        [Constants.VIEW_DAY + '-compact']: DayEventSplitter
     };
     return new SplitterDecorator(new splitterMap[viewName](dateUtils), dateCursor);
 }

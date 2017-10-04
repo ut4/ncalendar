@@ -38,7 +38,7 @@ class EventExtension {
      */
     load() {
         this.eventSplitter = newSplitter(
-            this.calendar.currentView,
+            this.calendar.currentView + (this.calendar.isCompactViewEnabled ? '-compact' : ''),
             this.calendar.dateUtils,
             this.calendar.dateCursor
         );
@@ -59,7 +59,9 @@ class EventExtension {
     decorateCell(cell) {
         if (cell instanceof PlaceholderCell) {
             cell.children.push(new ComponentConstruct('div', null,
-                `Tällä viikolla ${this.events.length} tapahtumaa`
+                `Tällä viikolla ${this.events.filter(e =>
+                    e.id.toString().indexOf('-spawning') < 0
+                ).length} tapahtumaa`
             ));
             return;
         }
@@ -140,8 +142,12 @@ class EventExtension {
      * @access private
      */
     newEventConstruct(event) {
+        const currentView = this.calendar.currentView;
         return new ComponentConstruct(
-            this.calendar.currentView !== Constants.VIEW_MONTH ? EventComponent : MonthEventComponent,
+            (currentView === Constants.VIEW_MONTH ||
+            (currentView === Constants.VIEW_WEEK && this.calendar.isCompactViewEnabled))
+                ? MonthEventComponent
+                : EventComponent,
             {
                 event,
                 stackIndex: this.stackIndexes[event.id],
