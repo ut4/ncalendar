@@ -6,6 +6,7 @@ import './test/event/EventModalComponentTests.js';
 import './test/event/EventTests.js';
 import './test/event/MonthViewEventRenderingTests.js';
 import './test/event/RepositoryFactoriesTests.js';
+import './test/event/SelectorsTests.js';
 import './test/event/WeekAndDayViewEventRenderingTests.js';
 import './test/CalendarLayoutComponentTests.js';
 import './test/CalendarLayoutComponentTests(day).js';

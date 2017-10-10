@@ -2,6 +2,7 @@ let autoIncrement = 1;
 
 class Event {
     constructor(data) {
+        Object.assign(this, data);
         this.id = !data.id ? autoIncrement++ : data.id;
         this.setTitle(data.title);
         this.setStart(data.start);

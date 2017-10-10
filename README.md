@@ -294,18 +294,20 @@ nullcalendar.newCalendar(myEl, {
 
 - toolbarPartRegistry.add(name, factoryFn)
 
-## Events-extension
+# Events-extension
 
-### Usage
+## Usage
 
 ```javascript
 <script src="inferno-preact-or-react.js"></script>
 <script src="dist/nullcalendar+events.min.js"></script>
-nullcalendar.newCalendar(document.getElementById('cal'), {contentLayers: [
-    {name: 'event', args: (contentCtrl, calCtrl) =>
-        [{repository: 'memory'}, contentCtrl, calCtrl]
-    }
-]});
+nullcalendar.newCalendar(document.getElementById('cal'), {
+    extensions: [
+        {name: 'event', setup: ee => ee.initialize({repository: 'memory'})}
+    ],
+    // Event-laajennoksen rekisteröimät arvot: event-categories ja event-tags.
+    toolbarParts: 'prev,next,today|title|event-categories,week,month'
+});
 ```
 
 # License

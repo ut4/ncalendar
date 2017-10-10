@@ -10,7 +10,11 @@ if (window.Inferno) {
     window.ReactTestUtils.findRenderedDOMComponentWithClass = Inferno.TestUtils.findRenderedDOMElementWithClass;
     window.ReactTestUtils.scryRenderedDOMComponentsWithTag = Inferno.TestUtils.scryRenderedDOMElementsWithTag;
     window.ReactTestUtils.findRenderedDOMComponentWithTag = Inferno.TestUtils.findRenderedDOMElementWithTag;
-    window.ReactTestUtils.Simulate = {click: el => el.click(), input: el => triggerEvent('input', el)};
+    window.ReactTestUtils.Simulate = {
+        click: el => el.click(),
+        input: el => triggerEvent('input', el),
+        change: el => triggerEvent('change', el)
+    };
 } else if (window.React) {
     window.React.INPUT_EVENT = 'change';
     window.ReactTestUtils = React.addons.TestUtils;

@@ -157,6 +157,7 @@ class SplitterDecorator {
             }
             // ...jatka seuraavana päivänä/maanantaina
             const spawning = new Event(event);
+            spawning.splitEnd = undefined;
             spawning.isSpawning = true;
             spawning.start = new Date(spawningStart);
             spawning.end = new Date(event.end);

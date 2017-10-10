@@ -50,7 +50,7 @@ class EventModal extends React.Component {
     render() {
         return $el('div', null,
             $el('h3', null, !this.props.event.title ? 'Luo uusi tapahtuma' : ['Muokkaa tapahtumaa',
-                $el('a', {href: '', title: 'Poista tapahtuma', onClick: e => this.delete(e) }, 'Poista tapahtuma')
+                $el('a', {href: '', title: 'Poista tapahtuma', onClick: e => this.delete(e), key: 'dl' }, 'Poista tapahtuma')
             ]),
             $el('input', {value: this.state.title, [React.ON_INPUT]: e => this.receiveInputValue(e.target), name: 'title'}),
             $el('input', {value: this.state.start, [React.ON_INPUT]: e => this.receiveInputValue(e.target), name: 'start', type: 'date'}),

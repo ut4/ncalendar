@@ -4,6 +4,7 @@ import EventModal from './EventModal.js';
 import EventCollection from './EventCollection.js';
 import { newSplitter } from './EventSplitters.js';
 import RepositoryFactory from './RepositoryFactory.js';
+import { DropdownSelector, CheckboxSelector } from './Selectors.js';
 import ComponentConstruct from '../ComponentConstruct.js';
 import { PlaceholderCell } from '../Content.js';
 import Constants from '../Constants.js';
@@ -22,6 +23,18 @@ class EventExtension {
          * @prop {Object} key = eventin id, value = stackIndex-arvo
          */
         this.stackIndexes = {};
+        /**
+         * Funktio, jolla filtteröidään tapahtumat collectEvents-metodissa.
+         *
+         * @prop {Function=}
+         */
+        this.filterFn = null;
+        /**
+         * Toolbariin renderöity valitsin.
+         *
+         * @prop {DropdownSelector|CheckboxSelector=}
+         */
+        this.selector = null;
     }
     /**
      * @param {Object} repositoryOrSettings Luokka, joka tarjoaa & tallentaa tapahtumadatan | configuraatio, jonka perusteella em. luokan voi tehdä
@@ -45,7 +58,9 @@ class EventExtension {
         const range = this.calendar.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
             .then(events => {
-                this.events = this.makeEventCollection(events);
+                const collection = new EventCollection(...events.map(event => new Event(event)));
+                this.selector && this.selector.setSelectables(collection);
+                this.events = this.splitAllLongEvents(collection);
             }, () => {
                 this.events = new EventCollection();
             });
@@ -77,8 +92,31 @@ class EventExtension {
             {event: new Event({start: new Date(cell.date)}), onConfirm: event => this.createEvent(event)}
         )));
     }
-    addToolbarPartFactories() {
+    /**
+     * Lisää 'event-categories', ja 'event-tags' toolbarPartFactoryt, jolla
+     * voidaan filtteröidä näkymään renderöitäviä eventejä esim. kategorian tai
+     * tagien perusteella.
+     *
+     * @access public
+     */
+    addToolbarPartFactories(registry) {
         //
+        const props = {
+            eventExtension: this.calendar.getExtension('event'),
+            ref: cmp => { this.selector = cmp; }
+        };
+        registry.add('event-categories', () => $el(DropdownSelector, props));
+        registry.add('event-tags', () => $el(CheckboxSelector, props));
+    }
+    /**
+     * Asettaa dekoroinnin yhteydessä ajettavan lisäfiltterin {filterFn}, ja
+     * triggeröi uudelleendekoroinnin.
+     *
+     * @access public
+     */
+    applyFilter(filterFn) {
+        this.filterFn = filterFn;
+        this.calendar.contentController.refresh();
     }
     /**
      * @access protected
@@ -127,8 +165,7 @@ class EventExtension {
      * @access private
      * @returns {EventCollection}
      */
-    makeEventCollection(events) {
-        const collection = new EventCollection(...events.map(event => new Event(event)));
+    splitAllLongEvents(collection) {
         const spawnings = []; // seuraavalle viikolle menevät osuudet
         collection.forEach(event => {
             this.eventSplitter.splitLongEvent(event, spawning => spawnings.push(spawning));
@@ -174,11 +211,12 @@ class EventExtension {
         if (!this.events.length) {
             return [];
         }
-        return this.calendar.currentView === Constants.VIEW_MONTH
+        const events = this.calendar.currentView === Constants.VIEW_MONTH
             ? this.events.filterByDate(date.getDate(), this.calendar.dateCursor.range.start.getMonth())
             : this.events.filterByWeekDay(date.getDay(), this.calendar.currentView === Constants.VIEW_DAY ||
                 !this.calendar.isCompactViewEnabled ? date.getHours() : null
             );
+        return !this.filterFn ? events : events.filter(this.filterFn);
     }
     /**
      * @access private
