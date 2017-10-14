@@ -1,4 +1,4 @@
-/**
+/*
  * Kalenterikontrolleri/API:n kautta avattava/suljettava näkymä, johon voidaan
  * ladata custom-sisältöä.
  */

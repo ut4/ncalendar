@@ -77,18 +77,14 @@ const mySettings = {
     /**
      * Ladattavat laajennokset.
      *
-     * @prop {string|Object[]}
+     * @prop {string[]}
      * @default []
      */
-    extensions: [
-        'event',
-        // tai
-        {name: 'event'}
-    ],
+    extensions: ['event'],
     /**
      * Toolbariin renderöitävät sarakkeet, ja niiden sisältö. Mahdolliset arvot:
-     * fill, prev, next, today, title, month, week ja day. "|" -merkki luo uuden
-     * sarakkeen.
+     * fill, prev, next, today, title, month, week ja day, ja näiden lisäksi
+     * laajennoksien rekisteröimät arvot. "|" -merkki luo uuden sarakkeen.
      *
      * @prop {string}
      * @default 'prev,next,today|title|month,week,day'
@@ -122,6 +118,8 @@ const mySettings = {
      * @default undefined aka. selainmoottori päättää
      */
     locale: 'fi'
+    //
+    // Esim. laajennos-spesifisiä asetuksia tänne
 };
 ```
 
@@ -134,6 +132,9 @@ import { LoadType, PlaceholderCell } from './src/Content.js';
 
 /*
  * Laajennos, joka lisää kalenterin jokaisen perjantain sisällöksi {this.fridayText}.
+ *
+ * Note: load, decorateCell, addToolbarPartFactories, ja static defineSettings on
+ * laajennos-rajapinnan metodeja, joista kolme ensimmäistä on pakollisia.
  */
 class MyExtension {
     /**
@@ -142,6 +143,7 @@ class MyExtension {
     constructor(calendarController) {
         console.log(typeof calendarController.changeView); // function
         this.calendar = calendarController;
+        this.setFridayText(calendarController.settings.myExtensionFridayText);
     }
     /**
      * Triggeröityy aina kun sivu ladataan, kalenterin näkymä vaihtuu, tai
@@ -196,18 +198,43 @@ class MyExtension {
      * Mahdollista custom -toolbar-osien lisäyksen kalenteriin, joihin taas voidaan
      * viitata settings-objektin toolbarParts-asetuksessa.
      *
-     * @param {Object} registry @see https://github.com/ut4/ncalendar#toolbarpartregistry
+     * @param {Object} toolbarPartRegister @see https://github.com/ut4/ncalendar#toolbarpartregister
      */
-    addToolbarPartFactories(registry) {
-        const toolbarPartName = 'abutton';
-        const toolbarPartFactory = () => $el(
-            'span',
-            {onClick: () =>
-                this.calendar.getExtension('foo1').setAndRenderFridayText('fyyyy')
-            },
-            'Click dis '
+    addToolbarPartFactories(toolbarPartRegister) {
+        toolbarPartRegister.add(
+            // Toolbar-osan nimi
+            'abutton',
+            // Toolbar-osa -factory
+            () => $el(
+                'span',
+                {onClick: () =>
+                    this.calendar.getExtension('foo').setAndRenderFridayText('fyyyy')
+                },
+                'Click dis '
+            )
         );
-        registry.add(toolbarPartName, toolbarPartFactory);
+        // toolbarPartRegister.add('someOtherProp', ...) ...
+    }
+    /**
+     * Mahdollistaa custom-asetuksien lisäyksen kalenteriin. Esim. settingsRegister.add(
+     * 'myExtensionFoo', ...) -kutsun jälkeen lisättyä asetusta 'myExtensionFoo'
+     * voidaan käyttää uutta kalenteria luodessa: newCalendar(el, {
+     *     myExtensionFoo: 'someValue',
+     *     ...
+     * }). Note: staattinen metodi, kutsutaan ennen laajennoksen luomista.
+     *
+     * @param {Object} settingsRegister @see https://github.com/ut4/ncalendar#settingsregister
+     */
+    static defineSettings(settingsRegister) {
+        settingsRegister.add(
+            // Asetuksen nimi
+            'myExtensionFridayText',
+            // Arvon validaattori. Palauttaa virheviestin (invalid), tai minkä tahansa muun arvon (valid).
+            text => typeof text !== 'string' ? '%s tulisi olla merkkijono' : true,
+            // Käytettävä oletusarvo sen puuttuessa kalenterin asetuksissa
+            'yayy'
+        );
+        // settingsRegister.add('myExtensionSomeOtherProp', ...) ...
     }
     /**
      * Aseta jokaiselle perjantaille lisättävä teksti.
@@ -228,27 +255,16 @@ class MyExtension {
 
 // -- 2. Rekisteröi ----
 // -----------------------------------------------------------------------------
-// (a) - konfiguroimaton
-nullcalendar.registerExtension('foo2', MyExtension);
-// (b) - prekonfiguroitu
-nullcalendar.registerExtension('foo1', calendarCtrl => {
-    const myExtension = new MyExtension(calendarCtrl);
-    myExtension.setFridayText('yayy');
-    return myExtension;
-});
-
+nullcalendar.registerExtension('foo', MyExtension);
+// tai
+// nullcalendar.registerExtension('foo', calCtrl => new MyExtension(calCtrl));
 
 // -- 3. Ota käyttöön ----
 // -----------------------------------------------------------------------------
-// (a) - konfiguroimaton
-nullcalendar.newCalendar(myEl, {
-    extensions: [
-        {name: 'foo2', setup: myExtension => myExtension.setFridayText('yayy')}
-    ]
-});
-// (b) - prekonfiguroitu
-nullcalendar.newCalendar(myEl, {
-    extensions: ['foo1']
+nullcalendar.newCalendar(document.getElementById('cal'), {
+    extensions: ['foo'],
+    toolbarParts: 'prev,next,today|title|abutton,month,week,day',
+    myExtensionFridayText: 'yayy'
 });
 ```
 
@@ -288,11 +304,17 @@ nullcalendar.newCalendar(myEl, {
 - contentController.refresh()
 - contentController.reRender()
 
-## ToolbarPartRegistry
+## ToolbarPartRegister
 
 ### Methods
 
-- toolbarPartRegistry.add(name, factoryFn)
+- toolbarPartRegister.add(name, factoryFn)
+
+## SettingsRegister
+
+### Methods
+
+- settingsRegister.add(name, validator[, defaultValue])
 
 # License
 

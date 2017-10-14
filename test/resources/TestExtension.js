@@ -10,7 +10,7 @@ class TestExtension {
         this.calendar = calendarController;
         this.firstCell = null;
         this.loadCount = 0;
-        this.loadReturnValue = 'foo';
+        this.loadReturnValue = calendarController.settings.testExtensionLoadReturnValue;
         this.toolbarButtonText = 'Foo';
     }
     setSomeValue(value) {
@@ -41,11 +41,18 @@ class TestExtension {
             this.firstCell = cell;
         }
     }
-    addToolbarPartFactories(registry) {
-        registry.add('abutton', () => $el('button', null, this.toolbarButtonText));
+    addToolbarPartFactories(register) {
+        register.add('abutton', () => $el('button', null, this.toolbarButtonText));
     }
     getToolbarButtonText() {
         return this.toolbarButtonText;
+    }
+    static defineSettings(register) {
+        register.add(
+            'testExtensionLoadReturnValue',
+            value => value === 'qwerty' ? '%s ei voi olla "qwerty"' : true,
+            'foo'
+        );
     }
     static testClickHandler() {
         //
