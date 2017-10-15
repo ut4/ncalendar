@@ -1,10 +1,10 @@
-import AbstractViewLayout from './AbstractViewLayout.js';
-import {HOURS_ARRAY, ImmutableCell, Cell} from './Content.js';
+import WeekViewLayout from './WeekViewLayout.js';
+import {ImmutableCell, Cell} from './Content.js';
 
 /*
  * Kalenterin pääsisältö day-muodossa.
  */
-class DayViewLayout extends AbstractViewLayout {
+class DayViewLayout extends WeekViewLayout {
     /**
      * Palauttaa 2-sarakkellisen headerin, jossa yksi tyhjä solu tuntisaraketta
      * varten, ja yksi viikonpäiväsolu.
@@ -19,10 +19,11 @@ class DayViewLayout extends AbstractViewLayout {
      * Day-näkymällä ei ole erillistä compact-muotoa.
      *
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getCompactLayout() {
-        return this.getFullLayout();
+    getCompactLayout(hoursToDisplay) {
+        return this.getFullLayout(hoursToDisplay);
     }
     /**
      * Generoi vuorokauden jokaiselle tunnille rivin, jossa yksi tuntisarake,
@@ -31,13 +32,14 @@ class DayViewLayout extends AbstractViewLayout {
      * sisältönä aina null wrapattuna Cell-instanssiin.
      *
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getFullGrid() {
+    getFullGrid(hoursToDisplay) {
         const rollingDate = new Date(this.dateCursor.range.start);
         const isToday = rollingDate.toDateString() === new Date().toDateString();
         // Päivän jokaiselle tunnille rivi, ...
-        return HOURS_ARRAY.map(hour => {
+        return this.generateHourRange(hoursToDisplay).map(hour => {
             rollingDate.setHours(hour);
             // jossa tuntisarake, ja sisältösarake.
             return [

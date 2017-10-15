@@ -50,7 +50,7 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
                 'Pitäisi passata laajennoksen loadTypeksi LoadType.INITIAL'
             );
             assert.ok(this.contentApplyCallSpy.calledOnce, 'Pitäisi ajaa ladattu sisältö');
-            assert.equal(renderedRows.length, Constants.HOURS_IN_DAY);
+            assert.ok(renderedRows.length > 0);
             assert.ok(
                 isEveryCellDecoratedWith(rendered, expectedTestExtension.loadCount),
                 'Jokainen solu pitäisi olla dekoroitu'

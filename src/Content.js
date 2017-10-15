@@ -1,6 +1,3 @@
-import Constants from './Constants.js';
-
-const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
 const LoadType = Object.freeze({
     INITIAL: 'initial',
     NAVIGATION: 'navigation',
@@ -196,4 +193,4 @@ class ImmutableCell {
 }
 
 export default Content;
-export {Cell, ImmutableCell, PlaceholderCell, LoadType, HOURS_ARRAY};
+export {Cell, ImmutableCell, PlaceholderCell, LoadType};

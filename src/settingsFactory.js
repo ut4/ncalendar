@@ -44,6 +44,19 @@ function validateBreakPoint(candidate) {
         return 'layoutChangeBreakPoint-asetus tulisi olla kokonaisluku';
     }
 }
+function validateHours(candidate) {
+    if (typeof candidate !== 'object' ||
+        typeof candidate.first !== 'number' ||
+        typeof candidate.last !== 'number') {
+        return 'hours-asetus tulisi olla objekti, esim. {first: 8, last: 16}';
+    }
+    if (candidate.first >= candidate.last) {
+        return 'hours.first tulisi olla vähemmän kuin hours.last';
+    }
+    if (candidate.last > 23) {
+        return 'hours.last tulisi olla vähemmän kuin 24';
+    }
+}
 function validateLocale(candidate) {
     if (!Array.isArray(candidate) && typeof candidate !== 'string') {
         return 'locale-asetus tulisi olla merkkijono tai taulukko';
@@ -78,6 +91,7 @@ const knownSettings = {
     toolbarParts: {validator: validateToolbarParts, defaultValue: 'prev,next,today|title|month,week,day'},
     titleFormatters: {validator: validateFormatters, defaultValue: {}},
     layoutChangeBreakPoint: {validator: validateBreakPoint, defaultValue: 800},
+    hours: {validator: validateHours, defaultValue: {first: 6, last: 17}},
     locale: {validator: validateLocale, defaultValue: undefined}
 };
 const settingsRegister = {
@@ -101,6 +115,7 @@ const settingsFactory = {
      *     toolbarParts: {string},
      *     titleFormatters: {Object},
      *     layoutChangeBreakPoint: {number},
+     *     hours: {Object},
      *     locale: {string|string[]}
      * }
      */

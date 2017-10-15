@@ -112,6 +112,13 @@ const mySettings = {
      */
     layoutChangeBreakPoint: 600,
     /**
+     * Vuorokauden tunnit, jotka renderöidään Week-, ja Day-näkymissä.
+     *
+     * @prop {Object}
+     * @default {first: 6, last: 17}
+     */
+    hours: {first: 8, last: 16},
+    /**
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
      *
      * @prop {string|string[]}

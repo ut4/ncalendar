@@ -18,7 +18,8 @@ class CalendarLayout extends React.Component {
      *     extensions: {Array=},
      *     toolbarParts: {string=},
      *     titleFormatters: {Object=},
-     *     layoutChangeBreakPoint: {number=}
+     *     layoutChangeBreakPoint: {number=},
+     *     hours: {Object=},
      *     locale: {string|string[]=}
      * }
      */
@@ -133,7 +134,8 @@ class CalendarLayout extends React.Component {
         }
         //
         const [header, content] = this.state.viewLayout.getParts(
-            this.state.isWindowNarrowerThanBreakPoint
+            this.state.isWindowNarrowerThanBreakPoint,
+            this.settings.hours
         );
         return $el('div', {className},
             $el(Modal, {ref: cmp => {
