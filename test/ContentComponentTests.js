@@ -6,6 +6,7 @@ import {dateUtils} from './resources/Utils.js';
 
 const dateCursorFactory = new DateCursorFactory(dateUtils);
 const newDateCursor = v => dateCursorFactory.newCursor(v);
+const hoursToDisplay = {first: 6, last: 20};
 
 QUnit.module('ContentComponent', function (hooks) {
     hooks.afterEach(assert => {
@@ -17,29 +18,31 @@ QUnit.module('ContentComponent', function (hooks) {
             'Pitäisi asettaa kuluvan päivän sarakkeisiin CSS-luokka ".current"'
         );
     });
-    QUnit.test('day-gridillä renderöi 24-riviä joissa tuntisolu, ja 1 sisältösolu', assert => {
+    QUnit.test('day-gridillä renderöi n-riviä joissa tuntisolu, ja 1 sisältösolu', assert => {
         const renderedRows = getRenderedRows(ReactTestUtils.renderIntoDocument(
             $el(Content, makeProps(Constants.VIEW_DAY))
         ));
-        assert.equal(renderedRows.length, 24);
+        assert.equal(renderedRows.length, hoursToDisplay.last - hoursToDisplay.first + 1);
         this.expectedCurrentDayColEls = [];
-        renderedRows.forEach((row, hour) => {
-            assert.equal(row.children[0].textContent, dateUtils.formatHour(hour)); // Tuntisarake
-            assert.equal(row.children[1].textContent, '');                         // Sisältösolu
+        renderedRows.forEach((row, i) => {
+            const expectedHour = hoursToDisplay.first + i;
+            assert.equal(row.children[0].textContent, dateUtils.formatHour(expectedHour)); // Tuntisarake
+            assert.equal(row.children[1].textContent, '');                                 // Sisältösolu
             this.expectedCurrentDayColEls.push(row.children[1]);
             assert.equal(row.children.length, 2);
         });
     });
-    QUnit.test('week-gridillä renderöi 24-riviä joissa tuntisolu, ja 7 sisältösolua', assert => {
+    QUnit.test('week-gridillä renderöi n-riviä joissa tuntisolu, ja 7 sisältösolua', assert => {
         const renderedRows = getRenderedRows(ReactTestUtils.renderIntoDocument(
             $el(Content, makeProps(Constants.VIEW_WEEK))
         ));
-        assert.equal(renderedRows.length, 24);
+        assert.equal(renderedRows.length, hoursToDisplay.last - hoursToDisplay.first + 1);
         this.expectedCurrentDayColEls = [];
         const expectedCurrentDayColIndex = new Date().getDay() || 7;
-        renderedRows.forEach((row, hour) => {
-            assert.equal(row.children[0].textContent, dateUtils.formatHour(hour)); // Tuntisarake
-            assert.equal(row.children[1].textContent, '');                         // Sisältösolu (maanantai)
+        renderedRows.forEach((row, i) => {
+            const expectedHour = hoursToDisplay.first + i;
+            assert.equal(row.children[0].textContent, dateUtils.formatHour(expectedHour)); // Tuntisarake
+            assert.equal(row.children[1].textContent, '');                                 // Sisältösolu (maanantai)
             // kertaa 7
             assert.equal(row.children.length, 8);
             this.expectedCurrentDayColEls.push(row.children[expectedCurrentDayColIndex]);
@@ -114,12 +117,13 @@ QUnit.module('ContentComponent', function (hooks) {
         });
     });
 });
-function makeProps(selectedView, compactFormShouldBeUsed) {
+function makeProps(selectedView, compactFormShouldBeUsed, hours) {
     return {
         grid: (new ViewLayouts[selectedView](newDateCursor(selectedView), dateUtils))
-            .getParts(compactFormShouldBeUsed)[1].props.gridGeneratorFn(),
+            .getParts(compactFormShouldBeUsed, hours || hoursToDisplay)[1].props.gridGeneratorFn(),
         calendarController: {settings: {extensions: []}},// fake calendarController
-        extensions: []
+        extensions: [],
+        hours: hours || hoursToDisplay
     };
 }
 function getRenderedRows(rendered) {

@@ -19,7 +19,7 @@ export default {
      * @param {string} name Nimi, jolla rekisteröidään
      * @param {Object|Function} extension Laajennoksen implementaatio @see https://github.com/ut4/ncalendar#extending
      */
-    registerExtension: (name, extension) => extensionFactory.register(name, extension),
+    registerExtension: (name, extension) => extensionFactory.add(name, extension),
     /**
      * @prop {React.Component} Kalenterin juurikomponentti @see https://github.com/ut4/ncalendar#usage-jsx
      */

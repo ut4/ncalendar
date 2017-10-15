@@ -2,10 +2,10 @@ import CalendarLayout from '../src/CalendarLayout.js';
 import Content, {LoadType, Cell} from '../src/Content.js';
 import ExtensionFactory from '../src/ExtensionFactory.js';
 import Constants from '../src/Constants.js';
-import { domUtils } from './resources/Utils.js';
+import {domUtils} from './resources/Utils.js';
 import TestExtension from './resources/TestExtension.js';
 
-new ExtensionFactory().register('atest', TestExtension);
+new ExtensionFactory().add('atest', TestExtension);
 
 QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
     hooks.beforeEach(() => {
@@ -20,12 +20,10 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
         this.extensionLoadCallSpy.restore();
         TestExtension.testClickHandler.restore();
     });
-    const render = (extensions = ['atest'], toolbarParts = undefined) => {
-        return ReactTestUtils.renderIntoDocument($el(CalendarLayout, {
-            defaultView: Constants.VIEW_WEEK,
-            extensions,
-            toolbarParts
-        }));
+    const render = (mySettings) => {
+        const settings = {defaultView: Constants.VIEW_WEEK, extensions: ['atest']};
+        mySettings && Object.assign(settings, mySettings);
+        return ReactTestUtils.renderIntoDocument($el(CalendarLayout, settings));
     };
     QUnit.test('Instantioi & lataa & ajaa laajennoksen', assert => {
         const rendered = render();
@@ -52,7 +50,7 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
                 'Pitäisi passata laajennoksen loadTypeksi LoadType.INITIAL'
             );
             assert.ok(this.contentApplyCallSpy.calledOnce, 'Pitäisi ajaa ladattu sisältö');
-            assert.equal(renderedRows.length, Constants.HOURS_IN_DAY);
+            assert.ok(renderedRows.length > 0);
             assert.ok(
                 isEveryCellDecoratedWith(rendered, expectedTestExtension.loadCount),
                 'Jokainen solu pitäisi olla dekoroitu'
@@ -60,20 +58,8 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
             done();
         });
     });
-    QUnit.test('Lataa myös object-notaatiolla konfiguroidun laajennoksen', assert => {
-        const rendered = render([{name: 'atest'}]);// [{name: 'atest'}] eikä ['atest']
-        const expectedTestExtension = getInstantiatedExtensions(rendered)[0];
-        //
-        const done = assert.async();
-        this.contentLoadCallSpy.firstCall.returnValue.then(() => {
-            assert.ok(expectedTestExtension instanceof TestExtension,
-                'Pitäisi osata ladata myös object-notaatiolla konfiguroitu extension'
-            );
-            done();
-        });
-    });
     QUnit.test('Skippaa renderöinnin, jos extensionin .load palautti false', assert => {
-        render([{name: 'atest', setup: myExt => myExt.setLoadReturnValue(false)}]);
+        render({extensions: ['atest'], testExtensionLoadReturnValue: false});
         //
         const done = assert.async();
         this.contentLoadCallSpy.firstCall.returnValue.then(() => {
@@ -159,7 +145,7 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
         });
     });
     QUnit.test('Ei lataa laajennoksia jos niitä ei ole valittu', assert => {
-        const rendered = render([]);
+        const rendered = render({extensions: []});
         assert.equal(getInstantiatedExtensions(rendered).length, 0,
             'Ei pitäisi instantioida laajennoksia'
         );
@@ -181,7 +167,7 @@ QUnit.module('CalendarLayoutComponent(with-extension)', function (hooks) {
         testButtonClickTriggersDecoratorRefresh.call(this, 'Kuukausi', assert, LoadType.VIEW_CHANGE);
     });
     QUnit.test('Renderöi laajennoksen lisäämän toobarPartin', assert => {
-        const rendered = render(undefined, 'week|fill|day,abutton');
+        const rendered = render({toolbarParts: 'week|fill|day,abutton'});
         const toolbar = ReactTestUtils.findRenderedDOMComponentWithClass(rendered, 'toolbar');
         //                         .row       .col
         const columns = toolbar.children[0].children;

@@ -1,5 +1,5 @@
 import AbstractViewLayout from './AbstractViewLayout.js';
-import {HOURS_ARRAY, ImmutableCell, PlaceholderCell, Cell} from './Content.js';
+import {ImmutableCell, PlaceholderCell, Cell} from './Content.js';
 import Constants from './Constants.js';
 
 /*
@@ -26,11 +26,12 @@ class WeekViewLayout extends AbstractViewLayout {
      * sisältönä aina null wrapattuna Cell-instanssiin.
      *
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getFullGrid() {
+    getFullGrid(hoursToDisplay) {
         // Vuorokauden jokaiselle tunnille rivi, ...
-        return this.markCurrentDayColumn(HOURS_ARRAY.map(hour => {
+        return this.markCurrentDayColumn(this.generateHourRange(hoursToDisplay).map(hour => {
             const rollingDate = new Date(this.dateCursor.range.start);
             rollingDate.setHours(hour);
             // jossa tuntisarake, ...
@@ -75,6 +76,19 @@ class WeekViewLayout extends AbstractViewLayout {
                 new PlaceholderCell(null, null)
             ]
         ], true);
+    }
+    /**
+     * Luo asetuksissa määritellystä hours-arvosta range-taulukon. esim.
+     * {first: 8, last: 16} -> [8,9,...,15,16]
+     *
+     * @access protected
+     */
+    generateHourRange(hoursToDisplay) {
+        let hours = [];
+        for (let hour = hoursToDisplay.first; hour <= hoursToDisplay.last; hour++) {
+            hours.push(hour);
+        }
+        return hours;
     }
     /**
      * Asettaa kuluvalle päivälle kuuluvien Cell-instanssien

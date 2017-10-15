@@ -18,14 +18,15 @@ class CalendarLayout extends React.Component {
      *     extensions: {Array=},
      *     toolbarParts: {string=},
      *     titleFormatters: {Object=},
-     *     layoutChangeBreakPoint: {number=}
+     *     layoutChangeBreakPoint: {number=},
+     *     hours: {Object=},
      *     locale: {string|string[]=}
      * }
      */
     constructor(props) {
         super(props);
         // Luo asetukset & rekisteröi mediaquery
-        this.settings = settingsFactory(this.props);
+        this.settings = settingsFactory.makeSettings(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
         this.dateUtils = new DateUtils(this.settings.locale);
         this.dateCursorFactory = new DateCursorFactory(this.dateUtils);
@@ -39,9 +40,9 @@ class CalendarLayout extends React.Component {
         this.controller = newController(this);
         if (this.settings.extensions.length > 0) {
             const extensionFactory = new ExtensionFactory();
-            this.extensions = this.settings.extensions.map(setting => {
-                const ext = extensionFactory.make(setting, [this.controller]);
-                ext.configuredName = setting.name || setting;
+            this.extensions = this.settings.extensions.map(name => {
+                const ext = extensionFactory.make(name, [this.controller]);
+                ext.configuredName = name;
                 return ext;
             });
         } else {
@@ -133,7 +134,8 @@ class CalendarLayout extends React.Component {
         }
         //
         const [header, content] = this.state.viewLayout.getParts(
-            this.state.isWindowNarrowerThanBreakPoint
+            this.state.isWindowNarrowerThanBreakPoint,
+            this.settings.hours
         );
         return $el('div', {className},
             $el(Modal, {ref: cmp => {
@@ -150,7 +152,7 @@ class CalendarLayout extends React.Component {
                 header.props
             ),
             $el(content.Component, {
-                ref: cmp => { this.contentController = cmp.getController(); },
+                ref: cmp => { cmp && (this.contentController = cmp.getController()); },
                 grid: content.props.gridGeneratorFn(),
                 currentView: this.state.currentView,
                 extensions: this.extensions
