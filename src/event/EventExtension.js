@@ -19,6 +19,10 @@ class EventExtension {
      */
     constructor(calendarController) {
         this.calendar = calendarController;
+        const repositorySetting = calendarController.settings.eventRepository;
+        this.repository = !isValidRepository(repositorySetting)
+            ? new RepositoryFactory().make(repositorySetting, calendarController.settings)
+            : repositorySetting;
         /**
          * @prop {Object} key = eventin id, value = stackIndex-arvo
          */
@@ -35,14 +39,6 @@ class EventExtension {
          * @prop {DropdownSelector|CheckboxSelector=}
          */
         this.selector = null;
-    }
-    /**
-     * @param {Object} repositoryOrSettings Luokka, joka tarjoaa & tallentaa tapahtumadatan | configuraatio, jonka perusteella em. luokan voi tehdä
-     */
-    initialize(repositoryOrSettings) {
-        this.repository = !isValidRepository(repositoryOrSettings)
-            ? new RepositoryFactory().make(repositoryOrSettings.repository, repositoryOrSettings)
-            : repositoryOrSettings;
     }
     /**
      * Hakee tapahtumadatan repositorystä ja asettaa ne {this.events}iin.
@@ -107,6 +103,29 @@ class EventExtension {
         };
         registry.add('event-categories', () => $el(DropdownSelector, props));
         registry.add('event-tags', () => $el(CheckboxSelector, props));
+    }
+    /**
+     * Rekisteröi asetukset eventRepository, eventRepositoryDefaultEvents,
+     * eventRepositoryBaseUrl, ja eventRepositoryFetchFn.
+     */
+    static defineSettings(settingsRegister) {
+        settingsRegister.add(
+            'eventRepository',
+            () => true, // validoidaan myöhemmin
+            'memory'
+        );
+        settingsRegister.add(
+            'eventRepositoryDefaultEvents',
+            v => !Array.isArray(v) ? '%s tulisi olla taulukko' : true
+        );
+        settingsRegister.add(
+            'eventRepositoryBaseUrl',
+            v => typeof v !== 'string' ? '%s tulisi olla merkkijono' : true
+        );
+        settingsRegister.add(
+            'eventRepositoryFetchFn',
+            v => typeof v !== 'function' ? '%s tulisi olla funktio' : true
+        );
     }
     /**
      * Asettaa dekoroinnin yhteydessä ajettavan lisäfiltterin {filterFn}, ja

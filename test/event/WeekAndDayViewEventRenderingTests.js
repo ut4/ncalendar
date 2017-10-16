@@ -25,18 +25,18 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
     QUnit.test('Viikkonäkymä katkaisee seuraavalle päivälle menevät osuudet', assert => {
         const rendered = renderingTestUtils.renderCalendarLayout('week', [
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 22, 0, 0, 0), // klo 22
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 1, 0, 0, 0), // Seuraava päivä klo 01
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 15, 0, 0, 0), // klo 22
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 9, 0, 0, 0), // Seuraava päivä klo 01
                 id: 1,
                 title: '1'
             }, {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 20, 0, 0, 0), // klo 20-24
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 3, 30, 0, 0), // Seuraava päivä klo 03:30
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 15, 0, 0, 0), // klo 20-24
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 9, 30, 0, 0), // Seuraava päivä klo 03:30
                 id: 2,
                 title: '2'
             }, {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 2, 0, 0, 0), // klo 2-24
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+3, 0, 16, 0, 0), // Seuraava päivä klo 00:16
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 15, 0, 0, 0), // klo 2-24
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+3, 6, 16, 0, 0), // Seuraava päivä klo 00:16
                 id: 3,
                 title: '3'
             }
@@ -118,22 +118,22 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
         const rendered = renderingTestUtils.renderCalendarLayout(viewName, [
             {
                 // Vain 1. rivi (tunnin pituinen)
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 6, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
                 id: 1
             },
             // Ei rivejä välissä
             {
                 // Rivit 1 & 2 (2 tuntiä pitkä)
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 3, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 9, 0, 0, 0),
                 id: 2
             },
             // Välissä yksi tyhjä rivi
             {
                 // Rivit 4 & 5 & 6 (3 tuntia pitkä)
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 10, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 13, 0, 0, 0),
                 id: 3
             }
         ], d);
@@ -166,16 +166,16 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
     function testMinuteAdjustments(viewName, assert) {
         const rendered = renderingTestUtils.renderCalendarLayout(viewName, [
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 15, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 30, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 6, 15, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 30, 0, 0),
                 id: 1
             }, {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 2, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 32, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 8, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 10, 32, 0, 0),
                 id: 2
             }, {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 5, 40, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 11, 40, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 13, 0, 0, 0),
                 id: 3
             }
         ], d);
@@ -202,31 +202,31 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
     function testStacking(viewName, assert) {
         const rendered = renderingTestUtils.renderCalendarLayout(viewName, [
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 6, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
                 id: 1
             },
             // Samassa solussa toinen eventi
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 30, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 1, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 6, 30, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
                 id: 2
             },
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 2, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 8, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 10, 0, 0, 0),
                 id: 3
             },
             // Uusi event ennen kuin ylempi loppuu..
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 3, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 6, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 9, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0),
                 id: 4
             },
             // Uusi event ennen kuin ylempi loppuu..
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 4, 0, 0, 0),
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0, 0, 0),
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 10, 0, 0, 0),
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 13, 0, 0, 0),
                 id: 5
             }
         ], d);

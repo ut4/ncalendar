@@ -8,16 +8,16 @@ import ExtensionFactory from '../../src/ExtensionFactory.js';
 
 const now = new Date();
 const rtu = ReactTestUtils;
-new ExtensionFactory().register('eventasd', EventExtension);
+new ExtensionFactory().add('eventasd', EventExtension);
 
 QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hooks) {
     let testEvents;
     let repository;
     hooks.beforeEach(() => {
         testEvents = [
-            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 1'},
-            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate()-7, 0, 0, 0, 1), title: 'Event 2'},
-            {start: new Date(now.getFullYear(), now.getMonth()-1, now.getDate(), 0, 0, 0, 1), title: 'Event 3'}
+            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0, 1), title: 'Event 1'},
+            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate()-7, 8, 0, 0, 1), title: 'Event 2'},
+            {start: new Date(now.getFullYear(), now.getMonth()-1, now.getDate(), 8, 0, 0, 1), title: 'Event 3'}
         ].map(event => {
             event.end = new Date(event.start);
             event.end.setHours(event.end.getHours() + 1);
@@ -27,7 +27,8 @@ QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hoo
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.rendered = rtu.renderIntoDocument(
             $el(CalendarLayout, {
-                extensions: [{name: 'eventasd', setup: ext => ext.initialize(repository)}]
+                extensions: ['eventasd'],
+                eventRepository: repository
             })
         );
     });
@@ -54,11 +55,11 @@ QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hoo
             const renderedEventCountBefore = getRenderedEvents(this.rendered).length;
             const repositoryInsertSpy = sinon.spy(repository, 'insert');
             // Triggeröi klikkaus
-            const mondayAt0Am = hourRows[0].children[1].children[0];
-            rtu.Simulate.click(mondayAt0Am);
+            const mondayAt6Am = hourRows[0].children[1].children[0];
+            rtu.Simulate.click(mondayAt6Am);
             const inputs = getRenderedInputs(this.rendered);
             assert.equal(inputs.length, 3, 'Pitäisi avata modal');
-            const data = {title: 'Foo', start: getTestDateString(testEvents), end: getTestDateString(testEvents, 3)};
+            const data = {title: 'Foo', start: getTestDateString(testEvents, 6), end: getTestDateString(testEvents, 7)};
             // Triggeröi lomakkeen submit
             inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
             inputs[1].value = data.start; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
@@ -78,7 +79,7 @@ QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hoo
                     'Pitäisi lisätä luotu tapahtuma kalenteriin'
                 );
                 assert.ok(
-                    hourRows[2].contains(renderedEventsAfter[1]),
+                    hourRows[0].contains(renderedEventsAfter[0]), // hourRows[0] == 6:00
                     'Pitäisi renderöidä uusi tapahtuma oikealle tuntiriville'
                 );
                 done();
@@ -98,8 +99,8 @@ QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hoo
             rtu.Simulate.click(renderedEvents[0]);
             const inputs = getRenderedInputs(this.rendered);
             assert.equal(inputs.length, 3, 'Pitäisi avata modal');
-            // Simuloi lomakkeen submit
-            const data = {title: 'Holyy', start: getTestDateString(testEvents), end: getTestDateString(testEvents, 3)};
+            // Muokkaa eventin title & ajankohta 1h eteenpäin & Simuloi lomakkeen submit
+            const data = {title: 'Holyy', start: getTestDateString(testEvents, 9), end: getTestDateString(testEvents, 10)};
             inputs[0].value = data.title; rtu.Simulate[React.INPUT_EVENT](inputs[0]);
             inputs[1].value = data.start; rtu.Simulate[React.INPUT_EVENT](inputs[1]);
             inputs[2].value = data.end; rtu.Simulate[React.INPUT_EVENT](inputs[2]);
@@ -127,7 +128,7 @@ QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hoo
                     'Pitäisi siirtää tapahtuma uuteen soluun'
                 );
                 assert.ok(
-                    hourRows[2].contains(renderedEventsAfter[0]),
+                    hourRows[3].contains(renderedEventsAfter[0]), // 0 = 6:00, 1 = 7:00 jne..
                     'Pitäisi siirtää tapahtuma oikeaan soluun'
                 );
                 done();
@@ -172,7 +173,7 @@ function getRenderedEvents(rendered) {
 function getRenderedRows(rendered) {
     return rtu.findRenderedDOMComponentWithClass(rendered, 'main').children;
 }
-function getTestDateString(testEvents, hour = 2) {
+function getTestDateString(testEvents, hour = 8) {
     const date = new Date(testEvents[0].start);
     date.setHours(hour);
     return date.toISOString();

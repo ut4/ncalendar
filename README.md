@@ -331,12 +331,50 @@ nullcalendar.newCalendar(document.getElementById('cal'), {
 <script src="inferno-preact-or-react.js"></script>
 <script src="dist/nullcalendar+events.min.js"></script>
 nullcalendar.newCalendar(document.getElementById('cal'), {
-    extensions: [
-        {name: 'event', setup: ee => ee.initialize({repository: 'memory'})}
-    ],
+    extensions: ['event'],
+    eventRepository: 'memory',
     // Event-laajennoksen rekisteröimät arvot: event-categories ja event-tags.
     toolbarParts: 'prev,next,today|title|event-categories,week,month'
 });
+```
+
+## Settings
+
+```javascript
+const settings = {
+    /**
+     * Tapahtumien lataukseen ja CRUD-operaatioihin käytettävän implementaaion nimi
+     * tai instanssi (new nullcalendar.events.RepositoryFactory().make(name, args)).
+     *
+     * @prop {string|Object} 'memory'|'http'
+     * @default 'memory'
+     */
+    eventRepository: 'memory',
+    /**
+     * Tapahtumat, jotka passataan repositoryn konstruktoriin. Vaikuttaa vain
+     * jos eventRepository-asetuksen arvo on 'memory'.
+     *
+     * @prop {Array}
+     * @default undefined
+     */
+    eventRepositoryDefaultEvents: [{title: 'Foo', start: ...}, ...],
+    /**
+     * Url, josta tapahtumat ladataan HTTP:lla. Vaikuttaa vain jos eventRepository-
+     * asetuksen arvo on 'http'.
+     *
+     * @prop {string}
+     * @default undefined
+     */
+    eventRepositoryBaseUrl: 'http://localhost/foo/',
+    /**
+     * Funktio, jolla suoritetaan HTTP-pyynnöt. Jos undefined, käyttöön otetaan
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
+     *
+     * @prop {Function}
+     * @default undefined
+     */
+    eventRepositoryFetchFn: (url, init) => myFetchImpl(url, init)
+};
 ```
 
 # License

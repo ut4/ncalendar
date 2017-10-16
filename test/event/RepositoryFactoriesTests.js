@@ -17,39 +17,39 @@ QUnit.module('event/RepositoryFactories', function(hooks) {
     });
     QUnit.test('make({repository: \'memory\') luo uuden InMemoryEventRepositoryn', assert => {
         const withDefaults = this.repositoryFactory.make('memory');
-        const withProvided = this.repositoryFactory.make('memory', {defaultEvents: [someEvent]});
+        const withProvided = this.repositoryFactory.make('memory', {eventRepositoryDefaultEvents: [someEvent]});
         //
         assert.ok(withDefaults instanceof InMemoryEventRepository, 'Pitäisi luoda InMemoryEventRepository');
         assert.deepEqual(withDefaults.events, [], 'Pitäisi passata oletukseventeiksi []');
         assert.ok(withProvided instanceof InMemoryEventRepository, 'Pitäisi luoda InMemoryEventRepository');
-        assert.deepEqual(withProvided.events, [new Event(someEvent)], 'Pitäisi passata settings.defaultEvents oletuseventeiksi');
+        assert.deepEqual(withProvided.events, [new Event(someEvent)], 'Pitäisi passata settings.eventRepositoryDefaultEvents oletuseventeiksi');
     });
-    QUnit.test('make({repository: \'memory\') failaa, jos settings.defaultEvents ei ole validi', assert => {
+    QUnit.test('make({repository: \'memory\') failaa, jos settings.eventRepositoryDefaultEvents ei ole validi', assert => {
         assert.throws(
-            () => this.repositoryFactory.make('memory', {defaultEvents: 'bogus'}),
-            'Pitäisi heittää poikkeus, jos settings.defaultEvents ei ole taulukko'
+            () => this.repositoryFactory.make('memory', {eventRepositoryDefaultEvents: 'bogus'}),
+            'Pitäisi heittää poikkeus, jos settings.eventRepositoryDefaultEvents ei ole taulukko'
         );
     });
     QUnit.test('make({repository: \'http\') luo uuden HttpEventRepositoryn', assert => {
         const withDefaults = this.repositoryFactory.make('http');
-        const settings = {repository: 'http', fetchFn: url => url, baseUrl: 'http://sd'};
+        const settings = {repository: 'http', eventRepositoryFetchFn: url => url, eventRepositoryBaseUrl: 'http://sd'};
         const withProvided = this.repositoryFactory.make(settings.repository, settings);
         //
         assert.ok(withDefaults instanceof HttpEventRepository, 'Pitäisi luoda HttpEventRepository');
-        assert.equal(typeof withDefaults.http.fetch, 'function', 'Pitäisi asettaa oletus-fetchFn');
-        assert.deepEqual(withDefaults.http.baseUrl, undefined, 'Ei pitäisi asettaa oletus-baseUrliksi mitään');
+        assert.equal(typeof withDefaults.http.fetch, 'function', 'Pitäisi asettaa oletus-eventRepositoryFetchFn');
+        assert.deepEqual(withDefaults.http.eventRepositoryBaseUrl, undefined, 'Ei pitäisi asettaa oletus-baseUrliksi mitään');
         assert.ok(withProvided instanceof HttpEventRepository, 'Pitäisi luoda HttpEventRepository');
-        assert.deepEqual(withProvided.http.fetch, settings.fetchFn, 'Pitäisi asettaa settings.fetchFn');
-        assert.deepEqual(withProvided.http.baseUrl, settings.baseUrl, 'Pitäisi asettaa settings.baseUrl');
+        assert.deepEqual(withProvided.http.fetch, settings.eventRepositoryFetchFn, 'Pitäisi asettaa settings.eventRepositoryFetchFn');
+        assert.deepEqual(withProvided.http.baseUrl, settings.eventRepositoryBaseUrl, 'Pitäisi asettaa settings.eventRepositoryBaseUrl');
     });
-    QUnit.test('make({repository: \'http\') failaa, jos settings.fetchFn|baseUrl ei ole validi', assert => {
+    QUnit.test('make({repository: \'http\') failaa, jos settings.eventRepositoryFetchFn|eventRepositoryBaseUrl ei ole validi', assert => {
         assert.throws(
-            () => this.repositoryFactory.make({repository: 'http', fetchFn: 'bogus'}),
-            'Pitäisi heittää poikkeus, jos settings.fetchFn ei ole funktio'
+            () => this.repositoryFactory.make({repository: 'http', eventRepositoryFetchFn: 'bogus'}),
+            'Pitäisi heittää poikkeus, jos settings.eventRepositoryFetchFn ei ole funktio'
         );
         assert.throws(
-            () => this.repositoryFactory.make({repository: 'http', baseUrl: /bogus/}),
-            'Pitäisi heittää poikkeus, jos settings.baseUrl ei ole merkkijono'
+            () => this.repositoryFactory.make({repository: 'http', eventRepositoryBaseUrl: {bog: 'us'}}),
+            'Pitäisi heittää poikkeus, jos settings.eventRepositoryBaseUrl ei ole merkkijono'
         );
     });
 });

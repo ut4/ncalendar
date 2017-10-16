@@ -10,9 +10,9 @@ QUnit.module('event/Selectors', function(hooks) {
     let repository;
     hooks.beforeEach(() => {
         testEvents = [
-            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 1), title: 'Event 1', category: 'cat1'},
-            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 2, 0, 0, 1), title: 'Event 2', category: 'cat2'},
-            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 4, 0, 0, 1), title: 'Event 3', category: 'cat2'}
+            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0, 0, 1), title: 'Event 1', category: 'cat1'},
+            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0, 1), title: 'Event 2', category: 'cat2'},
+            {start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0, 1), title: 'Event 3', category: 'cat2'}
         ].map(event => {
             event.end = new Date(event.start);
             event.end.setHours(event.end.getHours() + 1);
@@ -22,7 +22,8 @@ QUnit.module('event/Selectors', function(hooks) {
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.rendered = rtu.renderIntoDocument(
             $el(CalendarLayout, {
-                extensions: [{name: 'event', setup: ext => ext.initialize(repository)}],
+                extensions: ['event'],
+                eventRepository: repository,
                 toolbarParts: 'prev,next,today|title|event-categories,month,week,day'
             })
         );

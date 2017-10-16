@@ -3,20 +3,11 @@ import HttpEventRepository from './HttpEventRepository.js';
 import Http from './Http.js';
 
 const factories = {
-    memory: ({defaultEvents}) => {
-        if (defaultEvents && !Array.isArray(defaultEvents)) {
-            throw new Error('memory-repositoryn defaultEvents tulisi olla taulukko.');
-        }
-        return new InMemoryEventRepository(defaultEvents || []);
+    memory: ({eventRepositoryDefaultEvents}) => {
+        return new InMemoryEventRepository(eventRepositoryDefaultEvents || []);
     },
-    http: ({fetchFn, baseUrl}) => {
-        if (fetchFn && typeof fetchFn !== 'function') {
-            throw new Error('http-repositoryn fetchFn tulisi olla funktio.');
-        }
-        if (baseUrl && typeof baseUrl !== 'string') {
-            throw new Error('http-repositoryn baseUrl tulisi olla merkkijono.');
-        }
-        return new HttpEventRepository(new Http(fetchFn, baseUrl));
+    http: ({eventRepositoryFetchFn, eventRepositoryBaseUrl}) => {
+        return new HttpEventRepository(new Http(eventRepositoryFetchFn, eventRepositoryBaseUrl));
     }
 };
 
