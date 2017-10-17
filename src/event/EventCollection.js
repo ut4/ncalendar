@@ -13,15 +13,17 @@ class EventCollection extends Array {
     /**
      * @access public
      * @param {number} weekDay 0-6
+     * @param {number} date 1-31
      * @param {number=} hour 0-23
      * @returns {Array}
      */
-    filterByWeekDay(weekDay, hour) {
+    filterByWeekDay(weekDay, date, hour) {
         if (!this.length) {
             return [];
         }
         return this.filter(event =>
             event.start.getDay() === weekDay &&
+            event.start.getDate() === date &&
             (typeof hour !== 'number' || event.start.getHours() === hour)
         );
     }

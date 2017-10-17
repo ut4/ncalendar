@@ -47,7 +47,7 @@ class EventComponent extends React.Component {
      * @returns {string}
      */
     getSplitClasses() {
-        return (this.props.event.hasSpawning ? ' has-split-end' : '') +
+        return (this.props.event.splitEnd ? ' has-split-end' : '') +
             (this.props.event.isSpawning ? ' has-split-start' : '');
     }
     /**
@@ -71,7 +71,8 @@ class EventComponent extends React.Component {
     getLengthCorrection(multiplier) {
         // 1 === border
         return (this.props.cellPadding * 2 + 1) * (multiplier - 1) +
-                (this.props.event.isSpawning || this.props.event.hasSpawning ? this.props.cellPadding : 0);
+                (this.props.event.isSpawning ? this.props.cellPadding : 0) +
+                (this.props.event.splitEnd ? this.props.cellPadding : 0);
     }
 }
 

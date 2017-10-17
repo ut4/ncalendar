@@ -2,13 +2,10 @@ import {domUtils} from '../resources/Utils.js';
 import CalendarLayout from '../../src/CalendarLayout.js';
 import Content from '../../src/Content.js';
 import Event from '../../src/event/Event.js';
-import EventExtension from '../../src/event/EventExtension.js';
 import InMemoryEventRepository from '../../src/event/InMemoryEventRepository.js';
-import ExtensionFactory from '../../src/ExtensionFactory.js';
 
 const now = new Date();
 const rtu = ReactTestUtils;
-new ExtensionFactory().add('eventasd', EventExtension);
 
 QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hooks) {
     let testEvents;
@@ -27,7 +24,7 @@ QUnit.module('event/CalendarLayoutComponent(with-event-extension)', function(hoo
         this.contentLoadCallSpy = sinon.spy(Content.prototype, 'loadAsyncContent');
         this.rendered = rtu.renderIntoDocument(
             $el(CalendarLayout, {
-                extensions: ['eventasd'],
+                extensions: ['event'],
                 eventRepository: repository
             })
         );

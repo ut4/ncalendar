@@ -25,18 +25,18 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
     QUnit.test('Viikkonäkymä katkaisee seuraavalle päivälle menevät osuudet', assert => {
         const rendered = renderingTestUtils.renderCalendarLayout('week', [
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 15, 0, 0, 0), // klo 22
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 9, 0, 0, 0), // Seuraava päivä klo 01
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 16, 0, 0, 0), // klo 16
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 7, 0, 0, 0), // Seuraava päivä klo 07
                 id: 1,
                 title: '1'
             }, {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 15, 0, 0, 0), // klo 20-24
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 9, 30, 0, 0), // Seuraava päivä klo 03:30
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 14, 0, 0, 0), // klo 14-17
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 9, 30, 0, 0), // Seuraava päivä klo 09:30
                 id: 2,
                 title: '2'
             }, {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 15, 0, 0, 0), // klo 2-24
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+3, 6, 16, 0, 0), // Seuraava päivä klo 00:16
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate()+2, 8, 0, 0, 0), // klo 8-17
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+3, 6, 16, 0, 0), // Seuraava päivä klo 06:16
                 id: 3,
                 title: '3'
             }
@@ -50,7 +50,7 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
             assert.equal(renderedEvents[0].style.height, renderingTestUtils.getExpectedEventStyle(200, true),// 22-24
                 '1. eventin 1. osa pitäisi olla 2 solua pitkä'
             );
-            assert.equal(renderedEvents[1].style.height, '', // 00-01
+            assert.equal(renderedEvents[1].style.height, renderingTestUtils.getExpectedEventStyle(100, true), // 00-01
                 '1. eventin 2. osa pitäisi olla 1 solua pitkä'
             );
             assert.equal(renderedEvents[2].style.height, renderingTestUtils.getExpectedEventStyle(400, true),// 20-24
@@ -59,7 +59,7 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
             assert.equal(renderedEvents[3].style.height, renderingTestUtils.getExpectedEventStyle(350, true),// 00-03
                 '2. eventin 2. osa pitäisi olla 3.25 solua pitkä'
             );
-            assert.equal(renderedEvents[4].style.height, renderingTestUtils.getExpectedEventStyle(2200, true),// 02-24
+            assert.equal(renderedEvents[4].style.height, renderingTestUtils.getExpectedEventStyle(1000, true),// 02-24
                 '3. eventin 1. osa pitäisi olla 22 solua pitkä'
             );
             assert.equal(renderedEvents[5].style.height, renderingTestUtils.getExpectedEventStyle(25, true),// 00-00.16
@@ -80,12 +80,12 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
     QUnit.test('Päivänäkymä katkaisee, ja siirtää seuraavalle päivälle menevät osuudet', assert => {
         const rendered = renderingTestUtils.renderCalendarLayout('day', [
             {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 22, 0, 0, 0), // klo 22
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 1, 0, 0, 0), // Seuraava päivä klo 01
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 16, 0, 0, 0), // klo 22
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 7, 0, 0, 0), // Seuraava päivä klo 07
                 id: 1
             }, {
-                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 0, 0, 0), // klo 23
-                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 3, 30, 0, 0), // Seuraava päivä klo 03:30
+                start: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 17, 0, 0, 0), // klo 17
+                end: new Date(d.getFullYear(), d.getMonth(), d.getDate()+1, 9, 30, 0, 0), // Seuraava päivä klo 09:30
                 id: 2
             }
         ], d);
@@ -105,7 +105,7 @@ QUnit.module('event/WeekAndDayViewEventRendering', function (hooks) {
            // Löytyykö splitatut osat seuraavalta päivältä?
             const renderedEvents2 = renderingTestUtils.getRenderedEvents(rendered);
             assert.equal(renderedEvents2.length, 2, 'Katkaistut osat pitäisi löytyä seuraavalta päivältä');
-            assert.equal(renderedEvents2[0].style.height, "",// 00-01
+            assert.equal(renderedEvents2[0].style.height, renderingTestUtils.getExpectedEventStyle(100, true),// 00-01
                 '1. eventin 2. osa pitäisi olla 1 solua pitkä'
             );
             assert.equal(renderedEvents2[1].style.height, renderingTestUtils.getExpectedEventStyle(350, true), // 00-03:30

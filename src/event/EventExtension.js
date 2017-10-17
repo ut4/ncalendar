@@ -49,7 +49,8 @@ class EventExtension {
         this.eventSplitter = newSplitter(
             this.calendar.currentView + (this.calendar.isCompactViewEnabled ? '-compact' : ''),
             this.calendar.dateUtils,
-            this.calendar.dateCursor
+            this.calendar.dateCursor,
+            this.calendar.settings.hours
         );
         const range = this.calendar.dateCursor.range;
         return this.repository.getAll(range.start, range.end)
@@ -232,7 +233,7 @@ class EventExtension {
         }
         const events = this.calendar.currentView === Constants.VIEW_MONTH
             ? this.events.filterByDate(date.getDate(), this.calendar.dateCursor.range.start.getMonth())
-            : this.events.filterByWeekDay(date.getDay(), this.calendar.currentView === Constants.VIEW_DAY ||
+            : this.events.filterByWeekDay(date.getDay(), date.getDate(), this.calendar.currentView === Constants.VIEW_DAY ||
                 !this.calendar.isCompactViewEnabled ? date.getHours() : null
             );
         return !this.filterFn ? events : events.filter(this.filterFn);
@@ -270,9 +271,13 @@ class EventExtension {
      * @access private
      */
     clearSpawnings(event) {
-        this.events = this.events.filter(e =>
+        const filtered = this.events.filter(e =>
             e.id.toString().indexOf(event.id + '-spawning') < 0
         );
+        if (filtered.length !== this.events.length) {
+            this.events = filtered;
+            delete event.splitEnd;
+        }
     }
     /**
      * @access private

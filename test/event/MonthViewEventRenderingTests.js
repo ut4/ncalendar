@@ -130,7 +130,7 @@ QUnit.module('event/MonthViewEventRendering', function (hooks) {
             assert.equal(renderedEvents[4].style.width, renderingTestUtils.getExpectedEventStyle(500, true),// Ke-Su
                 '3. eventin 1. osa pitäisi olla 5 solua pitkä'
             );
-            assert.equal(renderedEvents[5].style.width, renderingTestUtils.getExpectedEventStyle(700, true),// Ke-Su
+            assert.equal(renderedEvents[5].style.width, renderingTestUtils.getExpectedEventStyle(700, true, true),// Ke-Su
                 '3. eventin 2. osa pitäisi olla koko rivin pituinen'
             );
             assert.equal(renderedEvents[6].style.width, renderingTestUtils.getExpectedEventStyle(150, true),// Ma-Ti
