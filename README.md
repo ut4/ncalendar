@@ -80,7 +80,7 @@ const mySettings = {
      * @prop {string[]}
      * @default []
      */
-    extensions: ['event'],
+    extensions: ['events'],
     /**
      * Toolbariin renderöitävät sarakkeet, ja niiden sisältö. Mahdolliset arvot:
      * fill, prev, next, today, title, month, week ja day, ja näiden lisäksi
