@@ -1,5 +1,5 @@
 /*!
- * nullcalendar v0.2.0
+ * nullcalendar v0A.0.0
  * https://github.com/ut4/ncalendar
  * @license BSD-3-Clause
  */
@@ -28,7 +28,7 @@ if (window.Inferno) {
 // 2. window.$el
 window.$el = React.createElement;
 
-/**
+/*
  * Kalenterikontrolleri/API:n kautta avattava/suljettava näkymä, johon voidaan
  * ladata custom-sisältöä.
  */
@@ -69,6 +69,68 @@ class Modal extends React.Component {
     }
 }
 
+/**
+ * Geneerinen duplikaatiton kokoelma arvoja.
+ *
+ * @param {Object} register Objekti, jota mutatoidaan
+ * @param {string} name Rekisterin nimi
+ */
+function Register(register, name = 'unnamed-register') {
+    /**
+     * @access public
+     * @param {string} key
+     * @param {any...} value
+     * @throws {Error} Jos {key} on jo rekisteröity
+     */
+    this.add = function (key, value, ...rest) {
+        if (this.has(key)) {
+            throw new Error(`${name} "${key}" on jo rekisteröity.`);
+        }
+        register[key] = !this.transform ? value : this.transform(value, key, ...rest);
+    };
+    /**
+     * @access public
+     * @param {string} key
+     * @returns {boolean}
+     */
+    this.has = function (key) {
+        return register[key];
+    };
+    /**
+     * @access public
+     * @param {string} key
+     * @returns {any} Rekisteröity arvo
+     * @throws {Error} Jos arvoa avaimella {key} ei löytynyt
+     */
+    this.get = function (key) {
+        if (!this.has(key)) {
+            throw new Error(`${name}ta "${key}" ei ole rekisteröity.`);
+        }
+        return register[key];
+    };
+    /**
+     * @access public
+     * @param {Function} fn Funktio, jolle passataan rekisterin jokainen itemi.
+     */
+    this.traverse = function (fn) {
+        for (const key in register) {
+            fn(register[key], key);
+        }
+    };
+}
+
+const called = {};
+/**
+ * @param {string} key
+ * @param {Function} fn
+ */
+const once = (key, fn) =>  {
+    if (!called.hasOwnProperty(key)) {
+        fn();
+        called[key] = 1;
+    }
+};
+
 var Constants = Object.freeze({
     VIEW_DAY: 'day',
     VIEW_WEEK: 'week',
@@ -96,9 +158,22 @@ const titleFormatters = {
         dateUtils.format(dateCursorRange.start, {month: 'long', year: 'numeric'})
 };
 
+const partFactories = {
+    prev(toolbar) { return $el('button', {onClick: () => toolbar.ctrl.dateCursor.prev(), key: 'prev' }, '<'); },
+    next(toolbar) { return $el('button', {onClick: () => toolbar.ctrl.dateCursor.next(), key: 'next' }, '>'); },
+    today(toolbar) { return $el('button', {onClick: () => toolbar.ctrl.dateCursor.reset(), key: 'today' }, 'Tänään'); },
+    title(toolbar) { return $el('h2', {key: 'title'}, (toolbar.props.titleFormatter || titleFormatters[toolbar.ctrl.currentView])(
+        toolbar.ctrl.dateCursor.range, toolbar.props.dateUtils
+    )); },
+    month(toolbar) { return $el('button', {onClick: () => { toolbar.ctrl.changeView(Constants.VIEW_MONTH); }, key: 'month'}, 'Kuukausi'); },
+    week(toolbar) { return $el('button', {onClick: () => { toolbar.ctrl.changeView(Constants.VIEW_WEEK); }, key: 'week'}, 'Viikko'); },
+    day(toolbar) { return $el('button', {onClick: () => { toolbar.ctrl.changeView(Constants.VIEW_DAY); }, key: 'day'}, 'Päivä'); },
+    fill() { return null; }
+};
+
 /*
  * Kalenterilayoutin ylin osa. Sisältää oletuksena päänavigaatiopainikkeet,
- * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa.
+ * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa asetuksien kautta.
  *  ___________________________
  * |______--> Toolbar <--______|
  * |__________Header___________|
@@ -112,112 +187,31 @@ class Toolbar extends React.Component {
      *     parts: {string},
      *     calendarController: {Object},
      *     dateUtils: {Object},
+     *     extensions: {Array},
      *     titleFormatter: {Function=}
      * }
      */
     constructor(props) {
         super(props);
-        this.partGenerators = new PartGenerators(props);
+        this.ctrl = this.props.calendarController;
+        this.toolbarPartRegister = new Register(partFactories, 'toolbarPartFactory');
+        this.props.extensions.forEach(extension => {
+            once('addToolbarFactories#' + extension.configuredName, () =>
+                extension.addToolbarPartFactories(this.toolbarPartRegister)
+            );
+        });
     }
     render() {
         return $el('div', {className: 'toolbar'},
             $el('div', {className: 'row'}, this.props.parts.split('|').map((group, r) =>
                 $el('div', {className: 'col', key: r},
-                    group.split(',').map(partName => this.partGenerators[partName]())
+                    group.split(',').map(partName => this.toolbarPartRegister.get(partName)(this))
                 )
             ))
         );
     }
 }
 
-class PartGenerators {
-    constructor(props) { this.ctrl = props.calendarController; this.props = props; }
-    prev() { return $el('button', {onClick: () => this.ctrl.dateCursor.prev(), key: 'prev' }, '<'); }
-    next() { return $el('button', {onClick: () => this.ctrl.dateCursor.next(), key: 'next' }, '>'); }
-    today() { return $el('button', {onClick: () => this.ctrl.dateCursor.reset(), key: 'today' }, 'Tänään'); }
-    title() { return $el('h2', {key: 'title'}, (this.props.titleFormatter || titleFormatters[this.ctrl.currentView])(
-        this.ctrl.dateCursor.range, this.props.dateUtils
-    )); }
-    month() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_MONTH); }, key: 'month'}, 'Kuukausi'); }
-    week() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_WEEK); }, key: 'week'}, 'Viikko'); }
-    day() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_DAY); }, key: 'day'}, 'Päivä'); }
-    fill() { return null; }
-}
-const validPartNames = Object.getOwnPropertyNames(PartGenerators.prototype).filter(prop => prop !== 'constructor');
-
-/**
- * Jokaiselle ContentLayerFactory-instanssille yhteinen, staattinen säilytystila
- * rekisteröidyille sisältökerroksille.
- *
- * @var {Object}
- */
-const register = {};
-
-class ContentLayerFactory {
-    /**
-     * Rekisteröi sisältökerroksen {ConstructorOrFactory} nimellä {name},
-     * tai heittää poikkeuksen jos {name} on jo rekisteröity.
-     *
-     * @access public
-     * @param {string} name
-     * @param {Function} constructorOrFactory
-     */
-    register(name, constructorOrFactory) {
-        if (this.isRegistered(name)) {
-            throw new Error(`Layer "${name}" on jo rekisteröity.`);
-        }
-        if (typeof constructorOrFactory !== 'function') {
-            throw new Error('Rekisteröitävä itemi tulisi olla luokka, tai funktio.');
-        }
-        register[name] = constructorOrFactory;
-    }
-    /**
-     * Palauttaa tiedon löytyykö rekisteristä sisältökerros nimeltä {name}.
-     *
-     * @access public
-     * @param {string} name
-     * @returns {boolean}
-     */
-    isRegistered(name) {
-        return register.hasOwnProperty(name);
-    }
-    /**
-     * Luo uuden sisältökerroksen käyttäen rekisteröityä konstruktoria tai
-     * factoryä {layer|layer.name}, tai heittää poikkeuksen mikäli rekisteröityä
-     * itemiä ei löytynyt, tai se oli virheellinen.
-     *
-     * @access public
-     * @param {string|Object} layer
-     * @param {Array} args
-     * @returns {Object} Uusi instanssi sisältölayerista {layer|layer.name}
-     */
-    make(layer, args) {
-        if (typeof layer !== 'string') {
-            layer.args && (args = layer.args(...args));
-            layer = layer.name || '';
-        }
-        const item = register[layer];
-        if (!item) {
-            throw new Error(`Layeria "${layer}" ei ole rekisteröity.`);
-        }
-        if (!isValidContentLayer(item.prototype)) {
-            const providedLayer = item(...args);
-            if (!isValidContentLayer(providedLayer)) {
-                throw new Error('Sisältökerros-factory:n palauttama instanssi ' +
-                    ' tulisi implementoida metodit "load", ja "decorateCell"');
-            }
-            return providedLayer;
-        } else {
-            return new item(...args);
-        }
-    }
-}
-
-function isValidContentLayer(obj) {
-    return obj && typeof obj.load === 'function' && typeof obj.decorateCell === 'function';
-}
-
-const HOURS_ARRAY = Array.from(Array(Constants.HOURS_IN_DAY).keys());
 const LoadType = Object.freeze({
     INITIAL: 'initial',
     NAVIGATION: 'navigation',
@@ -226,7 +220,7 @@ const LoadType = Object.freeze({
 
 /*
  * Kalenterin pääsisältö, renderöi ViewLayoutin generoiman gridin, ja lisää
- * valittujen sisältökerroksien (jos niitä on) luoman sisällön gridin soluihin.
+ * valittujen laajennoksien (jos niitä on) luoman sisällön gridin soluihin.
  *  ___________________________
  * |__________Toolbar__________|
  * |__________Header___________|
@@ -238,40 +232,21 @@ class Content extends React.Component {
     /**
      * @param {object} props {
      *     grid: {Array},
-     *     calendarController: {Object},
+     *     extensions: {Array},
      *     currentView: {string}
      * }
      */
     constructor(props) {
         super(props);
-        const selectedContentLayers = this.props.calendarController.settings.contentLayers;
-        this.hasAsyncContent = selectedContentLayers.length > 0;
+        this.hasAsyncContent = this.props.extensions.length > 0;
         this.state = {currentlyHasAsyncContent: undefined};
         if (this.hasAsyncContent) {
-            const contentLayerFactory = new ContentLayerFactory();
-            this.contentLayers = selectedContentLayers.map(layerConfig =>
-                contentLayerFactory.make(layerConfig, [
-                    this.newController(),
-                    this.props.calendarController
-                ])
-            );
+            this.controller = this.newController();
             this.loadAsyncContent(LoadType.INITIAL);
         }
     }
     /**
-     * Poistaa props.gridistä sisältökerroksien modifikaatiot (children &
-     * clickHandlers).
-     */
-    resetGrid() {
-        return this.props.grid.map(rows => rows.map(cell => {
-            if (cell && !(cell instanceof ImmutableCell)) {
-                cell.children = [];
-                cell.clickHandlers = [];
-            }
-        }));
-    }
-    /**
-     * Triggeröi sisältökerroksien päivityksen, jos niitä on.
+     * Triggeröi laajennoksien päivityksen, jos niitä on.
      */
     componentWillReceiveProps(props) {
         if (this.hasAsyncContent) {
@@ -283,46 +258,67 @@ class Content extends React.Component {
         }
     }
     /**
-     * Disabloi sisältökerroksien lataustapahtuman jälkeisen renderöinnin, jos
-     * yksikään ladatuista kerroksista ei palauttanut sisältöä.
+     * Disabloi laajennoksien lataustapahtuman jälkeisen renderöinnin, jos
+     * yksikään ladatuista laajennoksista ei palauttanut sisältöä.
      */
     shouldComponentUpdate(_, state) {
         return state.currentlyHasAsyncContent !== false;
     }
     /**
-     * Lataa & ajaa sisältökerrokset, esim. eventLayerin tapahtumat.
+     * Palauttaa sisältö-API:n, jonka kautta pääsee käsiksi mm. laajennoksien
+     * omiin apeihin. Jos valittuja laajennoksia ei ole, palauttaa undefined.
+     */
+    getController() {
+        return this.controller;
+    }
+    /**
+     * Poistaa props.gridistä laajennoksien modifikaatiot (children &
+     * clickHandlers).
+     *
+     * @access private
+     */
+    resetGrid() {
+        return this.props.grid.map(rows => rows.map(cell => {
+            if (cell && !(cell instanceof ImmutableCell)) {
+                cell.children = [];
+                cell.clickHandlers = [];
+            }
+        }));
+    }
+    /**
+     * Lataa & ajaa laajennokset, esim. eventExtensionin tapahtumat.
      *
      * @access private
      */
     loadAsyncContent(loadType) {
         return Promise.all(
-            this.contentLayers.map(layer => layer.load(loadType))
+            this.props.extensions.map(extension => extension.load(loadType))
         ).then(returnValues => {
-            const layersWhichMaybeHadContent = this.contentLayers.filter((layer, i) =>
-                // Layerit, joiden load palautti false, skipataan. Jos layer
+            const extensionsWhichMaybeHadContent = this.props.extensions.filter((extension, i) =>
+                // Extensionit, joiden load palautti false, skipataan. Jos extension
                 // ei palauttanut mitään, tai jotain muuta kuin false, ladataan
                 // normaalisti.
                 returnValues[i] !== false
             );
-            if (layersWhichMaybeHadContent.length > 0) {
-                this.applyAsyncContent(layersWhichMaybeHadContent);
+            if (extensionsWhichMaybeHadContent.length > 0) {
+                this.applyAsyncContent(extensionsWhichMaybeHadContent);
                 this.setState({currentlyHasAsyncContent: true});
             }
         });
     }
     /**
-     * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne sisältökerroksien
-     * dekoroitavaksi. Sisältökerros voi tällöin esim. lisätä solun children-,
+     * Traversoi kalenterin jokaisen sisältösolun, ja tarjoaa ne laajennoksien
+     * dekoroitavaksi. Laajennos voi tällöin esim. lisätä solun children-,
      * tai clickHandlers-taulukkoon omat lisäyksensä.
      *
      * @access private
      */
-    applyAsyncContent(layersToLoad) {
+    applyAsyncContent(extensionsToLoad) {
         this.resetGrid();
-        (layersToLoad || this.contentLayers).forEach(layer => {
+        (extensionsToLoad || this.props.extensions).forEach(extension => {
             this.props.grid.forEach(row => {
                 row.forEach(cell => {
-                    (cell instanceof Cell) && layer.decorateCell(cell);
+                    (cell instanceof Cell) && extension.decorateCell(cell);
                 });
             });
         });
@@ -368,13 +364,12 @@ class Content extends React.Component {
             : children;
     }
     /**
-     * Public API-versio tästä luokasta sisältökerroksia varten.
+     * Public API-versio tästä luokasta laajennoksia varten.
+     *
+     * @access private
      */
     newController() {
         return {
-            LoadType,
-            Cell,
-            PlaceholderCell,
             refresh: () => {
                 this.applyAsyncContent();
                 this.forceUpdate();
@@ -434,29 +429,32 @@ class AbstractViewLayout {
     /**
      * @access public
      * @param {boolean} compactFormShouldBeUsed
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getParts(compactFormShouldBeUsed) {
-        return !compactFormShouldBeUsed ? this.getFullLayout() : this.getCompactLayout();
+    getParts(compactFormShouldBeUsed, hoursToDisplay) {
+        return this['get' + (!compactFormShouldBeUsed ? 'Full' : 'Compact') + 'Layout'](hoursToDisplay);
     }
     /**
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getFullLayout() {
+    getFullLayout(hoursToDisplay) {
         return [
             new ComponentConstruct(Header, {items: this.getHeaderCells()}),
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getFullGrid()})
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getFullGrid(hoursToDisplay)})
         ];
     }
     /**
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getCompactLayout() {
+    getCompactLayout(hoursToDisplay) {
         return [
             null,
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getCompactGrid()})
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getCompactGrid(hoursToDisplay)})
         ];
     }
 }
@@ -477,53 +475,6 @@ class Header extends React.Component {
                 $el('div', {key: i + item, className: 'col'}, $el('div', {className: 'cell'}, item))
             ))
         );
-    }
-}
-
-/*
- * Kalenterin pääsisältö day-muodossa.
- */
-class DayViewLayout extends AbstractViewLayout {
-    /**
-     * Palauttaa 2-sarakkellisen headerin, jossa yksi tyhjä solu tuntisaraketta
-     * varten, ja yksi viikonpäiväsolu.
-     *
-     * @access protected
-     * @returns {Array}
-     */
-    getHeaderCells() {
-        return ['', this.dateUtils.format(this.dateCursor.range.start, {weekday: 'long'})];
-    }
-    /**
-     * Day-näkymällä ei ole erillistä compact-muotoa.
-     *
-     * @access protected
-     * @returns {Array}
-     */
-    getCompactLayout() {
-        return this.getFullLayout();
-    }
-    /**
-     * Generoi vuorokauden jokaiselle tunnille rivin, jossa yksi tuntisarake,
-     * ja yksi päiväsarake. Tuntisarakkeen sisältönä vuorokauden tunti muodossa
-     * `mm:ss` wrapattuna ImmutableCell-instanssiin, ja sisältösarakkeen
-     * sisältönä aina null wrapattuna Cell-instanssiin.
-     *
-     * @access protected
-     * @returns {Array}
-     */
-    getFullGrid() {
-        const rollingDate = new Date(this.dateCursor.range.start);
-        const isToday = rollingDate.toDateString() === new Date().toDateString();
-        // Päivän jokaiselle tunnille rivi, ...
-        return HOURS_ARRAY.map(hour => {
-            rollingDate.setHours(hour);
-            // jossa tuntisarake, ja sisältösarake.
-            return [
-                new ImmutableCell(this.dateUtils.formatHour(hour)),
-                new Cell(null, new Date(rollingDate), isToday)
-            ];
-        });
     }
 }
 
@@ -551,11 +502,12 @@ class WeekViewLayout extends AbstractViewLayout {
      * sisältönä aina null wrapattuna Cell-instanssiin.
      *
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getFullGrid() {
+    getFullGrid(hoursToDisplay) {
         // Vuorokauden jokaiselle tunnille rivi, ...
-        return this.markCurrentDayColumn(HOURS_ARRAY.map(hour => {
+        return this.markCurrentDayColumn(this.generateHourRange(hoursToDisplay).map(hour => {
             const rollingDate = new Date(this.dateCursor.range.start);
             rollingDate.setHours(hour);
             // jossa tuntisarake, ...
@@ -602,6 +554,19 @@ class WeekViewLayout extends AbstractViewLayout {
         ], true);
     }
     /**
+     * Luo asetuksissa määritellystä hours-arvosta range-taulukon. esim.
+     * {first: 8, last: 16} -> [8,9,...,15,16]
+     *
+     * @access protected
+     */
+    generateHourRange(hoursToDisplay) {
+        let hours = [];
+        for (let hour = hoursToDisplay.first; hour <= hoursToDisplay.last; hour++) {
+            hours.push(hour);
+        }
+        return hours;
+    }
+    /**
      * Asettaa kuluvalle päivälle kuuluvien Cell-instanssien
      * isCurrentDay -> true.
      *
@@ -620,6 +585,55 @@ class WeekViewLayout extends AbstractViewLayout {
             }
         }
         return grid;
+    }
+}
+
+/*
+ * Kalenterin pääsisältö day-muodossa.
+ */
+class DayViewLayout extends WeekViewLayout {
+    /**
+     * Palauttaa 2-sarakkellisen headerin, jossa yksi tyhjä solu tuntisaraketta
+     * varten, ja yksi viikonpäiväsolu.
+     *
+     * @access protected
+     * @returns {Array}
+     */
+    getHeaderCells() {
+        return ['', this.dateUtils.format(this.dateCursor.range.start, {weekday: 'long'})];
+    }
+    /**
+     * Day-näkymällä ei ole erillistä compact-muotoa.
+     *
+     * @access protected
+     * @param {Object} hoursToDisplay
+     * @returns {Array}
+     */
+    getCompactLayout(hoursToDisplay) {
+        return this.getFullLayout(hoursToDisplay);
+    }
+    /**
+     * Generoi vuorokauden jokaiselle tunnille rivin, jossa yksi tuntisarake,
+     * ja yksi päiväsarake. Tuntisarakkeen sisältönä vuorokauden tunti muodossa
+     * `mm:ss` wrapattuna ImmutableCell-instanssiin, ja sisältösarakkeen
+     * sisältönä aina null wrapattuna Cell-instanssiin.
+     *
+     * @access protected
+     * @param {Object} hoursToDisplay
+     * @returns {Array}
+     */
+    getFullGrid(hoursToDisplay) {
+        const rollingDate = new Date(this.dateCursor.range.start);
+        const isToday = rollingDate.toDateString() === new Date().toDateString();
+        // Päivän jokaiselle tunnille rivi, ...
+        return this.generateHourRange(hoursToDisplay).map(hour => {
+            rollingDate.setHours(hour);
+            // jossa tuntisarake, ja sisältösarake.
+            return [
+                new ImmutableCell(this.dateUtils.formatHour(hour)),
+                new Cell(null, new Date(rollingDate), isToday)
+            ];
+        });
     }
 }
 
@@ -900,6 +914,63 @@ class DateCursorFactory {
     }
 }
 
+/**
+ * Jokaiselle ExtensionFactory-instanssille yhteinen, staattinen säilytystila
+ * rekisteröidyille laajennoksille.
+ *
+ * @var {Object}
+ */
+const register = {};
+
+class ExtensionFactory {
+    constructor() {
+        Object.assign(this, new Register(register, 'laajennos'));
+    }
+    /**
+     * Luo uuden laajennoksen käyttäen rekisteröityä konstruktoria, tai heittää
+     * poikkeuksen mikäli rekisteröityä itemiä ei löytynyt, tai se oli virheellinen.
+     *
+     * @access public
+     * @param {string} name
+     * @param {Array} args
+     * @returns {Object} Uusi instanssi laajennoksesta {name}
+     */
+    make(name, args) {
+        const registered = this.get(name);
+        // Konstruktori
+        if (isValidExtension(registered.prototype)) {
+            return new registered(...args);
+        // Factory-funktio
+        } else {
+            const out = registered(...args);
+            if (!isValidExtension(out)) {
+                throw new Error('Laajennos-factory:n palauttama instanssi ' +
+                    ' tulisi implementoida metodit "load", "decorateCell", ' +
+                    'ja "addToolbarPartFactories"');
+            }
+            return out;
+        }
+    }
+    /**
+     * Triggeröityy aina, kun kutsutaan extensionFactory.add(extension);
+     *
+     * @access protected
+     */
+    transform(extension) {
+        if (typeof extension !== 'function') {
+            throw new Error('Rekisteröitävä laajennos tulisi olla konstruktori.');
+        }
+        return extension;
+    }
+}
+
+function isValidExtension(obj) {
+    return obj &&
+        typeof obj.load === 'function' &&
+        typeof obj.decorateCell === 'function' &&
+        typeof obj.addToolbarPartFactories === 'function';
+}
+
 function validateViewKey(viewNameKey) {
     const lookedUpViewName = Constants['VIEW_' + viewNameKey.toUpperCase()];
     if (!lookedUpViewName) {
@@ -911,9 +982,9 @@ function validateDefaultDate(candidate) {
         return 'defaultDate-asetus tulisi olla Date-instanssi';
     }
 }
-function validateLayers(candidate) {
+function validateExtensions(candidate) {
     if (!Array.isArray(candidate)) {
-        return 'contentLayers-asetus tulisi olla taulukko';
+        return 'extensions-asetus tulisi olla taulukko';
     }
 }
 function validateToolbarParts(candidate) {
@@ -921,9 +992,8 @@ function validateToolbarParts(candidate) {
         return 'toolbarParts-asetus tulisi olla merkkijono. esim \'prev,next|title|day,week\'';
     }
     for (const part of candidate.replace(/\|/g, ',').split(',')) {
-        if (validPartNames.indexOf(part) < 0) {
-            return 'titlePart "' + part + '" ei ole validi. Tuetut arvot: ' +
-                validPartNames.join(',');
+        if (!part.length) {
+            return 'Toolbarpart-osa ei voi olla tyhjä';
         }
     }
 }
@@ -943,6 +1013,19 @@ function validateBreakPoint(candidate) {
         return 'layoutChangeBreakPoint-asetus tulisi olla kokonaisluku';
     }
 }
+function validateHours(candidate) {
+    if (typeof candidate !== 'object' ||
+        typeof candidate.first !== 'number' ||
+        typeof candidate.last !== 'number') {
+        return 'hours-asetus tulisi olla objekti, esim. {first: 8, last: 16}';
+    }
+    if (candidate.first >= candidate.last) {
+        return 'hours.first tulisi olla vähemmän kuin hours.last';
+    }
+    if (candidate.last > 23) {
+        return 'hours.last tulisi olla vähemmän kuin 24';
+    }
+}
 function validateLocale(candidate) {
     if (!Array.isArray(candidate) && typeof candidate !== 'string') {
         return 'locale-asetus tulisi olla merkkijono tai taulukko';
@@ -952,42 +1035,84 @@ function validateLocale(candidate) {
  * @param {any} value Asetuksen arvo
  * @param {Function} validator Arvon validoija
  * @param {any} defaultValue Oletusarvo asetukselle, jos value = undefined
+ * @param {string=} key Aetuksen nimi
  * @returns {any} Käyttäjän määrittelemä-, tai oletusarvo
- * @throws {Error}
+ * @throws {Error} Jos {validator} palautti merkkijonon
  */
-function getValidValue(value, validator, defaultValue) {
+function getValidValue(value, validator, defaultValue, key) {
     if (value === undefined) {
         return defaultValue;
     }
     const error = validator(value) || null;
-    if (error) {
-        throw new Error(error);
+    if (typeof error === 'string') {
+        throw new Error(!key ? error : error.replace(/%s/g, key));
     }
     return value;
 }
 const getValidViewName = value => getValidValue(value, validateViewKey, Constants.VIEW_DEFAULT);
-/**
- * @param {Object} userSettings
- * @returns {Object} {
- *     defaultView: {string},
- *     defaultDate: {Date},
- *     contentLayers: {Array},
- *     toolbarParts: {string},
- *     titleFormatters: {Object},
- *     layoutChangeBreakPoint: {number},
- *     locale: {string|string[]}
- * }
- * @throws {Error}
+
+/*
+ * Jokaiselle kalenterille yhteinen asetus-avain/validaattorirekisteri.
  */
-var settingsFactory = userSettings => ({
-    defaultView: getValidViewName(userSettings.defaultView),
-    defaultDate: getValidValue(userSettings.defaultDate, validateDefaultDate, new Date()),
-    contentLayers: getValidValue(userSettings.contentLayers, validateLayers, []),
-    toolbarParts: getValidValue(userSettings.toolbarParts, validateToolbarParts, 'prev,next,today|title|month,week,day'),
-    titleFormatters: getValidValue(userSettings.titleFormatters, validateFormatters, {}),
-    layoutChangeBreakPoint: getValidValue(userSettings.layoutChangeBreakPoint, validateBreakPoint, 800),
-    locale: getValidValue(userSettings.locale, validateLocale, undefined)
-});
+const knownSettings = {
+    defaultView: {validator: validateViewKey, defaultValue: Constants.VIEW_DEFAULT},
+    defaultDate: {validator: validateDefaultDate, defaultValue: new Date()},
+    toolbarParts: {validator: validateToolbarParts, defaultValue: 'prev,next,today|title|month,week,day'},
+    titleFormatters: {validator: validateFormatters, defaultValue: {}},
+    layoutChangeBreakPoint: {validator: validateBreakPoint, defaultValue: 800},
+    hours: {validator: validateHours, defaultValue: {first: 6, last: 17}},
+    locale: {validator: validateLocale, defaultValue: undefined}
+};
+const settingsRegister = {
+    transform(validator, key, defaultValue) {
+        return {validator, defaultValue};
+    }
+};
+Object.assign(settingsRegister, new Register(knownSettings, 'asetus'));
+
+/*
+ * Jokaiselle kalenterille yhteinen asetusFactory.
+ */
+const extensionFactory$1 = new ExtensionFactory();
+const settingsFactory = {
+    /**
+     * @param {Object} userSettings
+     * @returns {Object} {
+     *     defaultView: {string},
+     *     defaultDate: {Date},
+     *     extensions: {Array},
+     *     toolbarParts: {string},
+     *     titleFormatters: {Object},
+     *     layoutChangeBreakPoint: {number},
+     *     hours: {Object},
+     *     locale: {string|string[]}
+     * }
+     */
+    makeSettings(userSettings) {
+        // 1. Lisää laajennoksien rekisteröimät asetusavain/validaattorit.
+        const selectedExtensionNames = getValidValue(userSettings.extensions, validateExtensions, []);
+        selectedExtensionNames.forEach(name => {
+            once('defineSettings#' + name, () => {
+                // Staattinen metodi "defineSettings" on laajennoksille vapaaehtoinen.
+                const definer = extensionFactory$1.get(name).defineSettings;
+                if (typeof definer === 'function') {
+                    definer(settingsRegister);
+                }
+            });
+        });
+        // 2. Validoi, ja luo asetukset
+        const validSettings = {extensions: selectedExtensionNames};
+        settingsRegister.traverse((def, key) => {
+            validSettings[key] = getValidValue(
+                userSettings[key],
+                def.validator,
+                def.defaultValue,
+                key
+            );
+        });
+        return validSettings;
+    },
+};
 
 const EMPTY_WEEK = Array.from(Array(7));
 
@@ -1059,17 +1184,18 @@ class CalendarLayout extends React.Component {
      * @param {object} props {
      *     defaultView: {string=},
      *     defaultDate: {Date=},
-     *     contentLayers: {Array=},
+     *     extensions: {Array=},
      *     toolbarParts: {string=},
      *     titleFormatters: {Object=},
-     *     layoutChangeBreakPoint: {number=}
+     *     layoutChangeBreakPoint: {number=},
+     *     hours: {Object=},
      *     locale: {string|string[]=}
      * }
      */
     constructor(props) {
         super(props);
         // Luo asetukset & rekisteröi mediaquery
-        this.settings = settingsFactory(this.props);
+        this.settings = settingsFactory.makeSettings(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
         this.dateUtils = new DateUtils(this.settings.locale);
         this.dateCursorFactory = new DateCursorFactory(this.dateUtils);
@@ -1081,6 +1207,16 @@ class CalendarLayout extends React.Component {
         this.state = state;
         //
         this.controller = newController(this);
+        if (this.settings.extensions.length > 0) {
+            const extensionFactory = new ExtensionFactory();
+            this.extensions = this.settings.extensions.map(name => {
+                const ext = extensionFactory.make(name, [this.controller]);
+                ext.configuredName = name;
+                return ext;
+            });
+        } else {
+            this.extensions = [];
+        }
     }
     /**
      * Lisää matchmedia-kuuntelijan.
@@ -1096,11 +1232,22 @@ class CalendarLayout extends React.Component {
         return this.controller;
     }
     /**
+     * Palauttaa instantoidun laajennoksen {name}, tai undefined, jos sellaista
+     * ei löytynyt.
+     *
+     * @param {string} name
+     * @returns {Object} laajennosinstanssi
+     */
+    getExtension(name) {
+        return this.extensions.find(extensionInstance =>
+            extensionInstance.configuredName === name
+        );
+    }
+    /**
      * Vaihtaa kalenterin currentView:iksi {to}, mikäli se ei ole jo valmiiksi,
-     * uudelleeninstantioi dateCursorin, ja triggeröi sisältökerroksien
+     * uudelleeninstantioi dateCursorin, ja triggeröi laajennoksien
      * uudelleenlatauksen.
      *
-     * @access public
      * @param {string} to 'day'|'week'|'month'
      */
     changeView(to) {
@@ -1156,7 +1303,8 @@ class CalendarLayout extends React.Component {
         }
         //
         const [header, content] = this.state.viewLayout.getParts(
-            this.state.isWindowNarrowerThanBreakPoint
+            this.state.isWindowNarrowerThanBreakPoint,
+            this.settings.hours
         );
         return $el('div', {className},
             $el(Modal, {ref: cmp => {
@@ -1166,15 +1314,17 @@ class CalendarLayout extends React.Component {
                 parts: this.settings.toolbarParts,
                 calendarController: this.controller,
                 dateUtils: this.dateUtils,
+                extensions: this.extensions,
                 titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
             }),
             header !== null && $el(header.Component,
                 header.props
             ),
             $el(content.Component, {
+                ref: cmp => { cmp && (this.contentController = cmp.getController()); },
                 grid: content.props.gridGeneratorFn(),
                 currentView: this.state.currentView,
-                calendarController: this.controller
+                extensions: this.extensions
             })
         );
     }
@@ -1197,6 +1347,12 @@ function newController(component) {
         get isCompactViewEnabled() {
             return component.state.isWindowNarrowerThanBreakPoint;
         },
+        get contentController() {
+            return component.contentController;
+        },
+        get dateUtils() {
+            return component.dateUtils;
+        },
         changeView: to => {
             return component.changeView(to);
         },
@@ -1205,11 +1361,12 @@ function newController(component) {
         },
         closeModal: () => {
             component.modal.close();
-        }
+        },
+        getExtension: name => component.getExtension(name)
     };
 }
 
-const contentLayerFactory = new ContentLayerFactory();
+const extensionFactory = new ExtensionFactory();
 
 /**
  * Kirjaston public API.
@@ -1217,7 +1374,7 @@ const contentLayerFactory = new ContentLayerFactory();
 var nullcalendar$1 = {
     /**
      * @param {HTMLElement} el DOM-elementti, johon kalenteri renderöidään
-     * @param {Object=} settings Kalenterin configuraatio
+     * @param {Object=} settings Kalenterin konfiguraatio
      * @returns {Object} Kalenteri-instanssin kontrolleri/API
      */
     newCalendar: (el, settings) => {
@@ -1225,9 +1382,9 @@ var nullcalendar$1 = {
     },
     /**
      * @param {string} name Nimi, jolla rekisteröidään
-     * @param {Object|Function} layer Sisältökerroksen implementaatio @see https://github.com/ut4/ncalendar#extending
+     * @param {Object|Function} extension Laajennoksen implementaatio @see https://github.com/ut4/ncalendar#extending
      */
-    registerContentLayer: (name, layer) => contentLayerFactory.register(name, layer),
+    registerExtension: (name, extension) => extensionFactory.add(name, extension),
     /**
      * @prop {React.Component} Kalenterin juurikomponentti @see https://github.com/ut4/ncalendar#usage-jsx
      */
