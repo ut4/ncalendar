@@ -75,20 +75,16 @@ const mySettings = {
      */
     defaultDate: new Date(2017, 6, 30),
     /**
-     * Ladattavat sisältökerrokset.
+     * Ladattavat laajennokset.
      *
-     * @prop {string|Object[]}
+     * @prop {string[]}
      * @default []
      */
-    contentLayers: [
-        'event',
-        // tai
-        {name: 'event'}
-    ],
+    extensions: ['events'],
     /**
      * Toolbariin renderöitävät sarakkeet, ja niiden sisältö. Mahdolliset arvot:
-     * fill, prev, next, today, title, month, week ja day. "|" -merkki luo uuden
-     * sarakkeen.
+     * fill, prev, next, today, title, month, week ja day, ja näiden lisäksi
+     * laajennoksien rekisteröimät arvot. "|" -merkki luo uuden sarakkeen.
      *
      * @prop {string}
      * @default 'prev,next,today|title|month,week,day'
@@ -116,12 +112,21 @@ const mySettings = {
      */
     layoutChangeBreakPoint: 600,
     /**
+     * Vuorokauden tunnit, jotka renderöidään Week-, ja Day-näkymissä.
+     *
+     * @prop {Object}
+     * @default {first: 6, last: 17}
+     */
+    hours: {first: 8, last: 16},
+    /**
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
      *
      * @prop {string|string[]}
      * @default undefined aka. selainmoottori päättää
      */
     locale: 'fi'
+    //
+    // Esim. laajennos-spesifisiä asetuksia tänne
 };
 ```
 
@@ -130,24 +135,29 @@ const mySettings = {
 ```javascript
 // -- 1. Implementoi ----
 // -----------------------------------------------------------------------------
-class MyContentLayer {
+import { LoadType, PlaceholderCell } from './src/Content.js';
+
+/*
+ * Laajennos, joka lisää kalenterin jokaisen perjantain sisällöksi {this.fridayText}.
+ *
+ * Note: load, decorateCell, addToolbarPartFactories, ja static defineSettings on
+ * laajennos-rajapinnan metodeja, joista kolme ensimmäistä on pakollisia.
+ */
+class MyExtension {
     /**
-     * @param {string} myArgument
-     * @param {Object} contentController Vastaa mm. sisällön päivityksestä @see https://github.com/ut4/ncalendar#contentcontroller-api
      * @param {Object} calendarController Vastaa yhden kalenterin ohjailusta. Sama kuin nullcalendar.newCalendar() paluuarvo. @see https://github.com/ut4/ncalendar#calendarcontroller-api
      */
-    constructor(myArgument, contentController, calendarController) {
-        console.log(typeof contentController.refresh);     // function
+    constructor(calendarController) {
         console.log(typeof calendarController.changeView); // function
-        this.contentController = contentController;
-        this.text = myArgument;
+        this.calendar = calendarController;
+        this.setFridayText(calendarController.settings.myExtensionFridayText);
     }
     /**
      * Triggeröityy aina kun sivu ladataan, kalenterin näkymä vaihtuu, tai
      * kalenterin cursorRange päivittyy. Hyvä paikka ladata jotain esim.
      * backendistä..
      *
-     * Jos metodi palauttaa false|promisejokaresolvaafalse, layerin dekorointi ja
+     * Jos metodi palauttaa false|promisejokaresolvaafalse, laajennoksen dekorointi ja
      * renderöinti ohitetaan, muussa tapauksessa paluuarvoa ei huomioida mitenkään.
      *
      * @param {string} loadType 'initial'|'navigation'|'view-change'
@@ -155,7 +165,7 @@ class MyContentLayer {
      */
     load(loadType) {
         console.log('Loadtype:' + loadType);
-        if (loadType !== this.contentController.LoadType.INITIAL) {
+        if (loadType !== LoadType.INITIAL) {
             return false;
         }
         return Promise.resolve().then(() => {
@@ -171,46 +181,98 @@ class MyContentLayer {
      * @returns {void}
      */
     decorateCell(cell) {
-        if (cell instanceof this.contentController.PlaceholderCell) {
+        if (cell instanceof PlaceholderCell) {
             return;
         }
         if (cell.date.getDay() === 5) {
-            cell.content = `Friday, ${this.text}!`;
-            // contentController.refresh = dekoroi & renderöi layerit uudelleen
-            // contentController.reRender = pelkästään renderöi layerit uudelleen
+            cell.content = `Friday, ${this.fridayText}!`;
+            // contentController.refresh = dekoroi & renderöi laajennokset uudelleen
+            // contentController.reRender = pelkästään renderöi laajennokset uudelleen
             cell.clickHandlers.push((cell, e) => {
                 if (Math.random() > 0.5) {
                     console.log('Refreshing...');
-                    this.text = this.text === 'yayy' ? 'nyayy' : 'yayy';
-                    this.contentController.refresh();
+                    this.fridayText = this.fridayText === 'yayy' ? 'nyayy' : 'yayy';
+                    this.calendar.contentController.refresh();
                 } else {
                     console.log('ReRendering...');
                     cell.content += '!';
-                    this.contentController.reRender();
+                    this.calendar.contentController.reRender();
                 }
             });
         }
+    }
+    /**
+     * Mahdollista custom -toolbar-osien lisäyksen kalenteriin, joihin taas voidaan
+     * viitata settings-objektin toolbarParts-asetuksessa.
+     *
+     * @param {Object} toolbarPartRegister @see https://github.com/ut4/ncalendar#toolbarpartregister
+     */
+    addToolbarPartFactories(toolbarPartRegister) {
+        toolbarPartRegister.add(
+            // Toolbar-osan nimi
+            'abutton',
+            // Toolbar-osa -factory
+            () => $el(
+                'span',
+                {onClick: () =>
+                    this.calendar.getExtension('foo').setAndRenderFridayText('fyyyy')
+                },
+                'Click dis '
+            )
+        );
+        // toolbarPartRegister.add('someOtherProp', ...) ...
+    }
+    /**
+     * Mahdollistaa custom-asetuksien lisäyksen kalenteriin. Esim. settingsRegister.add(
+     * 'myExtensionFoo', ...) -kutsun jälkeen lisättyä asetusta 'myExtensionFoo'
+     * voidaan käyttää uutta kalenteria luodessa: newCalendar(el, {
+     *     myExtensionFoo: 'someValue',
+     *     ...
+     * }). Note: staattinen metodi, kutsutaan ennen laajennoksen luomista.
+     *
+     * @param {Object} settingsRegister @see https://github.com/ut4/ncalendar#settingsregister
+     */
+    static defineSettings(settingsRegister) {
+        settingsRegister.add(
+            // Asetuksen nimi
+            'myExtensionFridayText',
+            // Arvon validaattori. Palauttaa virheviestin (invalid), tai minkä tahansa muun arvon (valid).
+            text => typeof text !== 'string' ? '%s tulisi olla merkkijono' : true,
+            // Käytettävä oletusarvo sen puuttuessa kalenterin asetuksissa
+            'yayy'
+        );
+        // settingsRegister.add('myExtensionSomeOtherProp', ...) ...
+    }
+    /**
+     * Aseta jokaiselle perjantaille lisättävä teksti.
+     *
+     * @param {string} someText
+     */
+    setFridayText(someString) {
+        this.fridayText = someString;
+    }
+    /**
+     * Laajennoksen ulkopuolelta kutsuttava metodi.
+     */
+    setAndRenderFridayText(newText) {
+        this.setFridayText(newText);
+        this.calendar.contentController.refresh();
     }
 }
 
 // -- 2. Rekisteröi ----
 // -----------------------------------------------------------------------------
-// (a) - preconfiguroitu
-nullcalendar.registerContentLayer('foo1', (contentCtrl, calendarCtrl) =>
-    new MyContentLayer('yayy', contentCtrl, calendarCtrl)
-);
-// (b) - configuroimaton
-nullcalendar.registerContentLayer('foo2', MyContentLayer);
-
+nullcalendar.registerExtension('foo', MyExtension);
+// tai
+// nullcalendar.registerExtension('foo', calCtrl => new MyExtension(calCtrl));
 
 // -- 3. Ota käyttöön ----
 // -----------------------------------------------------------------------------
-// (a) - preconfiguroitu
-nullcalendar.newCalendar(myEl, {contentLayers: ['foo1']});
-// (b) - configuroimaton
-nullcalendar.newCalendar(myEl, {contentLayers: [
-    {name:'foo2', args: (contentCtrl, calendarCtrl) => ['yayy', contentCtrl, calendarCtrl]}
-]});
+nullcalendar.newCalendar(document.getElementById('cal'), {
+    extensions: ['foo'],
+    toolbarParts: 'prev,next,today|title|abutton,month,week,day',
+    myExtensionFridayText: 'yayy'
+});
 ```
 
 ## Global-API
@@ -218,7 +280,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 ### Methods
 
 - nullcalendar.newCalendar(el[, settings])
-- nullcalendar.registerContentLayer(name, layer)
+- nullcalendar.registerExtension(name, extension)
 
 ### Properties
 
@@ -231,6 +293,7 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 - calendarController.changeView(to)
 - calendarController.openModal(componentConstruct)
 - calendarController.closeModal()
+- calendarController.getExtension(name)
 
 ### Getters
 
@@ -238,6 +301,8 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 - calendarController.dateCursor
 - calendarController.settings
 - calendarController.isCompactViewEnabled
+- calendarController.contentController
+- calendarController.dateUtils
 
 ## ContentController-API
 
@@ -246,11 +311,17 @@ nullcalendar.newCalendar(myEl, {contentLayers: [
 - contentController.refresh()
 - contentController.reRender()
 
-### Properties
+## ToolbarPartRegister
 
-- contentController.LoadType
-- contentController.Cell
-- contentController.PlaceholderCell
+### Methods
+
+- toolbarPartRegister.add(name, factoryFn)
+
+## SettingsRegister
+
+### Methods
+
+- settingsRegister.add(name, validator[, defaultValue])
 
 # License
 

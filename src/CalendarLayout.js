@@ -5,6 +5,7 @@ import {DateCursorFactory} from './DateCursors.js';
 import Constants from './Constants.js';
 import settingsFactory, {getValidViewName} from './settingsFactory.js';
 import DateUtils from './DateUtils.js';
+import ExtensionFactory from './ExtensionFactory.js';
 
 /*
  * Kalenterin juurikomponentti.
@@ -14,17 +15,18 @@ class CalendarLayout extends React.Component {
      * @param {object} props {
      *     defaultView: {string=},
      *     defaultDate: {Date=},
-     *     contentLayers: {Array=},
+     *     extensions: {Array=},
      *     toolbarParts: {string=},
      *     titleFormatters: {Object=},
-     *     layoutChangeBreakPoint: {number=}
+     *     layoutChangeBreakPoint: {number=},
+     *     hours: {Object=},
      *     locale: {string|string[]=}
      * }
      */
     constructor(props) {
         super(props);
         // Luo asetukset & rekisteröi mediaquery
-        this.settings = settingsFactory(this.props);
+        this.settings = settingsFactory.makeSettings(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
         this.dateUtils = new DateUtils(this.settings.locale);
         this.dateCursorFactory = new DateCursorFactory(this.dateUtils);
@@ -36,6 +38,16 @@ class CalendarLayout extends React.Component {
         this.state = state;
         //
         this.controller = newController(this);
+        if (this.settings.extensions.length > 0) {
+            const extensionFactory = new ExtensionFactory();
+            this.extensions = this.settings.extensions.map(name => {
+                const ext = extensionFactory.make(name, [this.controller]);
+                ext.configuredName = name;
+                return ext;
+            });
+        } else {
+            this.extensions = [];
+        }
     }
     /**
      * Lisää matchmedia-kuuntelijan.
@@ -51,11 +63,22 @@ class CalendarLayout extends React.Component {
         return this.controller;
     }
     /**
+     * Palauttaa instantoidun laajennoksen {name}, tai undefined, jos sellaista
+     * ei löytynyt.
+     *
+     * @param {string} name
+     * @returns {Object} laajennosinstanssi
+     */
+    getExtension(name) {
+        return this.extensions.find(extensionInstance =>
+            extensionInstance.configuredName === name
+        );
+    }
+    /**
      * Vaihtaa kalenterin currentView:iksi {to}, mikäli se ei ole jo valmiiksi,
-     * uudelleeninstantioi dateCursorin, ja triggeröi sisältökerroksien
+     * uudelleeninstantioi dateCursorin, ja triggeröi laajennoksien
      * uudelleenlatauksen.
      *
-     * @access public
      * @param {string} to 'day'|'week'|'month'
      */
     changeView(to) {
@@ -111,7 +134,8 @@ class CalendarLayout extends React.Component {
         }
         //
         const [header, content] = this.state.viewLayout.getParts(
-            this.state.isWindowNarrowerThanBreakPoint
+            this.state.isWindowNarrowerThanBreakPoint,
+            this.settings.hours
         );
         return $el('div', {className},
             $el(Modal, {ref: cmp => {
@@ -121,15 +145,17 @@ class CalendarLayout extends React.Component {
                 parts: this.settings.toolbarParts,
                 calendarController: this.controller,
                 dateUtils: this.dateUtils,
+                extensions: this.extensions,
                 titleFormatter: this.settings.titleFormatters[this.state.currentView] || null
             }),
             header !== null && $el(header.Component,
                 header.props
             ),
             $el(content.Component, {
+                ref: cmp => { cmp && (this.contentController = cmp.getController()); },
                 grid: content.props.gridGeneratorFn(),
                 currentView: this.state.currentView,
-                calendarController: this.controller
+                extensions: this.extensions
             })
         );
     }
@@ -152,6 +178,12 @@ function newController(component) {
         get isCompactViewEnabled() {
             return component.state.isWindowNarrowerThanBreakPoint;
         },
+        get contentController() {
+            return component.contentController;
+        },
+        get dateUtils() {
+            return component.dateUtils;
+        },
         changeView: to => {
             return component.changeView(to);
         },
@@ -160,7 +192,8 @@ function newController(component) {
         },
         closeModal: () => {
             component.modal.close();
-        }
+        },
+        getExtension: name => component.getExtension(name)
     };
 }
 

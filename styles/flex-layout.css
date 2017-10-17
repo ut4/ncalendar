@@ -13,10 +13,10 @@
         .cal .toolbar .col:last-of-type { text-align: right }
 /* -- header ---------------------------------------------------------------- */
     .cal .header { height: 40px; overflow-y: scroll; text-align: center; border: 1px solid #DDD; border-bottom: none }
-            .cal .header .cell { height: 20px/*; border-bottom: 1px solid #DDD*/ }
+            .cal .header .cell { height: 20px }
 /* -- main ------------------------------------------------------------------ */
-.cal .main { min-height: 343px; max-height: 400px; overflow-y: auto; margin-top: -19px; border: 1px solid #DDD }
-    .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; min-height: 40px; height: 100%; position: relative }
+.cal .main { max-height: 400px; overflow-y: scroll; margin-top: -20px; border: 1px solid #DDD }
+    .cal .main .cell { padding: 2px; border-top: 1px solid #DDD; height: 40px; position: relative }
     .main > .row:first-of-type .cell { border-top: none }
 /* -- month-view ------------------------------------------------------------ */
     .cal.month .main .cell { min-height: 80px }

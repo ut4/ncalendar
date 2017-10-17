@@ -16,29 +16,32 @@ class AbstractViewLayout {
     /**
      * @access public
      * @param {boolean} compactFormShouldBeUsed
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getParts(compactFormShouldBeUsed) {
-        return !compactFormShouldBeUsed ? this.getFullLayout() : this.getCompactLayout();
+    getParts(compactFormShouldBeUsed, hoursToDisplay) {
+        return this['get' + (!compactFormShouldBeUsed ? 'Full' : 'Compact') + 'Layout'](hoursToDisplay);
     }
     /**
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getFullLayout() {
+    getFullLayout(hoursToDisplay) {
         return [
             new ComponentConstruct(Header, {items: this.getHeaderCells()}),
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getFullGrid()})
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getFullGrid(hoursToDisplay)})
         ];
     }
     /**
      * @access protected
+     * @param {Object} hoursToDisplay
      * @returns {Array}
      */
-    getCompactLayout() {
+    getCompactLayout(hoursToDisplay) {
         return [
             null,
-            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getCompactGrid()})
+            new ComponentConstruct(Content, {gridGeneratorFn: () => this.getCompactGrid(hoursToDisplay)})
         ];
     }
 }

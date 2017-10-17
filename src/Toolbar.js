@@ -1,3 +1,4 @@
+import Register, {once} from './Register.js';
 import Constants from './Constants.js';
 
 const titleFormatters = {
@@ -17,9 +18,22 @@ const titleFormatters = {
         dateUtils.format(dateCursorRange.start, {month: 'long', year: 'numeric'})
 };
 
+const partFactories = {
+    prev(toolbar) { return $el('button', {onClick: () => toolbar.ctrl.dateCursor.prev(), key: 'prev' }, '<'); },
+    next(toolbar) { return $el('button', {onClick: () => toolbar.ctrl.dateCursor.next(), key: 'next' }, '>'); },
+    today(toolbar) { return $el('button', {onClick: () => toolbar.ctrl.dateCursor.reset(), key: 'today' }, 'Tänään'); },
+    title(toolbar) { return $el('h2', {key: 'title'}, (toolbar.props.titleFormatter || titleFormatters[toolbar.ctrl.currentView])(
+        toolbar.ctrl.dateCursor.range, toolbar.props.dateUtils
+    )); },
+    month(toolbar) { return $el('button', {onClick: () => { toolbar.ctrl.changeView(Constants.VIEW_MONTH); }, key: 'month'}, 'Kuukausi'); },
+    week(toolbar) { return $el('button', {onClick: () => { toolbar.ctrl.changeView(Constants.VIEW_WEEK); }, key: 'week'}, 'Viikko'); },
+    day(toolbar) { return $el('button', {onClick: () => { toolbar.ctrl.changeView(Constants.VIEW_DAY); }, key: 'day'}, 'Päivä'); },
+    fill() { return null; }
+};
+
 /*
  * Kalenterilayoutin ylin osa. Sisältää oletuksena päänavigaatiopainikkeet,
- * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa.
+ * otsakkeen, ja näkymänavigaatiopainikkeet. Konfiguroitavissa asetuksien kautta.
  *  ___________________________
  * |______--> Toolbar <--______|
  * |__________Header___________|
@@ -33,38 +47,29 @@ class Toolbar extends React.Component {
      *     parts: {string},
      *     calendarController: {Object},
      *     dateUtils: {Object},
+     *     extensions: {Array},
      *     titleFormatter: {Function=}
      * }
      */
     constructor(props) {
         super(props);
-        this.partGenerators = new PartGenerators(props);
+        this.ctrl = this.props.calendarController;
+        this.toolbarPartRegister = new Register(partFactories, 'toolbarPartFactory');
+        this.props.extensions.forEach(extension => {
+            once('addToolbarFactories#' + extension.configuredName, () =>
+                extension.addToolbarPartFactories(this.toolbarPartRegister)
+            );
+        });
     }
     render() {
         return $el('div', {className: 'toolbar'},
             $el('div', {className: 'row'}, this.props.parts.split('|').map((group, r) =>
                 $el('div', {className: 'col', key: r},
-                    group.split(',').map(partName => this.partGenerators[partName]())
+                    group.split(',').map(partName => this.toolbarPartRegister.get(partName)(this))
                 )
             ))
         );
     }
 }
 
-class PartGenerators {
-    constructor(props) { this.ctrl = props.calendarController; this.props = props; }
-    prev() { return $el('button', {onClick: () => this.ctrl.dateCursor.prev(), key: 'prev' }, '<'); }
-    next() { return $el('button', {onClick: () => this.ctrl.dateCursor.next(), key: 'next' }, '>'); }
-    today() { return $el('button', {onClick: () => this.ctrl.dateCursor.reset(), key: 'today' }, 'Tänään'); }
-    title() { return $el('h2', {key: 'title'}, (this.props.titleFormatter || titleFormatters[this.ctrl.currentView])(
-        this.ctrl.dateCursor.range, this.props.dateUtils
-    )); }
-    month() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_MONTH); }, key: 'month'}, 'Kuukausi'); }
-    week() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_WEEK); }, key: 'week'}, 'Viikko'); }
-    day() { return $el('button', {onClick: () => { this.ctrl.changeView(Constants.VIEW_DAY); }, key: 'day'}, 'Päivä'); }
-    fill() { return null; }
-}
-const validPartNames = Object.getOwnPropertyNames(PartGenerators.prototype).filter(prop => prop !== 'constructor');
-
 export default Toolbar;
-export { validPartNames };

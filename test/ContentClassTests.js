@@ -4,7 +4,7 @@ QUnit.module('ContentClass', function (hooks) {
     hooks.beforeEach(() => {
         this.content = Object.create(Content.prototype);
     });
-    QUnit.test('shouldComponentUpdate palauttaa false, jos yhdelläkään sisältökerroksella ei ollut sisältöä', assert => {
+    QUnit.test('shouldComponentUpdate palauttaa false, jos yhdelläkään laajennoksella ei ollut sisältöä', assert => {
         const props = null;
         assert.equal(this.content.shouldComponentUpdate(props, {currentlyHasAsyncContent: undefined}), true,
             'Ei pitäisi disabloida renderöintiä, jos ei ole tietoa onko sisältöä ladattu'
