@@ -26,6 +26,8 @@ const domUtils = {
     }
 };
 
-const dateUtils = new Dateutils();
+const LOCALE = undefined;
+const DAYNUM_MONDAY = 1;
+const dateUtils = new Dateutils(LOCALE, DAYNUM_MONDAY);
 
 export {domUtils, dateUtils};

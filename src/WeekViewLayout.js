@@ -97,16 +97,20 @@ class WeekViewLayout extends AbstractViewLayout {
      * @access private
      */
     markCurrentDayColumn(grid, isCompactView) {
-        const now = new Date();
-        // range == kuluva viikko?
-        if (this.dateUtils.getStartOfWeek(now).toDateString() ===
-            this.dateCursor.range.start.toDateString()) {
-            const colIndex = now.getDay() || 7;
-            if (!isCompactView) {
-                grid.forEach(row => { row[colIndex].isCurrentDay = true; });
-            } else {
-                grid[Math.round(colIndex / 2) - 1][!(colIndex % 2) ? 1 : 0].isCurrentDay = true;
+        let dateStringToday = new Date().toDateString();
+        const rollingDate = new Date(this.dateCursor.range.start);
+        let colIndex = 1;
+        while (colIndex < 8) {
+            if (rollingDate.toDateString() === dateStringToday) {
+                if (!isCompactView) {
+                    grid.forEach(row => { row[colIndex].isCurrentDay = true; });
+                } else {
+                    grid[Math.round(colIndex / 2) - 1][!(colIndex % 2) ? 1 : 0].isCurrentDay = true;
+                }
+                break;
             }
+            rollingDate.setDate(rollingDate.getDate() + 1);
+            colIndex++;
         }
         return grid;
     }

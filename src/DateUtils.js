@@ -3,9 +3,11 @@ const EMPTY_WEEK = Array.from(Array(7));
 class DateUtils {
     /**
      * @param {string|string[]} locale 'fi', 'en-US' etc.
+     * @param {number} firstDayOfWeek 0-6
      */
-    constructor(locale) {
+    constructor(locale, firstDayOfWeek) {
         this.locale = locale;
+        this.firstDayOfWeek = firstDayOfWeek;
     }
     // https://stackoverflow.com/questions/6117814/get-week-of-year-in-javascript-like-in-php#answer-6117889
     getWeekNumber(date) {
@@ -18,18 +20,23 @@ class DateUtils {
         // Calculate full weeks to nearest Thursday
         return Math.ceil(( ( (d - new Date(d.getFullYear(),0,1)) / 86400000) + 1)/7);
     }
-    getEstimatedFirstDayOfWeek() {
-        // Kesäkuun ensimmäinen maanantai, 2017, klo 12:00:00
-        return (new Date(2017, 5, 5, 12, 0, 0, 0)).getDay();
+    getFirstDayOfWeek() {
+        return this.firstDayOfWeek;
     }
     getStartOfWeek(date) {
-        const firstDay = this.getEstimatedFirstDayOfWeek();
+        const firstDay = this.getFirstDayOfWeek();
         const d = new Date(date);
         d.setDate(date.getDate() - (7 + date.getDay() - firstDay) % 7);
         return d;
     }
     getFormattedWeekDays(date, form) {
-        const d = this.getStartOfWeek(date);
+        return this.getFormattedWeek(this.getStartOfWeek(date), form);
+    }
+    getDefaultFormattedWeekDays(form) {
+        // Kesäkuun ensimmäinen sunnuntai, 2017, klo 12:00:00
+        return this.getFormattedWeek(new Date(2017, 5, 4, 12, 0, 0, 0), form);
+    }
+    getFormattedWeek(d, form) {
         return EMPTY_WEEK.map(() => {
             const formatted = this.format(d, {weekday: form});
             d.setDate(d.getDate() + 1);

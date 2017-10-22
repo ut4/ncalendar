@@ -48,13 +48,10 @@ class MonthViewLayout extends AbstractViewLayout {
      * @returns {Array}
      */
     getCompactGrid() {
-        const dayNames = this.dateUtils.getFormattedWeekDays(
-            this.dateCursor.range.start,
-            'short'
-        );
+        const dayNames = this.dateUtils.getDefaultFormattedWeekDays('short');
         const currentDayDateStr = new Date().toDateString();
         return this.generateGrid(2, d => {
-            const dateAndDayName = d.getDate() + ' ' + dayNames[(d.getDay() || 7) - 1];
+            const dateAndDayName = d.getDate() + ' ' + dayNames[d.getDay()];
             // Lisää viikkonumero ensimmäisen solun-, ja viikon ensimmäisten päivien perään
             return new Cell(d.getDay() !== 1 && d.getDate() > 1
                 ? dateAndDayName
@@ -78,12 +75,19 @@ class MonthViewLayout extends AbstractViewLayout {
     generateGrid(gridWidth, formatFn) {
         const startDate = this.dateCursor.range.start;
         const rollingDate = new Date(startDate);
+        const firstDayOfWeek = this.dateUtils.getFirstDayOfWeek();
         const grid = [];
         let row = [];
         // Lisää ensimmäisen rivin "tyhjät, jos kyseessä Ma-Su grid
         if (gridWidth === Constants.DAYS_IN_WEEK) {
-            row.length = (startDate.getDay() || 7) - 1;
+            let emptyCellCount = (startDate.getDay() || 7) - firstDayOfWeek;
+            if (emptyCellCount <= 0 && firstDayOfWeek > 1) { emptyCellCount += 7; }
+            row.length = emptyCellCount;
             row.fill(undefined);
+            if (row.length >= gridWidth) {
+                grid.push(row.slice(0, gridWidth));
+                row = row.slice(gridWidth);
+            }
         }
         // Lisää kuukauden päivät {gridWith} levyisinä riveinä
         while (rollingDate.getMonth() === startDate.getMonth()) {

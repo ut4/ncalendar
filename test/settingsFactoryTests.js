@@ -10,7 +10,8 @@ QUnit.module('settingsFactory', function() {
             ['titleFormatters', {[Constants.VIEW_DAY]: () => {}}],
             ['layoutChangeBreakPoint', 600],
             ['hours', {first: 8, last: 17}],
-            ['locale', 'en-US']
+            ['locale', 'en-US'],
+            ['firstDayOfWeek', 0]
         ].forEach(([setting, value]) => {
             const input = {[setting]: value};
             const settings = settingsFactory.makeSettings(input);
@@ -31,7 +32,10 @@ QUnit.module('settingsFactory', function() {
             {hours: {first: 1}},
             {hours: {first: 6, last: 2}},
             {hours: {first: 6, last: 24}},
-            {locale: /fus/}
+            {locale: /fus/},
+            {firstDayOfWeek: /ro/},
+            {firstDayOfWeek: -1},
+            {firstDayOfWeek: 7}
         ].forEach(value => {
             assert.throws(
                 () => { settingsFactory.makeSettings(value); },
@@ -50,6 +54,7 @@ QUnit.module('settingsFactory', function() {
         assert.deepEqual(settings.layoutChangeBreakPoint, 800);
         assert.deepEqual(settings.hours, {first: 6, last: 17});
         assert.deepEqual(settings.locale, undefined);
+        assert.deepEqual(settings.firstDayOfWeek, 1);
         assert.equal(settings.hasOwnProperty('foo'), false,
             'Pitäisi ignorettaa tuntemattomat asetukset'
         );

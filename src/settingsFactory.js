@@ -62,6 +62,11 @@ function validateLocale(candidate) {
         return 'locale-asetus tulisi olla merkkijono tai taulukko';
     }
 }
+function validateFirstDayOfWeek(candidate) {
+    if (typeof candidate !== 'number' || candidate < 0 || candidate > 6) {
+        return 'firstDayOfWeek tulisi olla numero 0-6';
+    }
+}
 /**
  * @param {any} value Asetuksen arvo
  * @param {Function} validator Arvon validoija
@@ -92,7 +97,8 @@ const knownSettings = {
     titleFormatters: {validator: validateFormatters, defaultValue: {}},
     layoutChangeBreakPoint: {validator: validateBreakPoint, defaultValue: 800},
     hours: {validator: validateHours, defaultValue: {first: 6, last: 17}},
-    locale: {validator: validateLocale, defaultValue: undefined}
+    locale: {validator: validateLocale, defaultValue: undefined},
+    firstDayOfWeek: {validator: validateFirstDayOfWeek, defaultValue: 1}
 };
 const settingsRegister = {
     transform(validator, key, defaultValue) {
@@ -116,7 +122,8 @@ const settingsFactory = {
      *     titleFormatters: {Object},
      *     layoutChangeBreakPoint: {number},
      *     hours: {Object},
-     *     locale: {string|string[]}
+     *     locale: {string|string[]},
+     *     firstDayOfWeek: {number}
      * }
      */
     makeSettings(userSettings) {

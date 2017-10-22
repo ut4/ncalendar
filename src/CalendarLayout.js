@@ -20,7 +20,8 @@ class CalendarLayout extends React.Component {
      *     titleFormatters: {Object=},
      *     layoutChangeBreakPoint: {number=},
      *     hours: {Object=},
-     *     locale: {string|string[]=}
+     *     locale: {string|string[]=},
+     *     firstDayOfWeek: {number=}
      * }
      */
     constructor(props) {
@@ -28,7 +29,7 @@ class CalendarLayout extends React.Component {
         // Luo asetukset & rekisteröi mediaquery
         this.settings = settingsFactory.makeSettings(this.props);
         this.smallScreenMediaQuery = window.matchMedia(`(max-width:${this.settings.layoutChangeBreakPoint}px)`);
-        this.dateUtils = new DateUtils(this.settings.locale);
+        this.dateUtils = new DateUtils(this.settings.locale, this.settings.firstDayOfWeek);
         this.dateCursorFactory = new DateCursorFactory(this.dateUtils);
         // Luo initial state
         const state = {dateCursor: this.newDateCursor(this.settings.defaultView)};

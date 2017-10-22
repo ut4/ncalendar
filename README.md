@@ -124,7 +124,15 @@ const mySettings = {
      * @prop {string|string[]}
      * @default undefined aka. selainmoottori päättää
      */
-    locale: 'fi'
+    locale: 'fi',
+    /**
+     * Viikonpäivän numero, jota käytetään kalenterissa viikon ensimmäisenä
+     * päivänä. 0 = Su, 1 = Ma ... 6 = La.
+     *
+     * @prop {number}
+     * @default 1
+     */
+    firstDayOfWeek: 0
     //
     // Esim. laajennos-spesifisiä asetuksia tänne
 };
