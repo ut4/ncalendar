@@ -2,6 +2,10 @@
 
 Kalenteri-komponentti seuraavaan applikaatioosi! ES6, virtual-DOM, flexbox, ECMAScript Intl. Konseptointivaiheessa. Dev-ympäristö vaatii selaimen, joka tukee ES6-moduuleja natiivisti; ks. [lista](https://jakearchibald.com/2017/es-modules-in-browsers/).
 
+## Status
+
+Jäissä toistaiseksi.
+
 ## Features
 
 - Inferno, preact, ja React yhteensopiva
